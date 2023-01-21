@@ -34,7 +34,7 @@ template MultipleChoiceTest(k) {
     component calculateScoreCommitment = Poseidon(2);
     calculateScoreCommitment.inputs[0] <== calculateSecret.out;
     // Multiple choice tests can only be passed if the user gets all the questions right
-    calculateScoreCommitment.inputs[1] <== verifyMultipleChoice.score;
+    calculateScoreCommitment.inputs[1] <== verifyMultipleChoice.result;
 
     identityCommitment <== calculateIdentityCommitment.out;
     scoreCommitment <== calculateScoreCommitment.out;
