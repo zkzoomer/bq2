@@ -24,7 +24,7 @@ template MixedTest(k) {
     signal input identityTrapdoor;
 
     signal output identityCommitment;
-    signal output scoreCommitment;
+    signal output gradeCommitment;
 
     component verifyMultipleChoice = VerifyMultipleChoice(k);
     verifyMultipleChoice.solutionHash <== solutionHash;
@@ -46,12 +46,12 @@ template MixedTest(k) {
     component calculateIdentityCommitment = CalculateIdentityCommitment();
     calculateIdentityCommitment.secret <== calculateSecret.out;
 
-    component calculateScoreCommitment = Poseidon(2);
-    calculateScoreCommitment.inputs[0] <== calculateSecret.out;
-    calculateScoreCommitment.inputs[1] <== verifyOpenAnswers.nCorrect + verifyMultipleChoice.result;
+    component calculateGradeCommitment = Poseidon(2);
+    calculateGradeCommitment.inputs[0] <== calculateSecret.out;
+    calculateGradeCommitment.inputs[1] <== verifyOpenAnswers.nCorrect + verifyMultipleChoice.result;
 
     identityCommitment <== calculateIdentityCommitment.out;
-    scoreCommitment <== calculateScoreCommitment.out;
+    gradeCommitment <== calculateGradeCommitment.out;
 }
 
 // Answer verifier for a maximum of 64 multiple choice questions and 64 open answer questions
