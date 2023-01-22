@@ -27,3 +27,17 @@ template CalculateIdentityCommitment() {
 
     out <== poseidon.out;
 }
+
+template CalculateNullifierHash() {
+    signal input externalNullifier;
+    signal input identityNullifier;
+
+    signal output out;
+
+    component poseidon = Poseidon(2);
+
+    poseidon.inputs[0] <== externalNullifier;
+    poseidon.inputs[1] <== identityNullifier;
+
+    out <== poseidon.out;
+}
