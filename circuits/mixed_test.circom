@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 include "../node_modules/circomlib/circuits/poseidon.circom";
 include "./verifiers/verify_multiple_choice.circom";
 include "./verifiers/verify_open_answers.circom";
-include "./common/semaphore_identity.circom";
+include "./lib/semaphore_identity.circom";
 
 template MixedTest(k) {
     var nQuestions = 2**k;
