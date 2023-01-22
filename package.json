@@ -6,13 +6,15 @@
 	"repository": "https://github.com/0xdeenz/bq-core-v2.git",
 	"author": "0xdeenz sergio@deenz.dev",
 	"license": "MIT",
-	"scripts": {},
-	"devDependencies": {
-		"circom_tester": "^0.0.19",
-		"circomlib": "^2.0.5",
-		"typescript": "^4.9.4"
+	"private": "true",
+	"scripts": {
+
 	},
-	"engines": {
-		"npm": "npm not supported - use yarn"
+	"workspaces": [
+        "packages/*",
+		"!packages/circuits"
+    ],
+	"devDependencies": {
+		"typescript": "^4.9.4"
 	}
 }
