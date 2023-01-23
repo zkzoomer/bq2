@@ -1,5 +1,5 @@
 {
-	"name": "circuits",
+	"name": "@bq-core/circuits",
 	"version": "1.0.0",
 	"dependencies": {
 		"circom_tester": "^0.0.19",
