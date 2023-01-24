@@ -15,6 +15,7 @@ template VerifyGrade(nLevels) {
 
     signal output root;
     signal output nullifierHash;
+    signal output identitySecret;
 
     component calculateSecret = CalculateSecret();
     calculateSecret.identityNullifier <== identityNullifier;
@@ -38,4 +39,5 @@ template VerifyGrade(nLevels) {
 
     root <== inclusionProof.root;
     nullifierHash <== calculateNullifierHash.out;
+    identitySecret <== calculateSecret.out;
 }
