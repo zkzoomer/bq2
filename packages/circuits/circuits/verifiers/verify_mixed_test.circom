@@ -32,7 +32,6 @@ template VerifyMixedTest(k) {
     signal output testRoot;
     signal output identityCommitment;
     signal output gradeCommitment;
-    signal output testParameters;
 
     component verifyMultipleChoice = VerifyMultipleChoice(k);
     verifyMultipleChoice.solutionHash <== solutionHash;
