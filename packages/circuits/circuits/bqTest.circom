@@ -41,11 +41,16 @@ template bqTest(k) {
     }
     mixedTest.openAnswersHashesRoot <== openAnswersHashesRoot;
     mixedTest.identitySecret <== identitySecret;
+
+    component calculateTestParameters = Poseidon(3);
+    calculateTestParameters.inputs[0] <== minimumGrade;
+    calculateTestParameters.inputs[1] <== multipleChoiceWeight;
+    calculateTestParameters.inputs[2] <== nQuestions;
     
     testRoot <== mixedTest.testRoot;
     identityCommitment <== mixedTest.identityCommitment;
     gradeCommitment <== mixedTest.gradeCommitment;
-    testParameters <== mixedTest.testParameters;
+    testParameters <== calculateTestParameters.out;
 }
 
 // Answer verifier for a maximum of 64 multiple choice questions and 64 open answer questions

@@ -69,14 +69,8 @@ template VerifyMixedTest(k) {
     component calculateGradeCommitment = Poseidon(2);
     calculateGradeCommitment.inputs[0] <== identitySecret;
     calculateGradeCommitment.inputs[1] <== testGrade.out;
-
-    component calculateTestParameters = Poseidon(3);
-    calculateTestParameters.inputs[0] <== minimumGrade;
-    calculateTestParameters.inputs[1] <== multipleChoiceWeight;
-    calculateTestParameters.inputs[2] <== nQuestions;
     
     testRoot <== calculateTestRoot.out;
     identityCommitment <== calculateIdentityCommitment.out;
     gradeCommitment <== calculateGradeCommitment.out;
-    testParameters <== calculateTestParameters.out;
 }
