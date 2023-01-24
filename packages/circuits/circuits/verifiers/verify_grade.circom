@@ -11,19 +11,13 @@ template VerifyGrade(nLevels) {
     signal input treeSiblings[nLevels];
 
     signal input grade;
-    signal input externalNullifier;
 
     signal output root;
-    signal output nullifierHash;
     signal output identitySecret;
 
     component calculateSecret = CalculateSecret();
     calculateSecret.identityNullifier <== identityNullifier;
     calculateSecret.identityTrapdoor <== identityTrapdoor;
-
-    component calculateNullifierHash = CalculateNullifierHash();
-    calculateNullifierHash.externalNullifier <== externalNullifier;
-    calculateNullifierHash.identityNullifier <== identityNullifier;
 
     component calculateGradeCommitment = Poseidon(2);
     calculateGradeCommitment.inputs[0] <== calculateSecret.out;
@@ -38,6 +32,5 @@ template VerifyGrade(nLevels) {
     }
 
     root <== inclusionProof.root;
-    nullifierHash <== calculateNullifierHash.out;
     identitySecret <== calculateSecret.out;
 }

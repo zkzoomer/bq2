@@ -24,7 +24,10 @@ template GradeClaim(nLevels) {
         verifyGrade.treeSiblings[i] <== treeSiblings[i];
     }
     verifyGrade.grade <== grade;
-    verifyGrade.externalNullifier <== externalNullifier;
+
+    component calculateNullifierHash = CalculateNullifierHash();
+    calculateNullifierHash.externalNullifier <== externalNullifier;
+    calculateNullifierHash.identityNullifier <== identityNullifier;
 
     component gradeGreaterEqThanThreshold = GreaterEqThan(13);  // Max value is 100 * 64 = 6400 < 2**13 - 1 = 8191
     gradeGreaterEqThanThreshold.in[0] <== grade;
@@ -33,7 +36,7 @@ template GradeClaim(nLevels) {
     gradeGreaterEqThanThreshold.out === 1;
 
     root <== verifyGrade.root;
-    nullifierHash <== verifyGrade.nullifierHash;
+    nullifierHash <== calculateNullifierHash.out;
 }
 
 component main {public [gradeThreshold, externalNullifier]} = GradeClaim(20);
