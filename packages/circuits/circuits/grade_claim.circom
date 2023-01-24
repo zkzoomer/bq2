@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 include "./node_modules/circomlib/circuits/comparators.circom";
 include "./verifiers/verify_grade.circom";
 
-template GradeClaim(nLevels) {
+template ClaimGrade(nLevels) {
     signal input identityNullifier;
     signal input identityTrapdoor;
     signal input treePathIndices[nLevels];
@@ -39,4 +39,4 @@ template GradeClaim(nLevels) {
     nullifierHash <== calculateNullifierHash.out;
 }
 
-component main {public [gradeThreshold, externalNullifier]} = GradeClaim(20);
+component main {public [gradeThreshold, externalNullifier]} = ClaimGrade(20);
