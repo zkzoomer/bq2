@@ -1,6 +1,8 @@
 pragma circom 2.0.0;
 
 include "./node_modules/circomlib/circuits/poseidon.circom";
+include "./lib/merkle_inclusion.circom";
+include "./lib/path_indices_to_member_index.circom";
 include "./verifiers/verify_mixed_test.circom";
 include "./verifiers/verify_grade.circom";
 
@@ -32,9 +34,12 @@ template UpdateGrade(k, nLevels) {
     // Correct answers hashes tree root, given by the smart contract
     signal input openAnswersHashesRoot;
     
-    signal output root;
+    signal output oldRoot;
+    signal output newRoot;
+    signal output oldGradeCommitment;
+    signal output newGradeCommitment;
+    signal output gradeCommitmentIndex;
     signal output testRoot;
-    signal output gradeCommitment;
     signal output testParameters;
 
     component verifyCurrentGrade = VerifyGrade(nLevels);
@@ -65,9 +70,24 @@ template UpdateGrade(k, nLevels) {
     calculateTestParameters.inputs[0] <== multipleChoiceWeight;
     calculateTestParameters.inputs[1] <== nQuestions;
 
-    root <== verifyCurrentGrade.root;
+    component calculateNewRoot = MerkleTreeInclusionProof(nLevels);
+    calculateNewRoot.leaf <== verifyMixedTest.gradeCommitment;
+    for (var i = 0; i < nLevels; i++) {
+        calculateNewRoot.pathIndices[i] <== treePathIndices[i];
+        calculateNewRoot.siblings[i] <== treeSiblings[i];
+    }
+
+    component calculateGradeCommitmentIndex = PathIndicesToMemberIndex(nLevels);
+    for (var i = 0; i < nLevels; i++) {
+        calculateGradeCommitmentIndex.pathIndices[i] <== treePathIndices[i];
+    }
+
+    oldRoot <== verifyCurrentGrade.root;
+    newRoot <== calculateNewRoot.root;
     testRoot <== verifyMixedTest.testRoot;
-    gradeCommitment <== verifyMixedTest.gradeCommitment;
+    oldGradeCommitment <== verifyCurrentGrade.gradeCommitment;
+    newGradeCommitment <== verifyMixedTest.gradeCommitment;
+    gradeCommitmentIndex <== calculateGradeCommitmentIndex.out;
     testParameters <== calculateTestParameters.out;
 }
 
