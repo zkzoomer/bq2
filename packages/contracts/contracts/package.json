@@ -1,0 +1,15 @@
+{
+	"name": "@bq-core/contracts",
+	"version": "1.0.0",
+	"description": "bq-core contracts to solve, manage credential and grade groups and broadcast anonymous signals.",
+	"main": "index.js",
+	"license": "MIT",
+	"files": [
+		"**/*.sol"
+	],
+	"dependencies": {
+		"@openzeppelin/contracts": "4.7.3",
+		"@semaphore-protocol/contracts": "2.6.1",
+		"@zk-kit/incremental-merkle-tree.sol": "1.3.1"
+	}
+}
