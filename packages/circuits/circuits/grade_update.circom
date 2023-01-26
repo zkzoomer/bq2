@@ -81,13 +81,14 @@ template UpdateGrade(k, nLevels) {
     for (var i = 0; i < nLevels; i++) {
         calculateGradeCommitmentIndex.pathIndices[i] <== treePathIndices[i];
     }
-
-    oldRoot <== verifyCurrentGrade.root;
-    newRoot <== calculateNewRoot.root;
-    testRoot <== verifyMixedTest.testRoot;
+    
+    gradeCommitmentIndex <== calculateGradeCommitmentIndex.out;
     oldGradeCommitment <== verifyCurrentGrade.gradeCommitment;
     newGradeCommitment <== verifyMixedTest.gradeCommitment;
-    gradeCommitmentIndex <== calculateGradeCommitmentIndex.out;
+    oldRoot <== verifyCurrentGrade.root;
+    newRoot <== calculateNewRoot.root;
+
+    testRoot <== verifyMixedTest.testRoot;
     testParameters <== calculateTestParameters.out;
 }
 
