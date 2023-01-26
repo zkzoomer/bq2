@@ -39,4 +39,4 @@ template ClaimGrade(nLevels) {
     nullifierHash <== calculateNullifierHash.out;
 }
 
-component main {public [gradeThreshold, externalNullifier]} = ClaimGrade(20);
+component main {public [gradeThreshold, externalNullifier]} = ClaimGrade(16);

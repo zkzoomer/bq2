@@ -1,9 +1,11 @@
 pragma circom 2.0.0;
 
 include "./node_modules/circomlib/circuits/poseidon.circom";
+include "./lib/merkle_inclusion.circom";
+include "./lib/path_indices_to_member_index.circom";
 include "./verifiers/verify_mixed_test.circom";
 
-template bqTest(k) {
+template bqTest(k, nLevels) {
     var maxQuestions = 2**k;
 
     // Test parameters
@@ -24,10 +26,25 @@ template bqTest(k) {
     signal input openAnswersHashesRoot;
 
     signal input identitySecret;
+
+    signal input identityTreeEmptyLeaf;
+    signal input identityTreePathIndices[nLevels];
+    signal input identityTreeSiblings[nLevels];
+    signal input gradeTreeEmptyLeaf;
+    signal input gradeTreePathIndices[nLevels];
+    signal input gradeTreeSiblings[nLevels];
     
-    signal output testRoot;
+    signal output identityCommitmentIndex;
     signal output identityCommitment;
+    signal output oldIdentityTreeRoot;
+    signal output newIdentityTreeRoot;
+
+    signal output gradeCommitmentIndex;
     signal output gradeCommitment;
+    signal output oldGradeTreeRoot;
+    signal output newGradeTreeRoot;
+
+    signal output testRoot;
     signal output testParameters;
 
     component mixedTest = VerifyMixedTest(k);
@@ -47,12 +64,58 @@ template bqTest(k) {
     calculateTestParameters.inputs[0] <== minimumGrade;
     calculateTestParameters.inputs[1] <== multipleChoiceWeight;
     calculateTestParameters.inputs[2] <== nQuestions;
+
+    component calculateIdentityCommitmentIndex = PathIndicesToMemberIndex(nLevels);
+    for (var i = 0; i < nLevels; i++) {
+        calculateIdentityCommitmentIndex.pathIndices[i] <== identityTreePathIndices[i];
+    }
+
+    component calculateOldIdentityTreeRoot = MerkleTreeInclusionProof(nLevels);
+    calculateOldIdentityTreeRoot.leaf <== identityTreeEmptyLeaf;
+    for (var i = 0; i < nLevels; i++) {
+        calculateOldIdentityTreeRoot.pathIndices[i] <== identityTreePathIndices[i];
+        calculateOldIdentityTreeRoot.siblings[i] <== identityTreeSiblings[i];
+    }
+
+    component calculateNewIdentityTreeRoot = MerkleTreeInclusionProof(nLevels);
+    calculateNewIdentityTreeRoot.leaf <== mixedTest.identityCommitment;
+    for (var i = 0; i < nLevels; i++) {
+        calculateNewIdentityTreeRoot.pathIndices[i] <== identityTreePathIndices[i];
+        calculateNewIdentityTreeRoot.siblings[i] <== identityTreeSiblings[i];
+    }
+
+    component calculateGradeCommitmentIndex = PathIndicesToMemberIndex(nLevels);
+    for (var i = 0; i < nLevels; i++) {
+        calculateGradeCommitmentIndex.pathIndices[i] <== gradeTreePathIndices[i];
+    }
+
+    component calculateOldGradeTreeRoot = MerkleTreeInclusionProof(nLevels);
+    calculateOldGradeTreeRoot.leaf <== gradeTreeEmptyLeaf;
+    for (var i = 0; i < nLevels; i++) {
+        calculateOldGradeTreeRoot.pathIndices[i] <== gradeTreePathIndices[i];
+        calculateOldGradeTreeRoot.siblings[i] <== gradeTreeSiblings[i];
+    }
+
+    component calculateNewGradeTreeRoot = MerkleTreeInclusionProof(nLevels);
+    calculateNewGradeTreeRoot.leaf <== mixedTest.gradeCommitment;
+    for (var i = 0; i < nLevels; i++) {
+        calculateNewGradeTreeRoot.pathIndices[i] <== gradeTreePathIndices[i];
+        calculateNewGradeTreeRoot.siblings[i] <== gradeTreePathIndices[i];
+    }
     
-    testRoot <== mixedTest.testRoot;
+    identityCommitmentIndex <== calculateIdentityCommitmentIndex.out;
     identityCommitment <== mixedTest.identityCommitment;
+    oldIdentityTreeRoot <== calculateOldIdentityTreeRoot.root;
+    newIdentityTreeRoot <== calculateNewIdentityTreeRoot.root;
+
+    gradeCommitmentIndex <== calculateGradeCommitmentIndex.out;
     gradeCommitment <== mixedTest.gradeCommitment;
+    oldGradeTreeRoot <== calculateOldGradeTreeRoot.root;
+    newGradeTreeRoot <== calculateNewGradeTreeRoot.root;
+
+    testRoot <== mixedTest.testRoot;
     testParameters <== calculateTestParameters.out;
 }
 
 // Answer verifier for a maximum of 64 multiple choice questions and 64 open answer questions
-component main = bqTest(6);
+component main = bqTest(6, 16);

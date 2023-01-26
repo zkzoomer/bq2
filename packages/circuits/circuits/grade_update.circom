@@ -91,4 +91,4 @@ template UpdateGrade(k, nLevels) {
     testParameters <== calculateTestParameters.out;
 }
 
-component main = UpdateGrade(6, 20);
+component main = UpdateGrade(6, 16);
