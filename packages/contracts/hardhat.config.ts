@@ -9,11 +9,11 @@ import { NetworksUserConfig } from "hardhat/types"
 import { resolve } from "path"
 import "solidity-coverage"
 import { config } from "./package.json"
-import "./tasks/accounts"
+/* import "./tasks/accounts"
 import "./tasks/deploy-semaphore"
 import "./tasks/deploy-semaphore-voting"
 import "./tasks/deploy-semaphore-whistleblowing"
-import "./tasks/deploy-verifier"
+import "./tasks/deploy-verifier" */
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
 
