@@ -22,7 +22,7 @@ interface ICredentials {
         /// Out of 100, minimum total grade the user must get to obtain the credential
         uint8 minimumGrade;  
         /// Maximum number of users that can obtain this credential -- set to 0 for unlimited
-        uint24 credentialLimit;
+        uint16 credentialLimit;
         /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited
         uint32 timeLimit;
         /// Address that controls this credential
@@ -31,8 +31,20 @@ interface ICredentials {
         uint256 multipleChoiceRoot;
         /// Root of the open answers Merkle tree, where each leaf is the hash of the corresponding correct answer
         uint256 openAnswersRoot;
-        /// External resource containing the actual test and more information about the credential
-        string testURI;
+    }
+
+    /// It defines all the test group parameters
+    struct TestGroup {
+        /// Leaf index of the next empty credentials tree leaf
+        uint128 credentialsTreeIndex;
+        /// Leaf index of the next empty no-credentials tree leaf
+        uint128 noCredentialsTreeIndex;
+        /// Root hash of the credentials tree
+        uint256 credentialsTreeRoot;
+        /// Root hash of the grade tree
+        uint256 gradeTreeRoot;
+        /// Root hash of the no credentials tree root
+        uint256 noCredentialsTreeRoot;
     }
 
     /// @dev Emitted when a test is invalidated by its admin
@@ -88,31 +100,23 @@ interface ICredentials {
     /// and the identityCommitment to the credentialsTree; otherwise, it adds the identityCommitment to the 
     /// no-credentials tree
     /// @param testId: id of the test
-    /// @param identityCommitmentIndex: the index within the identity tree of the new identity commitment
-    /// @param identityCommitment: new identity commitment
-    /// @param oldIdentityTreeRoot: old root of the identity tree
-    /// @param newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment
-    /// @param gradeCommitmentIndex: the index within the grade tree of the new grade commitment
-    /// @param gradeCommitment: new grade commitment
-    /// @param oldGradeTreeRoot: old root of the grade tree
-    /// @param newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
-    /// @param testRoot: root of the test that is being solved
-    /// @param testParameters: test parameters used for grading, Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
+    /// @param input: the public inputs of the proof, these being:
+    ///     - identityCommitmentIndex: the index within the identity tree of the new identity commitment
+    ///     - identityCommitment: new identity commitment
+    ///     - oldIdentityTreeRoot: old root of the identity tree
+    ///     - newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment
+    ///     - gradeCommitmentIndex: the index within the grade tree of the new grade commitment
+    ///     - gradeCommitment: new grade commitment
+    ///     - oldGradeTreeRoot: old root of the grade tree
+    ///     - newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
+    ///     - testRoot: root of the test that is being solved
+    ///     - testParameters: test parameters used for grading, Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
     /// @param proofA: SNARK proof
     /// @param proofB: SNARK proof
     /// @param proofC: SNARK proof
     function solveTest(
         uint256 testId,
-        uint256 identityCommitmentIndex,
-        uint256 identityCommitment,
-        uint256 oldIdentityTreeRoot,
-        uint256 newIdentityTreeRoot,
-        uint256 gradeCommitmentIndex,
-        uint256 gradeCommitment,
-        uint256 oldGradeTreeRoot,
-        uint256 newGradeTreeRoot,
-        uint256 testRoot,
-        uint256 testParameters,
+        uint256[10] calldata input,
         uint256[2] calldata proofA,
         uint256[2][2] calldata proofB,
         uint256[2] calldata proofC
@@ -122,25 +126,20 @@ interface ICredentials {
     /// and the identityCommitment to the credentialsTree; otherwise, it adds the identityCommitment to the 
     /// no-credentials tree
     /// @param testId: Id of the test
-    /// @param gradeCommitmentIndex: the index within the grade tree of the grade commitments
-    /// @param oldGradeCommitment: existing grade commitment that is being replaced
-    /// @param newGradeCommitment: new grade commitment replacing the old one
-    /// @param oldGradeTreeRoot: old root of the grade tree
-    /// @param newGradeTreeRoot: new root of the grade tree result of updating the grade commitment
-    /// @param testRoot: root of the test that is being solved
-    /// @param testParameters: test parameters used for grading, Poseidon(multipleChoiceWeight, nQuestions)
+    /// @param input: the public inputs of the proof, these being:
+    ///     - gradeCommitmentIndex: the index within the grade tree of the grade commitments
+    ///     - oldGradeCommitment: existing grade commitment that is being replaced
+    ///     - newGradeCommitment: new grade commitment replacing the old one
+    ///     - oldGradeTreeRoot: old root of the grade tree
+    ///     - newGradeTreeRoot: new root of the grade tree result of updating the grade commitment
+    ///     - testRoot: root of the test that is being solved
+    ///     - testParameters: test parameters used for grading, Poseidon(multipleChoiceWeight, nQuestions)
     /// @param proofA: SNARK proof
     /// @param proofB: SNARK proof
     /// @param proofC: SNARK proof
     function improveSolution(
         uint256 testId,
-        uint256 gradeCommitmentIndex,
-        uint256 oldGradeCommitment,
-        uint256 newGradeCommitment,
-        uint256 oldGradeTreeRoot,
-        uint256 newGradeTreeRoot,
-        uint256 testRoot,
-        uint256 testParameters,
+        uint256[7] calldata input,
         uint256[2] calldata proofA,
         uint256[2][2] calldata proofB,
         uint256[2] calldata proofC
@@ -148,33 +147,71 @@ interface ICredentials {
 
     /// @dev Returns the parameters of a given test in the form of the `Test` struct
     /// @param testId: id of the test
+    /// @return Test parameters
     function getTest(uint256 testId) external view returns (Test memory);
 
     /// @dev Returns the external resource of the test
     /// @param testId: id of the test
+    /// @return Test URI
     function getTestURI(uint256 testId) external view returns (string memory);
 
     /// @dev Returns the root of the multiple choice Merkle tree of the test
     /// @param testId: id of the test
+    /// @return Root hash of the multiple choice answers tree
     function getMultipleChoiceRoot(uint256 testId) external view returns (uint256);
 
     /// @dev Returns the root of the open answers Merkle tree of the test
     /// @param testId: id of the test
+    /// @return Root hash of the open answer hashes tree
     function getOpenAnswersRoot(uint256 testId) external view returns (uint256);
 
     /// @dev Returns the open answer hashes of the test
     /// @param testId: id of the test
+    /// @return Open answer hashes
     function getOpenAnswersHashes(uint256 testId) external view returns (uint256[] memory);
 
     /// @dev Returns the test root, testRoot = Poseidon(multipleChoiceRoot, openAnswersRoot)
     /// @param testId: id of the test
+    /// @return Hash of the multiple choice root and the open answers root
     function getTestRoot(uint256 testId) external view returns (uint256);
 
     /// @dev Returns whether the test exists
     /// @param testId: id of the test
+    /// @return Test existence
     function testExists(uint256 testId) external view returns (bool);
 
     /// @dev Returns whether the test is valid, that is, if it can be solved 
     /// @param testId: id of the test
+    /// @return Test validity
     function testIsValid(uint256 testId) external view returns (bool);
+
+    /// @dev Returns the last root hash of the grade tree group
+    /// @param testId: id of the test
+    /// @return Root hash of the grade tree
+    function getGradeTreeRoot(uint256 testId) external view returns (uint256);
+
+    /// @dev Returns the depth of the grade tree
+    /// @param testId: id of the test
+    /// @return Depth of the grade tree
+    function getGradeTreeDepth(uint256 testId) external view returns (uint256);
+
+    /// @dev Returns the number of tree leaves of the grade tree group
+    /// @param testId: id of the test
+    /// @return Number of grade tree leaves
+    function getNumberOfGradeTreeLeaves(uint256 testId) external view returns (uint256);
+
+    /// @dev Returns the last root hash of the no credentials tree group
+    /// @param testId: id of the test
+    /// @return Root hash of the no credentials tree
+    function getNoCredentialsTreeRoot(uint256 testId) external view returns (uint256);
+
+    /// @dev Returns the depth of the no credentials tree
+    /// @param testId: id of the test
+    /// @return Depth of the no credentials tree
+    function getNoCredentialsTreeDepth(uint256 testId) external view returns (uint256);
+
+    /// @dev Returns the number of tree leaves of the no credentials tree group
+    /// @param testId: id of the test
+    /// @return Number of no credentials tree leaves
+    function getNumberOfNoCredentialsTreeLeaves(uint256 testId) external view returns (uint256);
 }
