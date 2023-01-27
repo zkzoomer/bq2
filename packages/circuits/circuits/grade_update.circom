@@ -34,8 +34,8 @@ template UpdateGrade(k, nLevels) {
     // Correct answers hashes tree root, given by the smart contract
     signal input openAnswersHashesRoot;
     
-    signal output oldRoot;
-    signal output newRoot;
+    signal output oldGradeTreeRoot;
+    signal output newGradeTreeRoot;
     signal output oldGradeCommitment;
     signal output newGradeCommitment;
     signal output gradeCommitmentIndex;
@@ -85,8 +85,8 @@ template UpdateGrade(k, nLevels) {
     gradeCommitmentIndex <== calculateGradeCommitmentIndex.out;
     oldGradeCommitment <== verifyCurrentGrade.gradeCommitment;
     newGradeCommitment <== verifyMixedTest.gradeCommitment;
-    oldRoot <== verifyCurrentGrade.root;
-    newRoot <== calculateNewRoot.root;
+    oldGradeTreeRoot <== verifyCurrentGrade.root;
+    newGradeTreeRoot <== calculateNewRoot.root;
 
     testRoot <== verifyMixedTest.testRoot;
     testParameters <== calculateTestParameters.out;

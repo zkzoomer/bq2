@@ -13,7 +13,7 @@ template ClaimGrade(nLevels) {
     signal input gradeThreshold;
     signal input externalNullifier;
 
-    signal output root;
+    signal output gradeTreeRoot;
     signal output nullifierHash;
 
     component verifyGrade = VerifyGrade(nLevels);
@@ -35,7 +35,7 @@ template ClaimGrade(nLevels) {
 
     gradeGreaterEqThanThreshold.out === 1;
 
-    root <== verifyGrade.root;
+    gradeTreeRoot <== verifyGrade.root;
     nullifierHash <== calculateNullifierHash.out;
 }
 
