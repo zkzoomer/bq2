@@ -5,11 +5,11 @@ pragma solidity ^0.8.4;
 /// @dev Interface of a Credentials contract.
 interface ICredentials {
     error CallerIsNotTheTestAdmin();
-    error InvalidMultipleChoiceWeight();
+    error TimeLimitIsInThePast();
     error InvalidNumberOfQuestions();
     error InvalidMinimumGrade();
+    error InvalidMultipleChoiceWeight();
     error InvalidCredentialLimit();
-    error TimeLimitIsInThePast();
     error SolutionIsNotValid();
 
     /// It defines all the test parameters
