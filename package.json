@@ -7,14 +7,13 @@
 	"author": "0xdeenz sergio@deenz.dev",
 	"license": "MIT",
 	"private": "true",
-	"scripts": {
-
-	},
+	"scripts": {},
 	"workspaces": [
-        "packages/*",
+		"packages/*",
 		"!packages/circuits"
-    ],
+	],
 	"devDependencies": {
+		"dotenv": "^16.0.3",
 		"typescript": "^4.9.4"
 	}
 }
