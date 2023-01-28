@@ -9,5 +9,5 @@ interface ITestVerifier {
         uint256[2][2] calldata b,
         uint256[2] calldata c,
         uint256[10] calldata input
-    ) external view;
+    ) external view returns (bool);
 }

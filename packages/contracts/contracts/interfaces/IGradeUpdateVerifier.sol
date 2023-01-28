@@ -9,5 +9,5 @@ interface IGradeUpdateVerifier {
         uint256[2][2] calldata b,
         uint256[2] calldata c,
         uint256[7] calldata input
-    ) external view;
+    ) external view returns (bool);
 }
