@@ -5,11 +5,22 @@ pragma solidity ^0.8.4;
 /// @dev Interface of a Credentials contract.
 interface ICredentials {
     error CallerIsNotTheTestAdmin();
+
     error TimeLimitIsInThePast();
     error InvalidNumberOfQuestions();
     error InvalidMinimumGrade();
     error InvalidMultipleChoiceWeight();
     error InvalidCredentialLimit();
+
+    error TestAnswersAlreadyVerified();
+    error InvalidTestAnswersLength(uint256 expectedLength, uint256 providedLength);
+
+    error TestAlreadyInvalid();
+    
+    error InvalidTestRoot(uint256 expectedTestRoot, uint256 providedTestRoot);
+    error InvalidTestParameters(uint256 expectedTestParameters, uint256 providedTestParameters);
+    error InvalidTreeIndex(uint256 expectedIndex, uint256 providedIndex);
+    error InvalidTreeRoot(uint256 expectedRoot, uint256 providedRoot);
     error SolutionIsNotValid();
 
     /// It defines all the test parameters
@@ -31,6 +42,10 @@ interface ICredentials {
         uint256 multipleChoiceRoot;
         /// Root of the open answers Merkle tree, where each leaf is the hash of the corresponding correct answer
         uint256 openAnswersRoot;
+        /// The test root is the result of hashing together the multiple choice root and the open answers root
+        uint256 testRoot;
+        /// The test parameters are the result of hashing together the minimum grade, multiple choice weight and number of questions
+        uint256 testParameters;
     }
 
     /// It defines all the test group parameters
@@ -46,6 +61,16 @@ interface ICredentials {
         /// Root hash of the no credentials tree root
         uint256 noCredentialsTreeRoot;
     }
+
+    /// @dev Emitted when a test is created
+    /// @param testId: id of the test
+    event TestCreated(uint256 indexed testId);
+
+    /// @dev Emitted when an admin is assigned to a group.
+    /// @param testId: id of the test.
+    /// @param oldAdmin: old admin of the group
+    /// @param newAdmin: new admin of the group
+    event TestAdminUpdated(uint256 indexed testId, address indexed oldAdmin, address indexed newAdmin);
 
     /// @dev Emitted when a test is invalidated by its admin
     /// @param testId: id of the test
@@ -68,6 +93,7 @@ interface ICredentials {
     /// @param minimumGrade: see the `Test` struct
     /// @param credentialLimit: see the `Test` struct
     /// @param timeLimit: see the `Test` struct
+    /// @param admin: see the `Test` struct
     /// @param multipleChoiceRoot: see the `Test` struct
     /// @param openAnswersRoot: see the `Test` struct
     /// @param testURI: see the `Test` struct
@@ -75,8 +101,9 @@ interface ICredentials {
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
         uint8 minimumGrade,
-        uint24 credentialLimit,
+        uint16 credentialLimit,
         uint32 timeLimit,
+        address admin,
         uint256 multipleChoiceRoot,
         uint256 openAnswersRoot,
         string memory testURI
@@ -90,9 +117,13 @@ interface ICredentials {
     function verifyTestAnswers(
         uint256 testId,
         uint256[] memory answerHashes
-    ) external ;
+    ) external;
 
-    /// @dev Invalidates the test so that it is no longer solvable by anyone
+    /// @dev Changes the test admin to the one provided
+    /// @param newAdmin: address of the new admin to manage the test
+    function updateTestAdmin(uint256 testId, address newAdmin) external;
+
+    /// @dev Invalidates the test so that it is no longer solvable by anyone by setting its minimum grade to 255
     /// @param testId: id of the test
     function invalidateTest(uint256 testId) external;
 
@@ -137,7 +168,7 @@ interface ICredentials {
     /// @param proofA: SNARK proof
     /// @param proofB: SNARK proof
     /// @param proofC: SNARK proof
-    function improveSolution(
+    function updateGrade(
         uint256 testId,
         uint256[7] calldata input,
         uint256[2] calldata proofA,
@@ -175,6 +206,11 @@ interface ICredentials {
     /// @return Hash of the multiple choice root and the open answers root
     function getTestRoot(uint256 testId) external view returns (uint256);
 
+    /// @dev Returns the test parameters, testParameters = Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
+    /// @param testId: id of the test
+    /// @return Hash of the minimum grade, multiple choice weight and the number of questions
+    function getTestParameters(uint256 testId) external view returns (uint256);
+
     /// @dev Returns whether the test exists
     /// @param testId: id of the test
     /// @return Test existence
@@ -190,25 +226,10 @@ interface ICredentials {
     /// @return Root hash of the grade tree
     function getGradeTreeRoot(uint256 testId) external view returns (uint256);
 
-    /// @dev Returns the depth of the grade tree
-    /// @param testId: id of the test
-    /// @return Depth of the grade tree
-    function getGradeTreeDepth(uint256 testId) external view returns (uint256);
-
-    /// @dev Returns the number of tree leaves of the grade tree group
-    /// @param testId: id of the test
-    /// @return Number of grade tree leaves
-    function getNumberOfGradeTreeLeaves(uint256 testId) external view returns (uint256);
-
     /// @dev Returns the last root hash of the no credentials tree group
     /// @param testId: id of the test
     /// @return Root hash of the no credentials tree
     function getNoCredentialsTreeRoot(uint256 testId) external view returns (uint256);
-
-    /// @dev Returns the depth of the no credentials tree
-    /// @param testId: id of the test
-    /// @return Depth of the no credentials tree
-    function getNoCredentialsTreeDepth(uint256 testId) external view returns (uint256);
 
     /// @dev Returns the number of tree leaves of the no credentials tree group
     /// @param testId: id of the test
