@@ -18,7 +18,7 @@ template UpdateGrade(k, nLevels) {
     signal input grade;
 
     // Test parameters
-    // Minimum grade -- not included as we know the user passed the test already
+    signal input minimumGrade;
     signal input multipleChoiceWeight;
     signal input nQuestions;
 
@@ -66,9 +66,10 @@ template UpdateGrade(k, nLevels) {
     verifyMixedTest.openAnswersHashesRoot <== openAnswersHashesRoot;
     verifyMixedTest.identitySecret <== verifyCurrentGrade.identitySecret;
 
-    component calculateTestParameters = Poseidon(2);
-    calculateTestParameters.inputs[0] <== multipleChoiceWeight;
-    calculateTestParameters.inputs[1] <== nQuestions;
+    component calculateTestParameters = Poseidon(3);
+    calculateTestParameters.inputs[0] <== minimumGrade;
+    calculateTestParameters.inputs[1] <== multipleChoiceWeight;
+    calculateTestParameters.inputs[2] <== nQuestions;
 
     component calculateNewRoot = MerkleTreeInclusionProof(nLevels);
     calculateNewRoot.leaf <== verifyMixedTest.gradeCommitment;
