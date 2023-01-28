@@ -19,3 +19,8 @@ node_modules/
 
 # Production
 build
+
+# Hardhat
+artifacts
+cache
+typechain-types
