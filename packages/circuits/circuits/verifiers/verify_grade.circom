@@ -10,7 +10,7 @@ template VerifyGrade(nLevels) {
     signal input gradeTreePathIndices[nLevels];
     signal input gradeTreeSiblings[nLevels];
 
-    signal input grade;
+    signal input currentGrade;
 
     signal output root;
     signal output gradeCommitment;
@@ -21,7 +21,7 @@ template VerifyGrade(nLevels) {
 
     component calculateGradeCommitment = Poseidon(2);
     calculateGradeCommitment.inputs[0] <== calculateSecret.out;
-    calculateGradeCommitment.inputs[1] <== grade;
+    calculateGradeCommitment.inputs[1] <== currentGrade;
 
     component inclusionProof = MerkleTreeInclusionProof(nLevels);
     inclusionProof.leaf <== calculateGradeCommitment.out;

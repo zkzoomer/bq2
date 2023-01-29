@@ -53,7 +53,7 @@ template VerifyMixedTest(k) {
     testGrade.multipleChoiceWeight <== multipleChoiceWeight;
     testGrade.nQuestions <== nQuestions; 
 
-    component passedTest = GreaterEqThan(13);  // Max value is 100 * 64 = 6400 < 2**13 - 1 = 8191
+    component passedTest = GreaterEqThan(14);  // Max value is 100 * 64 = 6400 < 2**13 - 1 = 8191
     passedTest.in[0] <== testGrade.out;
     passedTest.in[1] <== minimumGrade * nQuestions;
 

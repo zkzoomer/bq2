@@ -21,5 +21,5 @@ template VerifyMultipleChoice(k) {
     testPassed.in[0] <== merkleRoot.out;
     testPassed.in[1] <== solutionHash;
 
-    result <== 100 * testPassed.out;
+    result <== testPassed.out;
 }

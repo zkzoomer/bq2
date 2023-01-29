@@ -102,7 +102,7 @@ template bqTest(k, nLevels) {
     calculateNewGradeTreeRoot.leaf <== mixedTest.gradeCommitment;
     for (var i = 0; i < nLevels; i++) {
         calculateNewGradeTreeRoot.pathIndices[i] <== gradeTreePathIndices[i];
-        calculateNewGradeTreeRoot.siblings[i] <== gradeTreePathIndices[i];
+        calculateNewGradeTreeRoot.siblings[i] <== gradeTreeSiblings[i];
     }
     
     identityCommitmentIndex <== calculateIdentityCommitmentIndex.out;

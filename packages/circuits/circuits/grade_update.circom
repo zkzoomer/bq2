@@ -9,14 +9,6 @@ include "./verifiers/verify_grade.circom";
 template UpdateGrade(k, nLevels) {
     var maxQuestions = 2**k;
 
-    signal input identityNullifier;
-    signal input identityTrapdoor;
-    signal input gradeTreePathIndices[nLevels];
-    signal input gradeTreeSiblings[nLevels];
-
-    // Current grade
-    signal input grade;
-
     // Test parameters
     signal input minimumGrade;
     signal input multipleChoiceWeight;
@@ -33,19 +25,26 @@ template UpdateGrade(k, nLevels) {
     signal input openAnswersHashes[maxQuestions];
     // Correct answers hashes tree root, given by the smart contract
     signal input openAnswersHashesRoot;
+
+    signal input identityNullifier;
+    signal input identityTrapdoor;
+
+    signal input currentGrade;
+    signal input gradeTreePathIndices[nLevels];
+    signal input gradeTreeSiblings[nLevels];
     
-    signal output oldGradeTreeRoot;
-    signal output newGradeTreeRoot;
+    signal output gradeCommitmentIndex;
     signal output oldGradeCommitment;
     signal output newGradeCommitment;
-    signal output gradeCommitmentIndex;
+    signal output oldGradeTreeRoot;
+    signal output newGradeTreeRoot;
     signal output testRoot;
     signal output testParameters;
 
     component verifyCurrentGrade = VerifyGrade(nLevels);
     verifyCurrentGrade.identityNullifier <== identityNullifier;
     verifyCurrentGrade.identityTrapdoor <== identityTrapdoor;
-    verifyCurrentGrade.grade <== grade;
+    verifyCurrentGrade.currentGrade <== currentGrade;
     for (var i = 0; i < nLevels; i++) {
         verifyCurrentGrade.gradeTreePathIndices[i] <== gradeTreePathIndices[i];
         verifyCurrentGrade.gradeTreeSiblings[i] <== gradeTreeSiblings[i];
@@ -54,7 +53,7 @@ template UpdateGrade(k, nLevels) {
     // User must obtain a strictly higher grade than the current one 
     // The non equality check is made in the smart contract with the gradeCommitment
     component verifyMixedTest = VerifyMixedTest(k);
-    verifyMixedTest.minimumGrade <== grade;  
+    verifyMixedTest.minimumGrade <== currentGrade;  
     verifyMixedTest.multipleChoiceWeight <== multipleChoiceWeight;
     verifyMixedTest.nQuestions <== nQuestions;
     verifyMixedTest.solutionHash <== solutionHash;
