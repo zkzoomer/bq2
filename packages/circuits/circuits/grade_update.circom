@@ -11,8 +11,8 @@ template UpdateGrade(k, nLevels) {
 
     signal input identityNullifier;
     signal input identityTrapdoor;
-    signal input treePathIndices[nLevels];
-    signal input treeSiblings[nLevels];
+    signal input gradeTreePathIndices[nLevels];
+    signal input gradeTreeSiblings[nLevels];
 
     // Current grade
     signal input grade;
@@ -47,8 +47,8 @@ template UpdateGrade(k, nLevels) {
     verifyCurrentGrade.identityTrapdoor <== identityTrapdoor;
     verifyCurrentGrade.grade <== grade;
     for (var i = 0; i < nLevels; i++) {
-        verifyCurrentGrade.treePathIndices[i] <== treePathIndices[i];
-        verifyCurrentGrade.treeSiblings[i] <== treeSiblings[i];
+        verifyCurrentGrade.gradeTreePathIndices[i] <== gradeTreePathIndices[i];
+        verifyCurrentGrade.gradeTreeSiblings[i] <== gradeTreeSiblings[i];
     }
     
     // User must obtain a strictly higher grade than the current one 
@@ -64,7 +64,8 @@ template UpdateGrade(k, nLevels) {
         verifyMixedTest.openAnswers[i] <== openAnswers[i];
     }
     verifyMixedTest.openAnswersHashesRoot <== openAnswersHashesRoot;
-    verifyMixedTest.identitySecret <== verifyCurrentGrade.identitySecret;
+    verifyMixedTest.identityNullifier <== identityNullifier;
+    verifyMixedTest.identityTrapdoor <== identityTrapdoor;
 
     component calculateTestParameters = Poseidon(3);
     calculateTestParameters.inputs[0] <== minimumGrade;
@@ -74,13 +75,13 @@ template UpdateGrade(k, nLevels) {
     component calculateNewRoot = MerkleTreeInclusionProof(nLevels);
     calculateNewRoot.leaf <== verifyMixedTest.gradeCommitment;
     for (var i = 0; i < nLevels; i++) {
-        calculateNewRoot.pathIndices[i] <== treePathIndices[i];
-        calculateNewRoot.siblings[i] <== treeSiblings[i];
+        calculateNewRoot.siblings[i] <== gradeTreeSiblings[i];
+        calculateNewRoot.pathIndices[i] <== gradeTreePathIndices[i];
     }
 
     component calculateGradeCommitmentIndex = PathIndicesToMemberIndex(nLevels);
     for (var i = 0; i < nLevels; i++) {
-        calculateGradeCommitmentIndex.pathIndices[i] <== treePathIndices[i];
+        calculateGradeCommitmentIndex.pathIndices[i] <== gradeTreePathIndices[i];
     }
     
     gradeCommitmentIndex <== calculateGradeCommitmentIndex.out;

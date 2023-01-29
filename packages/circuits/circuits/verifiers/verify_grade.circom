@@ -7,13 +7,12 @@ include "../lib/semaphore_identity.circom";
 template VerifyGrade(nLevels) {
     signal input identityNullifier;
     signal input identityTrapdoor;
-    signal input treePathIndices[nLevels];
-    signal input treeSiblings[nLevels];
+    signal input gradeTreePathIndices[nLevels];
+    signal input gradeTreeSiblings[nLevels];
 
     signal input grade;
 
     signal output root;
-    signal output identitySecret;
     signal output gradeCommitment;
 
     component calculateSecret = CalculateSecret();
@@ -28,11 +27,10 @@ template VerifyGrade(nLevels) {
     inclusionProof.leaf <== calculateGradeCommitment.out;
 
     for (var i = 0; i < nLevels; i++) {
-        inclusionProof.siblings[i] <== treeSiblings[i];
-        inclusionProof.pathIndices[i] <== treePathIndices[i];
+        inclusionProof.siblings[i] <== gradeTreeSiblings[i];
+        inclusionProof.pathIndices[i] <== gradeTreePathIndices[i];
     }
 
     root <== inclusionProof.root;
-    identitySecret <== calculateSecret.out;
     gradeCommitment <== calculateGradeCommitment.out;
 }
