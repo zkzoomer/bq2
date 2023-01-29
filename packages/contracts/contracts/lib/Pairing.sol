@@ -150,3 +150,8 @@ library Pairing {
         return pairing(p1, p2);
     }
 }
+
+// TODO update to new Semaphore verifier:
+// https://github.com/semaphore-protocol/semaphore/pull/96
+// by using the following template:
+// https://github.com/semaphore-protocol/semaphore/blob/main/packages/contracts/snarkjs-templates/verifier_groth16.sol.ejs

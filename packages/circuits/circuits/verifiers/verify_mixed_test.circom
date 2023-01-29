@@ -27,7 +27,8 @@ template VerifyMixedTest(k) {
     // Correct answers hashes tree root, given by the smart contract
     signal input openAnswersHashesRoot;
 
-    signal input identitySecret;
+    signal input identityNullifier;
+    signal input identityTrapdoor;
     
     signal output testRoot;
     signal output identityCommitment;
@@ -62,11 +63,15 @@ template VerifyMixedTest(k) {
     calculateTestRoot.inputs[0] <== solutionHash;
     calculateTestRoot.inputs[1] <== openAnswersHashesRoot;
 
+    component calculateSecret = CalculateSecret();
+    calculateSecret.identityNullifier <== identityNullifier;
+    calculateSecret.identityTrapdoor <== identityTrapdoor;
+
     component calculateIdentityCommitment = CalculateIdentityCommitment();
-    calculateIdentityCommitment.secret <== identitySecret;
+    calculateIdentityCommitment.secret <== calculateSecret.out;
 
     component calculateGradeCommitment = Poseidon(2);
-    calculateGradeCommitment.inputs[0] <== identitySecret;
+    calculateGradeCommitment.inputs[0] <== calculateSecret.out;
     calculateGradeCommitment.inputs[1] <== testGrade.out;
     
     testRoot <== calculateTestRoot.out;

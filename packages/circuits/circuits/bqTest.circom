@@ -25,7 +25,8 @@ template bqTest(k, nLevels) {
     // Correct answers hashes tree root, given by the smart contract
     signal input openAnswersHashesRoot;
 
-    signal input identitySecret;
+    signal input identityNullifier;
+    signal input identityTrapdoor;
 
     signal input identityTreeEmptyLeaf;
     signal input identityTreePathIndices[nLevels];
@@ -58,7 +59,8 @@ template bqTest(k, nLevels) {
         mixedTest.openAnswers[i] <== openAnswers[i];
     }
     mixedTest.openAnswersHashesRoot <== openAnswersHashesRoot;
-    mixedTest.identitySecret <== identitySecret;
+    mixedTest.identityNullifier <== identityNullifier;
+    mixedTest.identityTrapdoor <== identityTrapdoor;
 
     component calculateTestParameters = Poseidon(3);
     calculateTestParameters.inputs[0] <== minimumGrade;
