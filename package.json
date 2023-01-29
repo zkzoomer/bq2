@@ -7,13 +7,17 @@
 	"author": "0xdeenz sergio@deenz.dev",
 	"license": "MIT",
 	"private": "true",
-	"scripts": {},
+	"scripts": {
+		"test": "yarn test:circuits",
+		"test:circuits": "yarn workspace circuits test"
+	},
 	"workspaces": [
-		"packages/*",
-		"!packages/circuits"
+		"packages/*"
 	],
 	"devDependencies": {
+		"chai": "^4.3.7",
 		"dotenv": "^16.0.3",
+		"mocha": "^10.2.0",
 		"typescript": "^4.9.4"
 	}
 }
