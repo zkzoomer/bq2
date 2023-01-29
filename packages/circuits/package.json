@@ -1,5 +1,14 @@
 {
 	"name": "circuits",
 	"version": "1.0.0",
-	"private": true
+	"private": true,
+	"scripts": {
+		"test": "mocha test/*"
+	},
+	"devDependencies": {
+		"@zk-kit/incremental-merkle-tree": "^1.0.0",
+		"circom_tester": "^0.0.17",
+		"circomlibjs": "^0.1.7",
+		"js-sha3": "^0.8.0"
+	}
 }
