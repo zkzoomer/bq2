@@ -1,8 +1,8 @@
 import { Identity } from "@semaphore-protocol/identity"
-import { IncrementalMerkleTree, MerkleProof } from "@zk-kit/incremental-merkle-tree"
+import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree"
 import { expect } from "chai";
 import { wasm, WasmTester } from "circom_tester";
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumber } from "ethers";
 import { keccak256  } from 'js-sha3';
 import { describe } from "mocha";
 import path from "path";
