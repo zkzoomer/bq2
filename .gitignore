@@ -7,6 +7,10 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
+# IDE
+.vscode
+.idea
+
 # Dependency directories
 node_modules/
 
