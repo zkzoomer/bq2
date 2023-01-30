@@ -6,10 +6,10 @@ import { wasm, WasmTester } from "circom_tester";
 import { BigNumber, utils } from "ethers";
 import { describe } from "mocha";
 import path from "path";
-import { buildPoseidon, circuitShouldFail, generateOpenAnswers, Poseidon, rootFromLeafArray } from "./utils";
-import { ZERO_LEAF } from "../../proof/src";
+import { circuitShouldFail, generateOpenAnswers } from "./utils";
+import { Poseidon, buildPoseidon, rootFromLeafArray, ZERO_LEAF } from "../../proof/src";
 
-describe("bqTest Circuit", async function () {
+describe("Test Circuit", async function () {
     let circuitTester: WasmTester;
     let poseidon: Poseidon;
 
