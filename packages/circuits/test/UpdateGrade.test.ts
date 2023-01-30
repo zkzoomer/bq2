@@ -1,9 +1,9 @@
+import { keccak256 } from "@ethersproject/keccak256"
 import { Identity } from "@semaphore-protocol/identity"
 import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree"
 import { expect } from "chai";
 import { wasm, WasmTester } from "circom_tester";
-import { BigNumber } from "ethers";
-import { keccak256  } from 'js-sha3';
+import { BigNumber, utils } from "ethers";
 import { describe } from "mocha";
 import path from "path";
 import { buildPoseidon, circuitShouldFail, generateOpenAnswers, Poseidon, rootFromLeafArray } from "./utils";
@@ -60,8 +60,8 @@ describe("UpdateGrade Circuit", async function () {
         solutionHash = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
 
         // Open answer component
-        const _openAnswersHashes = [poseidon([BigInt('0x' + keccak256("sneed's"))]), poseidon([BigInt('0x' + keccak256("feed"))]), poseidon([BigInt('0x' + keccak256("seed"))])]
-        openAnswersHashes = Array(64).fill( poseidon([BigInt('0x' + keccak256(""))] ))
+        const _openAnswersHashes = [poseidon([BigInt(keccak256(utils.toUtf8Bytes("sneed's")))]), poseidon([BigInt(keccak256(utils.toUtf8Bytes("feed")))]), poseidon([BigInt(keccak256(utils.toUtf8Bytes("seed")))])]
+        openAnswersHashes = Array(64).fill( poseidon([BigInt(keccak256(utils.toUtf8Bytes("")))] ))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 
         openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
