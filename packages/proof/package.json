@@ -1,0 +1,12 @@
+{
+	"name": "@bq-core/proof",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"test": "mocha test/*"
+	},
+	"devDependencies": {
+		"@zk-kit/incremental-merkle-tree": "^1.0.0",
+		"circomlibjs": "^0.1.7"
+	}
+}
