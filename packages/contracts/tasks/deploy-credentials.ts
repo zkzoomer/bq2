@@ -1,6 +1,5 @@
 import { poseidon_gencontract as poseidonContract } from "circomlibjs"
-/* import { ethers, run } from "hardhat"
- */import { task, types } from "hardhat/config"
+import { task, types } from "hardhat/config"
 import { saveDeployedContracts } from "../scripts/utils"
 
 task("deploy:credentials", "Deploy the credentials contract")
