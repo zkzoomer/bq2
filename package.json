@@ -8,8 +8,9 @@
 	"license": "MIT",
 	"private": "true",
 	"scripts": {
-		"test": "yarn test:circuits",
-		"test:circuits": "yarn workspace circuits test"
+		"test": "yarn test:circuits && yarn test:contracts",
+		"test:circuits": "yarn workspace circuits test",
+		"test:contracts": "yarn workspace contracts test"
 	},
 	"workspaces": [
 		"packages/*"
