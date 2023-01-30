@@ -105,6 +105,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         testGroups[_nTests] = TestGroup(
             1,
             1,
+            1,
             EMPTY_ROOT,
             EMPTY_ROOT,
             EMPTY_ROOT
@@ -165,14 +166,14 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         if (!testVerifier.verifyProof(proofA, proofB, proofC, input)) {
             revert SolutionIsNotValid();
         }
+        if (testGroups[testId].gradeTreeIndex != input[4]) {
+            revert InvalidTreeIndex(testGroups[testId].credentialsTreeIndex, input[4]);
+        }
 
         // Passing grade / non passing grade / invalid condition
         if (tests[testId].testParameters == input[9]) {  
             if (testGroups[testId].credentialsTreeIndex != input[0]) {
                 revert InvalidTreeIndex(testGroups[testId].credentialsTreeIndex, input[0]);
-            }
-            if (testGroups[testId].credentialsTreeIndex != input[4]) {
-                revert InvalidTreeIndex(testGroups[testId].credentialsTreeIndex, input[4]);
             }
 
             if (testGroups[testId].credentialsTreeRoot != input[2]) {
@@ -186,21 +187,12 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
             testGroups[testId].credentialsTreeRoot = input[3];
 
-            testGroups[testId].gradeTreeRoot = input[7];
-
             // Member added to credentials tree
             emit MemberAdded(
                 testId,    // groupId
                 input[0],  // index
                 input[1],  // identityCommitment
                 input[3]   // merkleTreeRoot
-            );
-            // Member added to grade tree
-            emit MemberAdded(
-                testId,    // groupId
-                input[5],  // index
-                input[5],  // identityCommitment
-                input[7]   // merkleTreeRoot
             );
 
             emit CredentialsGained(
@@ -236,6 +228,17 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         } else {
             revert InvalidTestParameters(tests[testId].testParameters, input[9]);
         }
+
+        // Member always gets added to grade tree
+        testGroups[testId].gradeTreeIndex += 1;
+        testGroups[testId].gradeTreeRoot = input[7];
+
+        emit MemberAdded(
+            testId,    // groupId
+            input[5],  // index
+            input[5],  // identityCommitment
+            input[7]   // merkleTreeRoot
+        );
     }
 
     /// @dev See {ICredentials-updateGrade}

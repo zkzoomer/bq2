@@ -51,15 +51,17 @@ interface ICredentials {
     /// It defines all the test group parameters
     struct TestGroup {
         /// Leaf index of the next empty credentials tree leaf
-        uint128 credentialsTreeIndex;
+        uint80 credentialsTreeIndex;
         /// Leaf index of the next empty no-credentials tree leaf
-        uint128 noCredentialsTreeIndex;
+        uint80 noCredentialsTreeIndex;
+        /// Leaf index of the next empty grade tree leaf
+        uint80 gradeTreeIndex;
         /// Root hash of the credentials tree
         uint256 credentialsTreeRoot;
-        /// Root hash of the grade tree
-        uint256 gradeTreeRoot;
         /// Root hash of the no credentials tree root
         uint256 noCredentialsTreeRoot;
+        /// Root hash of the grade tree
+        uint256 gradeTreeRoot;
     }
 
     /// @dev Emitted when a test is created
