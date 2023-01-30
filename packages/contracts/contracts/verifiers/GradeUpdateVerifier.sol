@@ -14,22 +14,10 @@
 pragma solidity ^0.8.4;
 
 import "../interfaces/IGradeUpdateVerifier.sol";
-import "../lib/Pairing.sol";
 
 contract GradeUpdateVerifier is IGradeUpdateVerifier {
     using Pairing for *;
-    struct VerifyingKey {
-        Pairing.G1Point alfa1;
-        Pairing.G2Point beta2;
-        Pairing.G2Point gamma2;
-        Pairing.G2Point delta2;
-        Pairing.G1Point[] IC;
-    }
-    struct Proof {
-        Pairing.G1Point A;
-        Pairing.G2Point B;
-        Pairing.G1Point C;
-    }
+
     function verifyingKey() internal pure returns (VerifyingKey memory vk) {
         vk.alfa1 = Pairing.G1Point(
             20491192805390485299153009773594534940189261866228447918068658471970481763042,
