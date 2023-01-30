@@ -10,19 +10,6 @@ task("deploy:grade-update-verifier", "Deploy the grade update verifier contract"
             },
             { ethers }
         ): Promise<any> => {    
-            if (!pairingAddress) {
-                const PairingFactory = await ethers.getContractFactory("Pairing")
-                const pairing = await PairingFactory.deploy()
-
-                await pairing.deployed()
-
-                if (logs) {
-                    console.info(`Pairing library has been deployed to: ${pairing.address}`)
-                }
-
-                pairingAddress = pairing.address
-            }
-
             const GradeUpdateVerifierFactory = await ethers.getContractFactory("GradeUpdateVerifier")
 
             const gradeUpdateVerifier = await GradeUpdateVerifierFactory.deploy()
