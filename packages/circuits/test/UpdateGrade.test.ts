@@ -47,7 +47,7 @@ describe("UpdateGrade Circuit", async function () {
     let newGradeCommitment: BigNumber;
 
     before( async function () {
-        circuitTester = await wasm(path.join(__dirname, "../circuits", "grade_update.circom"))
+        circuitTester = await wasm(path.join(__dirname, "../circuits", "update_grade.circom"))
         poseidon = await buildPoseidon();
 
         const identity = new Identity("deenz")

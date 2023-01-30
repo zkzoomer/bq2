@@ -50,7 +50,7 @@ describe("bqTest Circuit", async function () {
     let gradeCommitment: BigNumber;
 
     before( async function () {
-        circuitTester = await wasm(path.join(__dirname, "../circuits", "bqTest.circom"))
+        circuitTester = await wasm(path.join(__dirname, "../circuits", "test.circom"))
         poseidon = await buildPoseidon();
 
         const identity = new Identity("deenz")

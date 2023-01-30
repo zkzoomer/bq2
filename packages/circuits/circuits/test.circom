@@ -5,7 +5,7 @@ include "./lib/merkle_inclusion.circom";
 include "./lib/path_indices_to_member_index.circom";
 include "./verifiers/verify_mixed_test.circom";
 
-template bqTest(k, nLevels) {
+template Test(k, nLevels) {
     var maxQuestions = 2**k;
 
     // Test parameters
@@ -120,4 +120,4 @@ template bqTest(k, nLevels) {
 }
 
 // Answer verifier for a maximum of 64 multiple choice questions and 64 open answer questions
-component main = bqTest(6, 16);
+component main = Test(6, 16);
