@@ -33,7 +33,7 @@ export type TestParameters = {
     openAnswersHashesRoot: BigNumberish,
 }
 
-export type GradeUpdateFullProof = {
+export type UpdateGradeFullProof = {
     gradeCommitmentIndex: BigNumberish
     oldGradeCommitment: BigNumberish
     newGradeCommitment: BigNumberish

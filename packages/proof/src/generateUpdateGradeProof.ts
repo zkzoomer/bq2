@@ -3,12 +3,12 @@ import type { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { poseidon } from "circomlibjs"
 import { groth16 } from "snarkjs"
-import { GradeUpdateFullProof, SnarkArtifacts, TestAnswers, TestParameters } from "./types"
+import { UpdateGradeFullProof, SnarkArtifacts, TestAnswers, TestParameters } from "./types"
 import { packProof } from "./helpers/packProof"
 import { ZERO_LEAF } from "./constants"
 import { Poseidon, buildPoseidon } from "./helpers/buildPoseidon"
 
-export default async function generateGradeUpdateProof(
+export default async function generateUpdateGradeProof(
     { trapdoor, nullifier }: Identity,
     { multipleChoiceAnswers, openAnswers }: TestAnswers,
     { minimumGrade, multipleChoiceWeight, nQuestions, solutionHash, openAnswersHashes, openAnswersHashesRoot }: TestParameters,
@@ -17,7 +17,7 @@ export default async function generateGradeUpdateProof(
     gradeIndex: number, // TODO: wont't have to be provided in the future and simply brute forced - would take a max of 130 tries
     snarkArtifacts: SnarkArtifacts
     /* snarkArtifacts?: SnarkArtifacts */
-): Promise<GradeUpdateFullProof> {
+): Promise<UpdateGradeFullProof> {
     let gradeMerkleProof: MerkleProof
     let poseidon: Poseidon
 
