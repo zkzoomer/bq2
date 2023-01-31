@@ -73,6 +73,7 @@ export default async function generateTestProof(
         newGradeTreeRoot: publicSignals[7],
         testRoot: publicSignals[8],
         testParameters: publicSignals[9],
+        publicSignals,
         proof: packProof(proof)
     }
 }

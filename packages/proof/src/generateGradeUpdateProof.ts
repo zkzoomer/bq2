@@ -66,6 +66,7 @@ export default async function generateGradeUpdateProof(
         newGradeTreeRoot: publicSignals[4],
         testRoot: publicSignals[5],
         testParameters: publicSignals[6],
+        publicSignals,
         proof: packProof(proof)
     }
 }
