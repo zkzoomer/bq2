@@ -1,4 +1,4 @@
-export type BigNumberish = string | bigint | BigInt
+import type { BigNumber } from "ethers";
 
 export type SnarkArtifacts = {
     wasmFilePath: string
@@ -6,56 +6,56 @@ export type SnarkArtifacts = {
 }
 
 export type SnarkJSProof = {
-    pi_a: BigNumberish[]
-    pi_b: BigNumberish[][]
-    pi_c: BigNumberish[]
+    pi_a: bigint[]
+    pi_b: bigint[][]
+    pi_c: bigint[]
     protocol: string
     curve: string
 }
 
 export type Proof = {
-    a: [BigNumberish, BigNumberish],
-    b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
-    c: [BigNumberish, BigNumberish]
+    a: [bigint, bigint],
+    b: [[bigint, bigint], [bigint, bigint]],
+    c: [bigint, bigint]
 }
 
 export type TestAnswers = {
     multipleChoiceAnswers: number[],
-    openAnswers: BigNumberish[]
+    openAnswers: bigint[]
 }
 
 export type TestParameters = {
     minimumGrade: number,
     multipleChoiceWeight: number,
     nQuestions: number,
-    solutionHash: BigNumberish,
-    openAnswersHashes: BigNumberish[],
-    openAnswersHashesRoot: BigNumberish,
+    solutionHash: bigint,
+    openAnswersHashes: bigint[],
+    openAnswersHashesRoot: bigint,
 }
 
 export type UpdateGradeFullProof = {
-    gradeCommitmentIndex: BigNumberish
-    oldGradeCommitment: BigNumberish
-    newGradeCommitment: BigNumberish
-    oldGradeTreeRoot: BigNumberish
-    newGradeTreeRoot: BigNumberish
-    testRoot: BigNumberish
-    testParameters: BigNumberish
-    publicSignals: BigNumberish[]
+    gradeCommitmentIndex: bigint
+    oldGradeCommitment: bigint
+    newGradeCommitment: bigint
+    oldGradeTreeRoot: bigint
+    newGradeTreeRoot: bigint
+    testRoot: bigint
+    testParameters: bigint
+    publicSignals: bigint[]
     proof: Proof
 }
 
 export type TestFullProof = {
-    identityCommitmentIndex: BigNumberish
-    identityCommitment: BigNumberish
-    oldIdentityTreeRoot: BigNumberish
-    newIdentityTreeRoot: BigNumberish
-    gradeCommitmentIndex: BigNumberish
-    gradeCommitment: BigNumberish
-    oldGradeTreeRoot: BigNumberish
-    newGradeTreeRoot: BigNumberish
-    testRoot: BigNumberish
-    testParameters: BigNumberish
-    publicSignals: BigNumberish[]
+    identityCommitmentIndex: bigint
+    identityCommitment: bigint
+    oldIdentityTreeRoot: bigint
+    newIdentityTreeRoot: bigint
+    gradeCommitmentIndex: bigint
+    gradeCommitment: bigint
+    oldGradeTreeRoot: bigint
+    newGradeTreeRoot: bigint
+    testRoot: bigint
+    testParameters: bigint
+    publicSignals: bigint[]
     proof: Proof
 }

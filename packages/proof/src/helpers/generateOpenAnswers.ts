@@ -1,11 +1,11 @@
-import { keccak256 } from 'js-sha3';
+import { BigNumber, utils } from "ethers"
 
-export default function generateOpenAnswers( openAnswers: string[] ): BigInt[] {
-    const resultsArray: BigInt[] = new Array(64).fill(
-        BigInt('0x' + keccak256(""))
+export default function generateOpenAnswers( openAnswers: string[] ): bigint[] {
+    const resultsArray: bigint[] = new Array(64).fill(
+        BigInt(utils.keccak256(utils.toUtf8Bytes("")))
     )
     resultsArray.forEach( (_, i) => { if (i < openAnswers.length) {
-        resultsArray[i] = BigInt('0x' + keccak256(openAnswers[i]))
+        resultsArray[i] = BigInt(utils.keccak256(utils.toUtf8Bytes(openAnswers[i])))
     }})
     return resultsArray
 }

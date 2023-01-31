@@ -13,38 +13,24 @@ describe("UpdateGrade Circuit", async function () {
     let circuitTester: WasmTester;
     let poseidon: Poseidon;
 
-    let identityTrapdoor: BigInt;
-    let identityNullifier: BigInt;
-    let identityCommitment: BigInt;
+    let identityTrapdoor: bigint;
+    let identityNullifier: bigint;
+    let identityCommitment: bigint;
 
-    let solutionHash: BigInt;
-    let openAnswersHashes: BigInt[];
-    let openAnswersHashesRoot: BigInt;
+    let solutionHash: bigint;
+    let openAnswersHashes: bigint[];
+    let openAnswersHashesRoot: bigint;
     let multipleChoiceAnswers: number[];
     let openAnswers: BigInt[];
 
     let gradeTree: IncrementalMerkleTree;
 
-    let inputs: {
-        minimumGrade: number;
-        multipleChoiceWeight: number;
-        nQuestions: number;
-        multipleChoiceAnswers: number[];
-        solutionHash: BigInt;
-        openAnswers: BigInt[];
-        openAnswersHashes: BigInt[];
-        openAnswersHashesRoot: any;
-        identityNullifier: BigInt;
-        identityTrapdoor: BigInt;
-        currentGrade: number;
-        gradeTreePathIndices: number[];
-        gradeTreeSiblings: any[];
-    }
+    let inputs: any
 
-    let circuitOutputs: BigInt[];
+    let circuitOutputs: bigint[];
     
-    let oldGradeCommitment: BigInt;
-    let newGradeCommitment: BigInt;
+    let oldGradeCommitment: bigint;
+    let newGradeCommitment: bigint;
 
     before( async function () {
         circuitTester = await wasm(path.join(__dirname, "../circuits", "update_grade.circom"))
@@ -60,7 +46,11 @@ describe("UpdateGrade Circuit", async function () {
         solutionHash = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
 
         // Open answer component
-        const _openAnswersHashes = [poseidon([BigInt(keccak256(utils.toUtf8Bytes("sneed's")))]), poseidon([BigInt(keccak256(utils.toUtf8Bytes("feed")))]), poseidon([BigInt(keccak256(utils.toUtf8Bytes("seed")))])]
+        const _openAnswersHashes = [
+            (poseidon([keccak256(utils.toUtf8Bytes("sneed's"))])), 
+            poseidon([keccak256(utils.toUtf8Bytes("feed"))]), 
+            poseidon([keccak256(utils.toUtf8Bytes("seed"))])
+        ]
         openAnswersHashes = Array(64).fill( poseidon([BigInt(keccak256(utils.toUtf8Bytes("")))] ))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 

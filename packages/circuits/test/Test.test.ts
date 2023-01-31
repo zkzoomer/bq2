@@ -13,41 +13,24 @@ describe("Test Circuit", async function () {
     let circuitTester: WasmTester;
     let poseidon: Poseidon;
 
-    let identityTrapdoor: BigInt;
-    let identityNullifier: BigInt;
-    let identityCommitment: BigInt;
+    let identityTrapdoor: bigint;
+    let identityNullifier: bigint;
+    let identityCommitment: bigint;
 
-    let solutionHash: BigInt;
-    let openAnswersHashes: BigInt[];
-    let openAnswersHashesRoot: BigInt;
+    let solutionHash: bigint;
+    let openAnswersHashes: bigint[];
+    let openAnswersHashesRoot: bigint;
     let multipleChoiceAnswers: number[];
     let openAnswers: BigInt[];
 
     let identityTree: IncrementalMerkleTree;
     let gradeTree: IncrementalMerkleTree;
 
-    let inputs: {
-        minimumGrade: number;
-        multipleChoiceWeight: number;
-        nQuestions: number;
-        multipleChoiceAnswers: number[];
-        solutionHash: BigInt;
-        openAnswers: BigInt[];
-        openAnswersHashes: BigInt[];
-        openAnswersHashesRoot: any;
-        identityNullifier: any;
-        identityTrapdoor: any;
-        identityTreeEmptyLeaf: BigInt;
-        identityTreePathIndices: number[];
-        identityTreeSiblings: any[];
-        gradeTreeEmptyLeaf: BigInt;
-        gradeTreePathIndices: number[];
-        gradeTreeSiblings: any[];
-    }
+    let inputs: any;
 
-    let circuitOutputs: BigInt[];
+    let circuitOutputs: bigint[];
     
-    let gradeCommitment: BigInt;
+    let gradeCommitment: bigint;
 
     before( async function () {
         circuitTester = await wasm(path.join(__dirname, "../circuits", "test.circom"))

@@ -1,8 +1,8 @@
 // @ts-ignore
 import { buildPoseidon as build } from "circomlibjs";
 
-type BigNumberish = string | number | bigint 
-export type Poseidon = (inputs: any[]) => BigInt;
+type BigNumberish = string | number | bigint
+export type Poseidon = (inputs: any[]) => bigint;
 
 let poseidon: any;
 
