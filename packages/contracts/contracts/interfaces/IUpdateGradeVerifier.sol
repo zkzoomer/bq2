@@ -5,7 +5,7 @@ import "../lib/Pairing.sol";
 
 /// @title Verifier interface.
 /// @dev Interface of Verifier contract.
-interface IGradeUpdateVerifier {
+interface IUpdateGradeVerifier {
     struct VerifyingKey {
         Pairing.G1Point alfa1;
         Pairing.G2Point beta2;

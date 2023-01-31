@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
 import "../interfaces/ICredentials.sol";
-import "../interfaces/IGradeUpdateVerifier.sol";
+import "../interfaces/IUpdateGradeVerifier.sol";
 import "../interfaces/ITestVerifier.sol";
 import { PoseidonT3, PoseidonT4 } from "../lib/Poseidon.sol";
 
@@ -31,8 +31,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
     /// @dev TestVerifier smart contract
     ITestVerifier testVerifier;
-    /// @dev GradeUpdateVerifier smart contract
-    IGradeUpdateVerifier gradeUpdateVerifier;
+    /// @dev UpdateGradeVerifier smart contract
+    IUpdateGradeVerifier updateGradeVerifier;
 
     /// @dev Number of tests that have been created
     uint256 private _nTests;
@@ -48,13 +48,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
     /// @dev Initializes the Credentials smart contract
     /// @param _testVerifier: address of the TestVerifier contract
-    /// @param _gradeUpdateVerifier: address of the GradeUpdateVerifier contract
+    /// @param _updateGradeVerifier: address of the UpdateGradeVerifier contract
     constructor(
         address _testVerifier,
-        address _gradeUpdateVerifier
+        address _updateGradeVerifier
     ) {
         testVerifier = ITestVerifier(_testVerifier);
-        gradeUpdateVerifier = IGradeUpdateVerifier(_gradeUpdateVerifier);
+        updateGradeVerifier = IUpdateGradeVerifier(_updateGradeVerifier);
     }
 
     /// @dev See {ICredentials-createTest}
@@ -252,7 +252,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         if (tests[testId].testRoot != input[5]) {
             revert InvalidTestRoot(tests[testId].testRoot, input[5]);
         }
-        if (!gradeUpdateVerifier.verifyProof(proofA, proofB, proofC, input)) {
+        if (!updateGradeVerifier.verifyProof(proofA, proofB, proofC, input)) {
             revert SolutionIsNotValid();
         }
 

@@ -13,9 +13,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
 
-import "../interfaces/IGradeUpdateVerifier.sol";
+import "../interfaces/IUpdateGradeVerifier.sol";
 
-contract GradeUpdateVerifier is IGradeUpdateVerifier {
+contract UpdateGradeVerifier is IUpdateGradeVerifier {
     using Pairing for *;
 
     function verifyingKey() internal pure returns (VerifyingKey memory vk) {
