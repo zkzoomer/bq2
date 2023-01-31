@@ -3,25 +3,25 @@ import { Identity } from "@semaphore-protocol/identity"
 import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree"
 import { expect } from "chai";
 import { wasm, WasmTester } from "circom_tester";
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 import { describe } from "mocha";
 import path from "path";
-import { circuitShouldFail, generateOpenAnswers } from "./utils";
-import { Poseidon, buildPoseidon, rootFromLeafArray, ZERO_LEAF } from "../../proof/src";
+import { circuitShouldFail } from "./utils/circuitShouldFail";
+import { Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray, ZERO_LEAF } from "../../proof/src";
 
 describe("Test Circuit", async function () {
     let circuitTester: WasmTester;
     let poseidon: Poseidon;
 
-    let identityTrapdoor: bigint;
-    let identityNullifier: bigint;
-    let identityCommitment: bigint;
+    let identityTrapdoor: BigInt;
+    let identityNullifier: BigInt;
+    let identityCommitment: BigInt;
 
-    let solutionHash: BigNumber;
-    let openAnswersHashes: BigNumber[];
-    let openAnswersHashesRoot: BigNumber;
+    let solutionHash: BigInt;
+    let openAnswersHashes: BigInt[];
+    let openAnswersHashesRoot: BigInt;
     let multipleChoiceAnswers: number[];
-    let openAnswers: BigNumber[];
+    let openAnswers: BigInt[];
 
     let identityTree: IncrementalMerkleTree;
     let gradeTree: IncrementalMerkleTree;
@@ -31,9 +31,9 @@ describe("Test Circuit", async function () {
         multipleChoiceWeight: number;
         nQuestions: number;
         multipleChoiceAnswers: number[];
-        solutionHash: BigNumber;
-        openAnswers: BigNumber[];
-        openAnswersHashes: BigNumber[];
+        solutionHash: BigInt;
+        openAnswers: BigInt[];
+        openAnswersHashes: BigInt[];
         openAnswersHashesRoot: any;
         identityNullifier: any;
         identityTrapdoor: any;
@@ -47,7 +47,7 @@ describe("Test Circuit", async function () {
 
     let circuitOutputs: BigInt[];
     
-    let gradeCommitment: BigNumber;
+    let gradeCommitment: BigInt;
 
     before( async function () {
         circuitTester = await wasm(path.join(__dirname, "../circuits", "test.circom"))
@@ -63,7 +63,11 @@ describe("Test Circuit", async function () {
         solutionHash = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
 
         // Open answer component
-        const _openAnswersHashes = [poseidon([BigInt(keccak256(utils.toUtf8Bytes("sneed's")))]), poseidon([BigInt(keccak256(utils.toUtf8Bytes("feed")))]), poseidon([BigInt(keccak256(utils.toUtf8Bytes("seed")))])]
+        const _openAnswersHashes = [
+            poseidon([BigInt(keccak256(utils.toUtf8Bytes("sneed's")))]), 
+            poseidon([BigInt(keccak256(utils.toUtf8Bytes("feed")))]), 
+            poseidon([BigInt(keccak256(utils.toUtf8Bytes("seed")))])
+        ]
         openAnswersHashes = Array(64).fill( poseidon([BigInt(keccak256(utils.toUtf8Bytes("")))] ))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 
@@ -72,10 +76,6 @@ describe("Test Circuit", async function () {
         multipleChoiceAnswers = Array.from({length: 64}, (_, i) => 1)
 
         openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
-
-        const _openAnswersB = new Array(64).fill("sneed's")
-        _openAnswersB[0] = "tree"
-        _openAnswersB[1] = "fiddy"
 
         identityTree = new IncrementalMerkleTree(poseidon, 16, ZERO_LEAF)
         gradeTree = new IncrementalMerkleTree(poseidon, 16, ZERO_LEAF)
