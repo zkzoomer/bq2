@@ -24,9 +24,7 @@ export default async function generateUpdateGradeProof(
     poseidon = await buildPoseidon();
 
     if ("depth" in gradeGroupOrMerkleProof) {
-        const index = gradeGroupOrMerkleProof.indexOf(gradeIndex)
-
-        gradeMerkleProof = gradeGroupOrMerkleProof.generateMerkleProof(index)
+        gradeMerkleProof = gradeGroupOrMerkleProof.generateMerkleProof(gradeIndex)
     } else {
         gradeMerkleProof = gradeGroupOrMerkleProof
     }
