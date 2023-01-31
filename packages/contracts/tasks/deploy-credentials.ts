@@ -11,7 +11,7 @@ task("deploy:credentials", "Deploy the credentials contract")
             {
                 logs,
                 pairing: pairingAddress,
-                gradeUpdateVerifier: gradeUpdateVerifierAddress,
+                updateGradeVerifier: updateGradeVerifierAddress,
                 testVerifier: testVerifierAddress,
                 poseidonT3: poseidonT3Address,
                 poseidonT4: poseidonT4Address,
@@ -32,17 +32,17 @@ task("deploy:credentials", "Deploy the credentials contract")
                 pairingAddress = pairing.address
             }
 
-            if (!gradeUpdateVerifierAddress) {
-                const GradeUpdateVerifierFactory = await ethers.getContractFactory("GradeUpdateVerifier")
+            if (!updateGradeVerifierAddress) {
+                const GradeUpdateVerifierFactory = await ethers.getContractFactory("UpdateGradeVerifier")
     
-                const gradeUpdateVerifier = await GradeUpdateVerifierFactory.deploy()
+                const updateGradeVerifier = await GradeUpdateVerifierFactory.deploy()
     
-                await gradeUpdateVerifier.deployed()
+                await updateGradeVerifier.deployed()
 
-                gradeUpdateVerifierAddress = gradeUpdateVerifier.address
+                updateGradeVerifierAddress = updateGradeVerifier.address
     
                 if (logs) {
-                    console.info(`GradeUpdateVerifier contract has been deployed to: ${gradeUpdateVerifier.address}`)
+                    console.info(`UpdateGradeVerifier contract has been deployed to: ${updateGradeVerifier.address}`)
                 }
             }
 
@@ -103,7 +103,7 @@ task("deploy:credentials", "Deploy the credentials contract")
                 }
             })
 
-            const credentials = await CredentialsFactory.deploy(testVerifierAddress, gradeUpdateVerifierAddress)
+            const credentials = await CredentialsFactory.deploy(testVerifierAddress, updateGradeVerifierAddress)
 
             await credentials.deployed()
 
@@ -114,7 +114,7 @@ task("deploy:credentials", "Deploy the credentials contract")
             return {
                 credentials,
                 pairingAddress,
-                gradeUpdateVerifierAddress,
+                updateGradeVerifierAddress,
                 testVerifierAddress,
                 poseidonT3Address,
                 poseidonT4Address
