@@ -1,8 +1,8 @@
 // @ts-ignore
 import { buildPoseidon as build } from "circomlibjs";
-import { BigNumber, BigNumberish } from "ethers";
 
-export type Poseidon = (inputs: any[]) => BigNumber;
+type BigNumberish = string | number | bigint 
+export type Poseidon = (inputs: any[]) => BigInt;
 
 let poseidon: any;
 
@@ -10,8 +10,8 @@ export async function buildPoseidon() {
 	if (!poseidon) poseidon = await build();
 
 	return (inputs: BigNumberish[]) => {
-		const hash = poseidon(inputs.map((x) => BigNumber.from(x)));
+		const hash = poseidon(inputs.map((x) => BigInt(x)));
 		const hashStr = poseidon.F.toString(hash);
-		return BigNumber.from(hashStr);
+		return BigInt(hashStr);
 	};
 }
