@@ -77,7 +77,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         if (nQuestions >= 1 && nQuestions <= 64) {
             revert InvalidNumberOfQuestions();
         }
-        if (minimumGrade <= 100) {
+        if (minimumGrade > 100) {
             revert InvalidMinimumGrade();
         }
         if (multipleChoiceWeight > 100) {
@@ -160,6 +160,9 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256[2][2] calldata proofB,
         uint256[2] calldata proofC
     ) external override {
+        if (block.timestamp > tests[testId].timeLimit) {
+            revert TimeLimitReached();
+        }
         if (tests[testId].testRoot != input[8]) {
             revert InvalidTestRoot(tests[testId].testRoot, input[8]);
         }
@@ -181,6 +184,9 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             }
             if (testGroups[testId].gradeTreeRoot != input[6]) {
                 revert InvalidTreeRoot(testGroups[testId].gradeTreeRoot, input[6]);
+            }
+            if (testGroups[testId].credentialsTreeIndex > tests[testId].credentialLimit) {
+                revert CredentialLimitReached();
             }
 
             testGroups[testId].credentialsTreeIndex += 1;

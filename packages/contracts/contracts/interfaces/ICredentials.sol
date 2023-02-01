@@ -16,12 +16,17 @@ interface ICredentials {
     error InvalidTestAnswersLength(uint256 expectedLength, uint256 providedLength);
 
     error TestAlreadyInvalid();
+
+    error TimeLimitReached();
+    error CredentialLimitReached();
     
     error InvalidTestRoot(uint256 expectedTestRoot, uint256 providedTestRoot);
     error InvalidTestParameters(uint256 expectedTestParameters, uint256 providedTestParameters);
     error InvalidTreeIndex(uint256 expectedIndex, uint256 providedIndex);
     error InvalidTreeRoot(uint256 expectedRoot, uint256 providedRoot);
     error SolutionIsNotValid();
+
+    error GroupIsFull();
 
     /// It defines all the test parameters
     struct Test {
