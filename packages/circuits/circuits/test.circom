@@ -16,7 +16,7 @@ template Test(k, nLevels) {
     // User's multiple choice answers tree
     signal input multipleChoiceAnswers[maxQuestions];
     // Correct multiple choice answers tree root, given by the smart contract
-    signal input solutionHash;
+    signal input multipleChoiceRoot;
 
     // User's answers tree
     signal input openAnswers[maxQuestions];
@@ -52,7 +52,7 @@ template Test(k, nLevels) {
     mixedTest.minimumGrade <== minimumGrade;
     mixedTest.multipleChoiceWeight <== multipleChoiceWeight;
     mixedTest.nQuestions <== nQuestions;
-    mixedTest.solutionHash <== solutionHash;
+    mixedTest.multipleChoiceRoot <== multipleChoiceRoot;
     for (var i = 0; i < maxQuestions; i++) {
         mixedTest.multipleChoiceAnswers[i] <== multipleChoiceAnswers[i];
         mixedTest.openAnswersHashes[i] <== openAnswersHashes[i];

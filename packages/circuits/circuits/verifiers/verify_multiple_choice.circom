@@ -7,7 +7,7 @@ template VerifyMultipleChoice(k) {
     var nQuestions = 2**k;
 
     signal input answers[nQuestions];
-    signal input solutionHash;
+    signal input multipleChoiceRoot;
 
     signal output result;
 
@@ -19,7 +19,7 @@ template VerifyMultipleChoice(k) {
 
     component testPassed = IsEqual();
     testPassed.in[0] <== merkleRoot.out;
-    testPassed.in[1] <== solutionHash;
+    testPassed.in[1] <== multipleChoiceRoot;
 
     result <== testPassed.out;
 }

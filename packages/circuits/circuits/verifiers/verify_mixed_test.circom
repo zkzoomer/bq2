@@ -18,7 +18,7 @@ template VerifyMixedTest(k) {
     // User's multiple choice answers tree
     signal input multipleChoiceAnswers[maxQuestions];
     // Correct multiple choice answers tree root, given by the smart contract
-    signal input solutionHash;
+    signal input multipleChoiceRoot;
 
     // User's answers tree
     signal input openAnswers[maxQuestions];
@@ -35,7 +35,7 @@ template VerifyMixedTest(k) {
     signal output gradeCommitment;
 
     component verifyMultipleChoice = VerifyMultipleChoice(k);
-    verifyMultipleChoice.solutionHash <== solutionHash;
+    verifyMultipleChoice.multipleChoiceRoot <== multipleChoiceRoot;
     for (var i = 0; i < maxQuestions; i++) {
         verifyMultipleChoice.answers[i] <== multipleChoiceAnswers[i];
     }
@@ -60,7 +60,7 @@ template VerifyMixedTest(k) {
     passedTest.out === 1;
 
     component calculateTestRoot = Poseidon(2);
-    calculateTestRoot.inputs[0] <== solutionHash;
+    calculateTestRoot.inputs[0] <== multipleChoiceRoot;
     calculateTestRoot.inputs[1] <== openAnswersHashesRoot;
 
     component calculateSecret = CalculateSecret();
