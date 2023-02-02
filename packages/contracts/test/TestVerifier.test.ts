@@ -1,10 +1,10 @@
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
-import { Signer, utils } from "ethers"
+import { Signer, constants, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
-import { Poseidon, TestAnswers, TestParameters, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "../../proof/src"
+import { Poseidon, TestAnswers, TestStruct, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "../../proof/src"
 import { TestVerifier } from "../typechain-types"
 
 describe("TestVerifier contract", () => {
@@ -13,7 +13,8 @@ describe("TestVerifier contract", () => {
     let identity: Identity
 
     let testAnswers: TestAnswers;
-    let testParameters: TestParameters;
+    let testStruct: TestStruct;
+    let openAnswersHashes: bigint[];
 
     let identityGroup: Group;
     let gradeGroup: Group;
@@ -50,10 +51,10 @@ describe("TestVerifier contract", () => {
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
         ]
-        const openAnswersHashes = Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
+        openAnswersHashes = Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
-        const solutionHash = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
+        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
         const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
 
         const multipleChoiceAnswers = Array.from({length: 64}, (_, i) => 1)
@@ -63,13 +64,17 @@ describe("TestVerifier contract", () => {
             multipleChoiceAnswers,
             openAnswers
         }
-        testParameters = {
+
+        testStruct = {
             minimumGrade: 50,
             multipleChoiceWeight: 50, 
             nQuestions: 3,
-            solutionHash,
-            openAnswersHashes,
-            openAnswersHashesRoot
+            timeLimit: 0,
+            admin: constants.AddressZero,
+            multipleChoiceRoot,
+            openAnswersHashesRoot,
+            testRoot: poseidon([multipleChoiceRoot, openAnswersHashesRoot]),
+            testParameters: poseidon([50, 50, 3])
         }
 
         identityGroup = new Group(1, 16)
@@ -80,7 +85,8 @@ describe("TestVerifier contract", () => {
         proof = await generateTestProof(
             identity,
             testAnswers,
-            testParameters,
+            testStruct,
+            openAnswersHashes,
             identityGroup,
             gradeGroup,
             snarkArtifacts
