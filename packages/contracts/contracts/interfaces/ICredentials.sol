@@ -10,15 +10,12 @@ interface ICredentials {
     error InvalidNumberOfQuestions();
     error InvalidMinimumGrade();
     error InvalidMultipleChoiceWeight();
-    error InvalidCredentialLimit();
 
     error TestAnswersAlreadyVerified();
     error InvalidTestAnswersLength(uint256 expectedLength, uint256 providedLength);
 
-    error TestAlreadyInvalid();
-
+    error TestWasInvalidated();
     error TimeLimitReached();
-    error CredentialLimitReached();
     
     error InvalidTestRoot(uint256 expectedTestRoot, uint256 providedTestRoot);
     error InvalidTestParameters(uint256 expectedTestParameters, uint256 providedTestParameters);
@@ -28,17 +25,17 @@ interface ICredentials {
 
     error GroupIsFull();
 
+    error TestDoesNotExist();
+
     /// It defines all the test parameters
     struct Test {
+        /// Out of 100, minimum total grade the user must get to obtain the credential
+        uint8 minimumGrade;  
         /// Out of 100, contribution of the multiple choice component towards the total grade:
         /// pure multiple choice tests will have 100, pure open answer tests will have 0
         uint8 multipleChoiceWeight;
         /// Number of open answer questions the test has -- must be set to 1 for pure multiple choice tests
         uint8 nQuestions;
-        /// Out of 100, minimum total grade the user must get to obtain the credential
-        uint8 minimumGrade;  
-        /// Maximum number of users that can obtain this credential -- set to 0 for unlimited
-        uint16 credentialLimit;
         /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited
         uint32 timeLimit;
         /// Address that controls this credential
@@ -46,7 +43,7 @@ interface ICredentials {
         /// Root of the multiple choice Merkle tree, where each leaf is the correct choice out of the given ones
         uint256 multipleChoiceRoot;
         /// Root of the open answers Merkle tree, where each leaf is the hash of the corresponding correct answer
-        uint256 openAnswersRoot;
+        uint256 openAnswersHashesRoot;
         /// The test root is the result of hashing together the multiple choice root and the open answers root
         uint256 testRoot;
         /// The test parameters are the result of hashing together the minimum grade, multiple choice weight and number of questions
@@ -61,12 +58,12 @@ interface ICredentials {
         uint80 noCredentialsTreeIndex;
         /// Leaf index of the next empty grade tree leaf
         uint80 gradeTreeIndex;
+        /// Root hash of the grade tree
+        uint256 gradeTreeRoot;
         /// Root hash of the credentials tree
         uint256 credentialsTreeRoot;
         /// Root hash of the no credentials tree root
         uint256 noCredentialsTreeRoot;
-        /// Root hash of the grade tree
-        uint256 gradeTreeRoot;
     }
 
     /// @dev Emitted when a test is created
@@ -92,27 +89,26 @@ interface ICredentials {
     /// @dev Emitted when a test is not solved and thus the credentials are not gained
     /// @param testId: id of the test
     /// @param identityCommitment: new identity commitment added to the no-credentials tree
-    event CredentialsNotGained(uint256 indexed testId, uint256 indexed identityCommitment);
+    /// @param gradeCommitment: new grade commitment added to the grade tree
+    event CredentialsNotGained(uint256 indexed testId, uint256 indexed identityCommitment, uint256 gradeCommitment);
 
     /// @dev Creates a new test with the test parameters as specified in the `Test` struct
+    /// @param minimumGrade: see the `Test` struct
     /// @param multipleChoiceWeight: see the `Test` struct
     /// @param nQuestions: see the `Test` struct
-    /// @param minimumGrade: see the `Test` struct
-    /// @param credentialLimit: see the `Test` struct
     /// @param timeLimit: see the `Test` struct
     /// @param admin: see the `Test` struct
     /// @param multipleChoiceRoot: see the `Test` struct
-    /// @param openAnswersRoot: see the `Test` struct
+    /// @param openAnswersHashesRoot: see the `Test` struct
     /// @param testURI: see the `Test` struct
     function createTest(
+        uint8 minimumGrade,
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
-        uint8 minimumGrade,
-        uint16 credentialLimit,
         uint32 timeLimit,
         address admin,
         uint256 multipleChoiceRoot,
-        uint256 openAnswersRoot,
+        uint256 openAnswersHashesRoot,
         string memory testURI
     ) external;
 
@@ -160,29 +156,6 @@ interface ICredentials {
         uint256[2] calldata proofC
     ) external;
 
-    /// @dev If the given proof of knowledge of the solution is valid, adds the gradeCommitment to the gradeTree
-    /// and the identityCommitment to the credentialsTree; otherwise, it adds the identityCommitment to the 
-    /// no-credentials tree
-    /// @param testId: Id of the test
-    /// @param input: the public inputs of the proof, these being:
-    ///     - gradeCommitmentIndex: the index within the grade tree of the grade commitments
-    ///     - oldGradeCommitment: existing grade commitment that is being replaced
-    ///     - newGradeCommitment: new grade commitment replacing the old one
-    ///     - oldGradeTreeRoot: old root of the grade tree
-    ///     - newGradeTreeRoot: new root of the grade tree result of updating the grade commitment
-    ///     - testRoot: root of the test that is being solved
-    ///     - testParameters: test parameters used for grading, Poseidon(multipleChoiceWeight, nQuestions)
-    /// @param proofA: SNARK proof
-    /// @param proofB: SNARK proof
-    /// @param proofC: SNARK proof
-    function updateGrade(
-        uint256 testId,
-        uint256[7] calldata input,
-        uint256[2] calldata proofA,
-        uint256[2][2] calldata proofB,
-        uint256[2] calldata proofC
-    ) external;
-
     /// @dev Returns the parameters of a given test in the form of the `Test` struct
     /// @param testId: id of the test
     /// @return Test parameters
@@ -201,14 +174,14 @@ interface ICredentials {
     /// @dev Returns the root of the open answers Merkle tree of the test
     /// @param testId: id of the test
     /// @return Root hash of the open answer hashes tree
-    function getOpenAnswersRoot(uint256 testId) external view returns (uint256);
+    function getopenAnswersHashesRoot(uint256 testId) external view returns (uint256);
 
     /// @dev Returns the open answer hashes of the test
     /// @param testId: id of the test
     /// @return Open answer hashes
     function getOpenAnswersHashes(uint256 testId) external view returns (uint256[] memory);
 
-    /// @dev Returns the test root, testRoot = Poseidon(multipleChoiceRoot, openAnswersRoot)
+    /// @dev Returns the test root, testRoot = Poseidon(multipleChoiceRoot, openAnswersHashesRoot)
     /// @param testId: id of the test
     /// @return Hash of the multiple choice root and the open answers root
     function getTestRoot(uint256 testId) external view returns (uint256);
@@ -223,23 +196,8 @@ interface ICredentials {
     /// @return Test existence
     function testExists(uint256 testId) external view returns (bool);
 
-    /// @dev Returns whether the test is valid, that is, if it can be solved 
+    /// @dev Returns whether the test is valid, that is, if it exists and can be solved 
     /// @param testId: id of the test
     /// @return Test validity
     function testIsValid(uint256 testId) external view returns (bool);
-
-    /// @dev Returns the last root hash of the grade tree group
-    /// @param testId: id of the test
-    /// @return Root hash of the grade tree
-    function getGradeTreeRoot(uint256 testId) external view returns (uint256);
-
-    /// @dev Returns the last root hash of the no credentials tree group
-    /// @param testId: id of the test
-    /// @return Root hash of the no credentials tree
-    function getNoCredentialsTreeRoot(uint256 testId) external view returns (uint256);
-
-    /// @dev Returns the number of tree leaves of the no credentials tree group
-    /// @param testId: id of the test
-    /// @return Number of no credentials tree leaves
-    function getNumberOfNoCredentialsTreeLeaves(uint256 testId) external view returns (uint256);
 }

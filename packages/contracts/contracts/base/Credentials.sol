@@ -4,16 +4,11 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
 import "../interfaces/ICredentials.sol";
-import "../interfaces/IUpdateGradeVerifier.sol";
 import "../interfaces/ITestVerifier.sol";
 import { PoseidonT3, PoseidonT4 } from "../lib/Poseidon.sol";
 
 contract Credentials is ICredentials, ISemaphoreGroups, Context {
-    // TODO: define these ones
     uint256 TREE_DEPTH = 16;
-    uint256 EMPTY_LEAF = 0;
-    uint256 EMPTY_ROOT = 0;
-
     uint256 MAX_LEAVES = 2 ** TREE_DEPTH;
 
     /// @dev Gets a test id and returns the test parameters
@@ -31,8 +26,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
     /// @dev TestVerifier smart contract
     ITestVerifier testVerifier;
-    /// @dev UpdateGradeVerifier smart contract
-    IUpdateGradeVerifier updateGradeVerifier;
 
     /// @dev Number of tests that have been created
     uint256 private _nTests;
@@ -46,69 +39,81 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         _;
     }
 
+    /// @dev Checks if the test exists
+    /// @param testId: Id of the test (Semaphore group)
+    modifier onlyExistingTests(uint256 testId) {
+        if (!_testExists(testId)) {
+            revert TestDoesNotExist();
+        }
+        _;
+    }
+
     /// @dev Initializes the Credentials smart contract
     /// @param _testVerifier: address of the TestVerifier contract
-    /// @param _updateGradeVerifier: address of the UpdateGradeVerifier contract
     constructor(
-        address _testVerifier,
-        address _updateGradeVerifier
+        address _testVerifier
     ) {
         testVerifier = ITestVerifier(_testVerifier);
-        updateGradeVerifier = IUpdateGradeVerifier(_updateGradeVerifier);
     }
 
     /// @dev See {ICredentials-createTest}
     function createTest(
+        uint8 minimumGrade,
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
-        uint8 minimumGrade,
-        uint16 credentialLimit,
         uint32 timeLimit,
         address admin,
         uint256 multipleChoiceRoot,
-        uint256 openAnswersRoot,
+        uint256 openAnswersHashesRoot,
         string memory testURI
     ) external override {
         // If time and credential limits are set to zero then these limits on solving do not get enforced
         // credential limits would still get enforced when adding to the corresponding trees
-        if (timeLimit > block.timestamp || timeLimit == 0) {
+        if (timeLimit < block.timestamp && timeLimit != 0) {
             revert TimeLimitIsInThePast();
         }
-        if (nQuestions >= 1 && nQuestions <= 64) {
+
+        if (nQuestions > 64 || nQuestions == 0 ) {
             revert InvalidNumberOfQuestions();
         }
+
         if (minimumGrade > 100) {
             revert InvalidMinimumGrade();
         }
+
         if (multipleChoiceWeight > 100) {
             revert InvalidMultipleChoiceWeight();
         }
-        if (credentialLimit > MAX_LEAVES) {
-            revert InvalidCredentialLimit();
+
+        uint256 zeroValue = uint256(keccak256(abi.encodePacked(_nTests))) >> 8;
+
+        for (uint8 i = 0; i < TREE_DEPTH; ) {
+            zeroValue = PoseidonT3.poseidon([zeroValue, zeroValue]);
+
+            unchecked {
+                ++i;
+            }
         }
 
-        _nTests++;
-        
         tests[_nTests] = Test(
+            minimumGrade,
             multipleChoiceWeight,
             nQuestions,
-            minimumGrade,
-            credentialLimit,
             timeLimit,
             admin,
             multipleChoiceRoot,
-            openAnswersRoot,
-            PoseidonT3.poseidon([multipleChoiceRoot, openAnswersRoot]),
+            openAnswersHashesRoot,
+            PoseidonT3.poseidon([multipleChoiceRoot, openAnswersHashesRoot]),
             PoseidonT4.poseidon([uint256(minimumGrade), uint256(multipleChoiceWeight), uint256(nQuestions)])
         );
 
         testGroups[_nTests] = TestGroup(
-            1,
-            1,
-            1,
-            EMPTY_ROOT,
-            EMPTY_ROOT,
-            EMPTY_ROOT
+            0,
+            0,
+            0,
+            zeroValue,
+            zeroValue,
+            zeroValue
         );
 
         testURIs[_nTests] = testURI;
@@ -116,17 +121,20 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         emit TestCreated(_nTests);
 
         emit TestAdminUpdated(_nTests, address(0), admin);
+
+        _nTests++;
     }       
 
     /// @dev See {ICredentials-verifyTestAnswers}
     function verifyTestAnswers(
         uint256 testId,
         uint256[] memory answerHashes
-    ) external override {
-        if (tests[testId].multipleChoiceWeight == 100) {
+    ) external override onlyExistingTests(testId) onlyTestAdmin(testId) {
+        if (tests[testId].multipleChoiceWeight == 100 || openAnswersHashes[testId].length != 0) {
             // A multiple choice test already has their test answers "verified", as these do not exist
             revert TestAnswersAlreadyVerified();
         }
+
         if (tests[testId].nQuestions != answerHashes.length) {
             revert InvalidTestAnswersLength(tests[testId].nQuestions, answerHashes.length);
         }
@@ -135,16 +143,21 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
 
     /// @dev See {ICredentials-updateTestAdmin}
-    function updateTestAdmin(uint256 testId, address newAdmin) external override onlyTestAdmin(testId) {
+    function updateTestAdmin(
+        uint256 testId, 
+        address newAdmin
+    ) external override onlyExistingTests(testId) onlyTestAdmin(testId) {
         tests[testId].admin = newAdmin;
 
         emit TestAdminUpdated(testId, tests[testId].admin, newAdmin);
     }
 
     /// @dev See {ICredentials-invalidateTest}
-    function invalidateTest(uint256 testId) external override onlyTestAdmin(testId) {
+    function invalidateTest(
+        uint256 testId
+    ) external override onlyExistingTests(testId) onlyTestAdmin(testId) {
         if (tests[testId].minimumGrade == 255) {
-            revert TestAlreadyInvalid();
+            revert TestWasInvalidated();
         }
 
         tests[testId].minimumGrade = 255;
@@ -159,16 +172,19 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256[2] calldata proofA,
         uint256[2][2] calldata proofB,
         uint256[2] calldata proofC
-    ) external override {
-        if (block.timestamp > tests[testId].timeLimit) {
+    ) external override onlyExistingTests(testId) {
+        if (tests[testId].minimumGrade == 255) {
+            revert TestWasInvalidated();
+        }
+
+        if (tests[testId].timeLimit != 0 && block.timestamp > tests[testId].timeLimit) {
             revert TimeLimitReached();
         }
+
         if (tests[testId].testRoot != input[8]) {
             revert InvalidTestRoot(tests[testId].testRoot, input[8]);
         }
-        if (!testVerifier.verifyProof(proofA, proofB, proofC, input)) {
-            revert SolutionIsNotValid();
-        }
+
         if (testGroups[testId].gradeTreeIndex != input[4]) {
             revert InvalidTreeIndex(testGroups[testId].credentialsTreeIndex, input[4]);
         }
@@ -182,11 +198,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             if (testGroups[testId].credentialsTreeRoot != input[2]) {
                 revert InvalidTreeRoot(testGroups[testId].credentialsTreeRoot, input[2]);
             }
+
             if (testGroups[testId].gradeTreeRoot != input[6]) {
                 revert InvalidTreeRoot(testGroups[testId].gradeTreeRoot, input[6]);
             }
-            if (testGroups[testId].credentialsTreeIndex > tests[testId].credentialLimit) {
-                revert CredentialLimitReached();
+            
+            if (!testVerifier.verifyProof(proofA, proofB, proofC, input)) {
+                revert SolutionIsNotValid();
             }
 
             testGroups[testId].credentialsTreeIndex += 1;
@@ -195,10 +213,10 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
             // Member added to credentials tree
             emit MemberAdded(
-                testId,    // groupId
-                input[0],  // index
-                input[1],  // identityCommitment
-                input[3]   // merkleTreeRoot
+                3 * testId + 1,  // groupId
+                input[0],        // index
+                input[1],        // identityCommitment
+                input[3]         // credentialsTreeRoot
             );
 
             emit CredentialsGained(
@@ -215,21 +233,26 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
                 revert InvalidTreeRoot(testGroups[testId].noCredentialsTreeRoot, input[2]);
             }
 
+            if (!testVerifier.verifyProof(proofA, proofB, proofC, input)) {
+                revert SolutionIsNotValid();
+            }
+
             testGroups[testId].noCredentialsTreeIndex += 1;
 
             testGroups[testId].noCredentialsTreeRoot = input[3];
 
             // Member added to no credentials tree
             emit MemberAdded(
-                testId,    // groupId
-                input[0],  // index
-                input[1],  // identityCommitment
-                input[3]   // merkleTreeRoot
+                3 * testId + 2,  // groupId
+                input[0],        // index
+                input[1],        // identityCommitment
+                input[3]         // noCredentialsTreeRoot
             );
 
             emit CredentialsNotGained(
-                testId,   // testId
-                input[1]  // identityCommitment
+                testId,    // testId
+                input[1],  // identityCommitment
+                input[5]   // gradeCommitment
             );
         } else {
             revert InvalidTestParameters(tests[testId].testParameters, input[9]);
@@ -240,44 +263,10 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         testGroups[testId].gradeTreeRoot = input[7];
 
         emit MemberAdded(
-            testId,    // groupId
-            input[5],  // index
-            input[5],  // identityCommitment
-            input[7]   // merkleTreeRoot
-        );
-    }
-
-    /// @dev See {ICredentials-updateGrade}
-    function updateGrade(
-        uint256 testId,
-        uint256[7] calldata input,
-        uint256[2] calldata proofA,
-        uint256[2][2] calldata proofB,
-        uint256[2] calldata proofC
-    ) external override {
-        if (tests[testId].testRoot != input[5]) {
-            revert InvalidTestRoot(tests[testId].testRoot, input[5]);
-        }
-        if (!updateGradeVerifier.verifyProof(proofA, proofB, proofC, input)) {
-            revert SolutionIsNotValid();
-        }
-
-        if (tests[testId].testParameters != input[6]) {
-            revert InvalidTestParameters(tests[testId].testParameters, input[6]);
-        }
-
-        if (testGroups[testId].gradeTreeRoot != input[3]) {
-            revert InvalidTreeRoot(testGroups[testId].gradeTreeRoot, input[3]);
-        }
-
-        testGroups[testId].gradeTreeRoot = input[4];
-
-        emit MemberUpdated(
-            testId,    // groupId
-            input[0],  // index
-            input[1],  // identityCommitment
-            input[2],  // newIdentityCommitment
-            input[4]   // merkleTreeRoot
+            3 * testId,  // groupId
+            input[4],    // index
+            input[5],    // gradeCommitment
+            input[7]     // gradeTreeRoot
         );
     }
 
@@ -296,9 +285,9 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         return tests[testId].multipleChoiceRoot;
     }
 
-    /// @dev See {ICredentials-getOpenAnswersRoot}
-    function getOpenAnswersRoot(uint256 testId) external view override returns (uint256) {
-        return tests[testId].openAnswersRoot;
+    /// @dev See {ICredentials-getopenAnswersHashesRoot}
+    function getopenAnswersHashesRoot(uint256 testId) external view override returns (uint256) {
+        return tests[testId].openAnswersHashesRoot;
     }
 
     /// @dev See {ICredentials-getOpenAnswersHashes}
@@ -318,45 +307,48 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
     /// @dev See {ICredentials-testExists}
     function testExists(uint256 testId) external view override returns (bool) {
-        return testId <= _nTests;
+        return _testExists(testId);
     }
 
     /// @dev See {ICredentials-testIsValid}
     function testIsValid(uint256 testId) external view override returns (bool) {
-        return tests[testId].minimumGrade == 255;
+        return _testExists(testId) && tests[testId].minimumGrade != 255;
     }
 
     /// @dev See {ISemaphoreGroups-getMerkleTreeRoot}
-    /// Returns the root of the credentialsTree for this testId, which works as our groupId
-    function getMerkleTreeRoot(uint256 testId) external view override returns (uint256) {
-        return testGroups[testId].credentialsTreeRoot;
+    function getMerkleTreeRoot(uint256 groupId) external view override returns (uint256) {
+        uint256 testId = groupId / 3;
+        if (groupId % 3 == 0) {
+            return testGroups[testId].gradeTreeRoot;
+        } else if (groupId % 3 == 1) {
+            return testGroups[testId].credentialsTreeRoot;
+        } else {  // groupId % 3 == 2
+            return testGroups[testId].noCredentialsTreeRoot;
+        }
     }
 
     /// @dev See {ISemaphoreGroups-getMerkleTreeDepth}
-    /// Returns the depth of the credentialsTree for this testId, which works as our groupId
     function getMerkleTreeDepth(uint256 /* testId */) external view override returns (uint256) {
         // Independent of the testId
         return TREE_DEPTH;
     }
     
     /// @dev See {ISemaphoreGroups-getNumberOfMerkleTreeLeaves}
-    /// Returns the number of non-empty leaves of the credentialsTree for this testId, which works as our groupId
-    function getNumberOfMerkleTreeLeaves(uint256 testId) external view override returns (uint256) {
-        return testGroups[testId].credentialsTreeIndex - 1;
+    function getNumberOfMerkleTreeLeaves(uint256 groupId) external view override returns (uint256) {
+        uint256 testId = groupId / 3;
+        if (groupId % 3 == 0) {
+            return uint256(testGroups[testId].gradeTreeIndex);
+        } else if (groupId % 3 == 1) {
+            return uint256(testGroups[testId].credentialsTreeIndex);
+        } else {  // groupId % 3 == 2
+            return uint256(testGroups[testId].noCredentialsTreeIndex);
+        }
     }
 
-    /// @dev See {ICredentials-getGradeTreeRoot}
-    function getGradeTreeRoot(uint256 testId) external view override returns (uint256) {
-        return testGroups[testId].gradeTreeRoot;
-    }
-
-    /// @dev See {ICredentials-getNoCredentialsTreeRoot}
-    function getNoCredentialsTreeRoot(uint256 testId) external view override returns (uint256) {
-        return testGroups[testId].noCredentialsTreeRoot;
-    }
-
-    /// @dev See {ICredentials-getNumberOfNoCredentialsTreeLeaves}
-    function getNumberOfNoCredentialsTreeLeaves(uint256 testId) external view override returns (uint256) {
-        return testGroups[testId].noCredentialsTreeIndex - 1;
+    /// @dev Returns whether the test exists
+    /// @param testId: id of the test
+    /// @return Test existence
+    function _testExists(uint256 testId) internal view virtual returns (bool) {
+        return testId < _nTests;
     }
 }
