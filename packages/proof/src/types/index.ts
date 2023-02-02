@@ -1,5 +1,3 @@
-import type { BigNumber } from "ethers";
-
 export type SnarkArtifacts = {
     wasmFilePath: string
     zkeyFilePath: string
@@ -24,13 +22,16 @@ export type TestAnswers = {
     openAnswers: bigint[]
 }
 
-export type TestParameters = {
+export type TestStruct = {
     minimumGrade: number,
     multipleChoiceWeight: number,
     nQuestions: number,
-    solutionHash: bigint,
-    openAnswersHashes: bigint[],
+    timeLimit: number,
+    admin: string,
+    multipleChoiceRoot: bigint,
     openAnswersHashesRoot: bigint,
+    testRoot: bigint,
+    testParameters: bigint,
 }
 
 export type UpdateGradeFullProof = {

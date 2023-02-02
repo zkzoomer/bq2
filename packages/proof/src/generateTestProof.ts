@@ -1,35 +1,38 @@
-import { Group } from "@semaphore-protocol/group"
+import { Group, Member } from "@semaphore-protocol/group"
 import type { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { groth16 } from "snarkjs"
-import { TestFullProof, SnarkArtifacts, TestAnswers, TestParameters } from "./types"
+import { TestFullProof, SnarkArtifacts, TestAnswers, TestStruct } from "./types"
 import { packProof } from "./helpers/packProof"
-import { ZERO_LEAF } from "./constants"
 
 export default async function generateTestProof(
     { trapdoor, nullifier }: Identity,
     { multipleChoiceAnswers, openAnswers }: TestAnswers,
-    { minimumGrade, multipleChoiceWeight, nQuestions, solutionHash, openAnswersHashes, openAnswersHashesRoot }: TestParameters,
-    identityGroupOrMerkleProof: Group | MerkleProof,
-    gradeGroupOrMerkleProof: Group | MerkleProof,
-    snarkArtifacts: SnarkArtifacts
+    { minimumGrade, multipleChoiceWeight, nQuestions, multipleChoiceRoot, openAnswersHashesRoot }: TestStruct,
+    openAnswersHashes: bigint[],
+    identityGroup: Group,
+    gradeGroup: Group,
+    snarkArtifacts: SnarkArtifacts,
     /* snarkArtifacts?: SnarkArtifacts */
 ): Promise<TestFullProof> {
     let identityMerkleProof: MerkleProof
     let gradeMerkleProof: MerkleProof
+    let emptyLeaf: Member
 
-    if ("depth" in identityGroupOrMerkleProof) {
-        identityGroupOrMerkleProof.addMember(ZERO_LEAF)
-        identityMerkleProof = identityGroupOrMerkleProof.generateMerkleProof(identityGroupOrMerkleProof.members.length - 1)
+    if ("depth" in identityGroup) {
+        emptyLeaf = identityGroup.zeroValue
+        identityGroup.addMember(emptyLeaf)
+        identityMerkleProof = identityGroup.generateMerkleProof(identityGroup.members.length - 1)
     } else {
-        identityMerkleProof = identityGroupOrMerkleProof
+        identityMerkleProof = identityGroup
     }
 
-    if ("depth" in gradeGroupOrMerkleProof) {
-        gradeGroupOrMerkleProof.addMember(ZERO_LEAF)
-        gradeMerkleProof = gradeGroupOrMerkleProof.generateMerkleProof(gradeGroupOrMerkleProof.members.length - 1)
+    if ("depth" in gradeGroup) {
+        emptyLeaf = gradeGroup.zeroValue
+        gradeGroup.addMember(gradeGroup.zeroValue)
+        gradeMerkleProof = gradeGroup.generateMerkleProof(gradeGroup.members.length - 1)
     } else {
-        gradeMerkleProof = gradeGroupOrMerkleProof
+        gradeMerkleProof = gradeGroup
     }
 
     /* if (!snarkArtifacts) {
@@ -45,16 +48,16 @@ export default async function generateTestProof(
             multipleChoiceWeight,
             nQuestions,
             multipleChoiceAnswers,
-            solutionHash,
+            multipleChoiceRoot,
             openAnswers,
             openAnswersHashes,
             openAnswersHashesRoot,
             identityNullifier: nullifier,
             identityTrapdoor: trapdoor,
-            identityTreeEmptyLeaf: ZERO_LEAF,
+            identityTreeEmptyLeaf: identityGroup.zeroValue,
             identityTreePathIndices: identityMerkleProof.pathIndices,
             identityTreeSiblings: identityMerkleProof.siblings,
-            gradeTreeEmptyLeaf: ZERO_LEAF,
+            gradeTreeEmptyLeaf: gradeGroup.zeroValue,
             gradeTreePathIndices: gradeMerkleProof.pathIndices,
             gradeTreeSiblings: gradeMerkleProof.siblings
         },
