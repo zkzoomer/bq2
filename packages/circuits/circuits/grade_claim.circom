@@ -3,11 +3,11 @@ pragma circom 2.0.0;
 include "./node_modules/circomlib/circuits/comparators.circom";
 include "./verifiers/verify_grade.circom";
 
-template ClaimGrade(nLevels) {
+template GradeClaim(nLevels) {
     signal input identityNullifier;
     signal input identityTrapdoor;
-    signal input treePathIndices[nLevels];
-    signal input treeSiblings[nLevels];
+    signal input gradeTreePathIndices[nLevels];
+    signal input gradeTreeSiblings[nLevels];
 
     signal input grade;
     signal input gradeThreshold;
@@ -20,10 +20,10 @@ template ClaimGrade(nLevels) {
     verifyGrade.identityNullifier <== identityNullifier;
     verifyGrade.identityTrapdoor <== identityTrapdoor;
     for (var i = 0; i < nLevels; i++) {
-        verifyGrade.treePathIndices[i] <== treePathIndices[i];
-        verifyGrade.treeSiblings[i] <== treeSiblings[i];
+        verifyGrade.gradeTreePathIndices[i] <== gradeTreePathIndices[i];
+        verifyGrade.gradeTreeSiblings[i] <== gradeTreeSiblings[i];
     }
-    verifyGrade.grade <== grade;
+    verifyGrade.currentGrade <== grade;
 
     component calculateNullifierHash = CalculateNullifierHash();
     calculateNullifierHash.externalNullifier <== externalNullifier;
@@ -39,4 +39,4 @@ template ClaimGrade(nLevels) {
     nullifierHash <== calculateNullifierHash.out;
 }
 
-component main {public [gradeThreshold, externalNullifier]} = ClaimGrade(16);
+component main {public [gradeThreshold, externalNullifier]} = GradeClaim(16);
