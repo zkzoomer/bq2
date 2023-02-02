@@ -1,6 +1,8 @@
+import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-network-helpers"
 import "@nomiclabs/hardhat-ethers"
 import "@nomiclabs/hardhat-etherscan"
-import "@nomiclabs/hardhat-waffle"
 import "@typechain/hardhat"
 import { config as dotenvConfig } from "dotenv"
 import "hardhat-gas-reporter"
@@ -11,7 +13,6 @@ import "solidity-coverage"
 import { config } from "./package.json"
 import "./tasks/accounts"
 import "./tasks/deploy-credentials"
-import "./tasks/deploy-update-grade-verifier"
 import "./tasks/deploy-test-verifier"
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
@@ -55,8 +56,7 @@ const hardhatConfig: HardhatUserConfig = {
     },
     gasReporter: {
         currency: "USD",
-        enabled: process.env.REPORT_GAS === "true",
-        coinmarketcap: process.env.COINMARKETCAP_API_KEY
+        enabled: true
     },
     etherscan: {
         apiKey: process.env.ETHERSCAN_API_KEY
