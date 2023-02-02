@@ -11,7 +11,6 @@ task("deploy:credentials", "Deploy the credentials contract")
             {
                 logs,
                 pairing: pairingAddress,
-                updateGradeVerifier: updateGradeVerifierAddress,
                 testVerifier: testVerifierAddress,
                 poseidonT3: poseidonT3Address,
                 poseidonT4: poseidonT4Address,
@@ -30,20 +29,6 @@ task("deploy:credentials", "Deploy the credentials contract")
                 }
 
                 pairingAddress = pairing.address
-            }
-
-            if (!updateGradeVerifierAddress) {
-                const GradeUpdateVerifierFactory = await ethers.getContractFactory("UpdateGradeVerifier")
-    
-                const updateGradeVerifier = await GradeUpdateVerifierFactory.deploy()
-    
-                await updateGradeVerifier.deployed()
-
-                updateGradeVerifierAddress = updateGradeVerifier.address
-    
-                if (logs) {
-                    console.info(`UpdateGradeVerifier contract has been deployed to: ${updateGradeVerifier.address}`)
-                }
             }
 
             if (!testVerifierAddress) {
@@ -103,7 +88,7 @@ task("deploy:credentials", "Deploy the credentials contract")
                 }
             })
 
-            const credentials = await CredentialsFactory.deploy(testVerifierAddress, updateGradeVerifierAddress)
+            const credentials = await CredentialsFactory.deploy(testVerifierAddress)
 
             await credentials.deployed()
 
@@ -114,7 +99,6 @@ task("deploy:credentials", "Deploy the credentials contract")
             return {
                 credentials,
                 pairingAddress,
-                updateGradeVerifierAddress,
                 testVerifierAddress,
                 poseidonT3Address,
                 poseidonT4Address
