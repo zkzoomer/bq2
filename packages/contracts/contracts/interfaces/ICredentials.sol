@@ -17,13 +17,7 @@ interface ICredentials {
     error TestWasInvalidated();
     error TimeLimitReached();
     
-    error InvalidTestRoot(uint256 expectedTestRoot, uint256 providedTestRoot);
-    error InvalidTestParameters(uint256 expectedTestParameters, uint256 providedTestParameters);
-    error InvalidTreeIndex(uint256 expectedIndex, uint256 providedIndex);
-    error InvalidTreeRoot(uint256 expectedRoot, uint256 providedRoot);
     error SolutionIsNotValid();
-
-    error GroupIsFull();
 
     error TestDoesNotExist();
 
@@ -48,6 +42,8 @@ interface ICredentials {
         uint256 testRoot;
         /// The test parameters are the result of hashing together the minimum grade, multiple choice weight and number of questions
         uint256 testParameters;
+        /// The non passing test parameters are the result of hashing together a minimum grade set to zero, multiple choice weight and number of questions
+        uint256 nonPassingTestParameters;
     }
 
     /// It defines all the test group parameters
@@ -134,26 +130,24 @@ interface ICredentials {
     /// and the identityCommitment to the credentialsTree; otherwise, it adds the identityCommitment to the 
     /// no-credentials tree
     /// @param testId: id of the test
-    /// @param input: the public inputs of the proof, these being:
-    ///     - identityCommitmentIndex: the index within the identity tree of the new identity commitment
-    ///     - identityCommitment: new identity commitment
-    ///     - oldIdentityTreeRoot: old root of the identity tree
-    ///     - newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment
-    ///     - gradeCommitmentIndex: the index within the grade tree of the new grade commitment
-    ///     - gradeCommitment: new grade commitment
-    ///     - oldGradeTreeRoot: old root of the grade tree
-    ///     - newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
-    ///     - testRoot: root of the test that is being solved
-    ///     - testParameters: test parameters used for grading, Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
+    /// @param identityCommitment: new identity commitment to add to the identity tree (credentials or no credentials tree)
+    /// @param newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
+    /// @param gradeCommitment: new grade commitment to add to the grade tree
+    /// @param newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
     /// @param proofA: SNARK proof
     /// @param proofB: SNARK proof
     /// @param proofC: SNARK proof
+    /// @param testPassed: boolean value indicating whether the proof provided corresponds to a passed test or not
     function solveTest(
         uint256 testId,
-        uint256[10] calldata input,
+        uint256 identityCommitment,
+        uint256 newIdentityTreeRoot,
+        uint256 gradeCommitment,
+        uint256 newGradeTreeRoot,
         uint256[2] calldata proofA,
         uint256[2][2] calldata proofB,
-        uint256[2] calldata proofC
+        uint256[2] calldata proofC,
+        bool testPassed
     ) external;
 
     /// @dev Returns the parameters of a given test in the form of the `Test` struct
@@ -185,6 +179,11 @@ interface ICredentials {
     /// @param testId: id of the test
     /// @return Hash of the multiple choice root and the open answers root
     function getTestRoot(uint256 testId) external view returns (uint256);
+
+    /// @dev Returns the non passing test parameters, nonPassingTestParameters = Poseidon(0, multipleChoiceWeight, nQuestions)
+    /// @param testId: id of the test
+    /// @return Hash of the minimum grade set to 0, multiple choice weight and the number of questions
+    function getNonPassingTestParameters(uint256 testId) external view returns (uint256);
 
     /// @dev Returns the test parameters, testParameters = Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
     /// @param testId: id of the test

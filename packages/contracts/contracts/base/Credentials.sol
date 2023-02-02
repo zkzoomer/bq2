@@ -95,6 +95,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             }
         }
 
+        uint256 testParameters = PoseidonT4.poseidon([uint256(minimumGrade), uint256(multipleChoiceWeight), uint256(nQuestions)]);
+
         tests[_nTests] = Test(
             minimumGrade,
             multipleChoiceWeight,
@@ -104,7 +106,11 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             multipleChoiceRoot,
             openAnswersHashesRoot,
             PoseidonT3.poseidon([multipleChoiceRoot, openAnswersHashesRoot]),
-            PoseidonT4.poseidon([uint256(minimumGrade), uint256(multipleChoiceWeight), uint256(nQuestions)])
+            testParameters,
+            minimumGrade == 0 ? 
+                testParameters
+            :
+                PoseidonT4.poseidon([uint256(0), uint256(multipleChoiceWeight), uint256(nQuestions)])
         );
 
         testGroups[_nTests] = TestGroup(
@@ -168,10 +174,14 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev See {ICredentials-solveTest}
     function solveTest(
         uint256 testId,
-        uint256[10] calldata input,
+        uint256 identityCommitment,
+        uint256 newIdentityTreeRoot,
+        uint256 gradeCommitment,
+        uint256 newGradeTreeRoot,
         uint256[2] calldata proofA,
         uint256[2][2] calldata proofB,
-        uint256[2] calldata proofC
+        uint256[2] calldata proofC,
+        bool testPassed
     ) external override onlyExistingTests(testId) {
         if (tests[testId].minimumGrade == 255) {
             revert TestWasInvalidated();
@@ -181,93 +191,86 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert TimeLimitReached();
         }
 
-        if (tests[testId].testRoot != input[8]) {
-            revert InvalidTestRoot(tests[testId].testRoot, input[8]);
-        }
+        if (testPassed || tests[testId].minimumGrade == 0) {  // test always gets passed when minimumGrade = 0
+            uint[10] memory proofInput = [
+                testGroups[testId].credentialsTreeIndex,
+                identityCommitment,
+                testGroups[testId].credentialsTreeRoot,
+                newIdentityTreeRoot,
+                testGroups[testId].gradeTreeIndex,
+                gradeCommitment,
+                testGroups[testId].gradeTreeRoot,
+                newGradeTreeRoot,
+                tests[testId].testRoot,
+                tests[testId].testParameters
+            ];
 
-        if (testGroups[testId].gradeTreeIndex != input[4]) {
-            revert InvalidTreeIndex(testGroups[testId].credentialsTreeIndex, input[4]);
-        }
-
-        // Passing grade / non passing grade / invalid condition
-        if (tests[testId].testParameters == input[9]) {  
-            if (testGroups[testId].credentialsTreeIndex != input[0]) {
-                revert InvalidTreeIndex(testGroups[testId].credentialsTreeIndex, input[0]);
-            }
-
-            if (testGroups[testId].credentialsTreeRoot != input[2]) {
-                revert InvalidTreeRoot(testGroups[testId].credentialsTreeRoot, input[2]);
-            }
-
-            if (testGroups[testId].gradeTreeRoot != input[6]) {
-                revert InvalidTreeRoot(testGroups[testId].gradeTreeRoot, input[6]);
-            }
-            
-            if (!testVerifier.verifyProof(proofA, proofB, proofC, input)) {
+            if (!testVerifier.verifyProof(proofA, proofB, proofC, proofInput)) {
                 revert SolutionIsNotValid();
             }
-
-            testGroups[testId].credentialsTreeIndex += 1;
-
-            testGroups[testId].credentialsTreeRoot = input[3];
 
             // Member added to credentials tree
             emit MemberAdded(
-                3 * testId + 1,  // groupId
-                input[0],        // index
-                input[1],        // identityCommitment
-                input[3]         // credentialsTreeRoot
+                3 * testId + 1,                           // groupId
+                testGroups[testId].credentialsTreeIndex,  // index
+                identityCommitment,                       // identityCommitment
+                newIdentityTreeRoot                       // credentialsTreeRoot
             );
 
             emit CredentialsGained(
-                testId,    // testId
-                input[1],  // identityCommitment
-                input[5]   // gradeCommitment
+                testId,              // testId
+                identityCommitment,  // identityCommitment
+                gradeCommitment      // gradeCommitment
             );
-        } else if (PoseidonT4.poseidon([0, uint256(tests[testId].multipleChoiceWeight), uint256(tests[testId].nQuestions)]) == input[9]) {
-            if (testGroups[testId].noCredentialsTreeIndex != input[0]) {
-                revert InvalidTreeIndex(testGroups[testId].noCredentialsTreeIndex, input[0]);
-            }
+            
+            testGroups[testId].credentialsTreeIndex += 1;
+            testGroups[testId].credentialsTreeRoot = newIdentityTreeRoot;
+        } else {
+            uint[10] memory proofInput = [
+                testGroups[testId].noCredentialsTreeIndex,
+                identityCommitment,
+                testGroups[testId].noCredentialsTreeRoot,
+                newIdentityTreeRoot,
+                testGroups[testId].gradeTreeIndex,
+                gradeCommitment,
+                testGroups[testId].gradeTreeRoot,
+                newGradeTreeRoot,
+                tests[testId].testRoot,
+                tests[testId].nonPassingTestParameters
+            ];
 
-            if (testGroups[testId].noCredentialsTreeRoot != input[2]) {
-                revert InvalidTreeRoot(testGroups[testId].noCredentialsTreeRoot, input[2]);
-            }
-
-            if (!testVerifier.verifyProof(proofA, proofB, proofC, input)) {
+            if (!testVerifier.verifyProof(proofA, proofB, proofC, proofInput)) {
                 revert SolutionIsNotValid();
             }
 
-            testGroups[testId].noCredentialsTreeIndex += 1;
-
-            testGroups[testId].noCredentialsTreeRoot = input[3];
-
             // Member added to no credentials tree
             emit MemberAdded(
-                3 * testId + 2,  // groupId
-                input[0],        // index
-                input[1],        // identityCommitment
-                input[3]         // noCredentialsTreeRoot
+                3 * testId + 2,                             // groupId
+                testGroups[testId].noCredentialsTreeIndex,  // index
+                identityCommitment,                         // identityCommitment
+                newIdentityTreeRoot                         // noCredentialsTreeRoot
             );
 
             emit CredentialsNotGained(
-                testId,    // testId
-                input[1],  // identityCommitment
-                input[5]   // gradeCommitment
+                testId,              // testId
+                identityCommitment,  // identityCommitment
+                gradeCommitment      // gradeCommitment
             );
-        } else {
-            revert InvalidTestParameters(tests[testId].testParameters, input[9]);
+
+            testGroups[testId].noCredentialsTreeIndex += 1;
+            testGroups[testId].noCredentialsTreeRoot = newIdentityTreeRoot;
         }
-
+        
         // Member always gets added to grade tree
-        testGroups[testId].gradeTreeIndex += 1;
-        testGroups[testId].gradeTreeRoot = input[7];
-
         emit MemberAdded(
-            3 * testId,  // groupId
-            input[4],    // index
-            input[5],    // gradeCommitment
-            input[7]     // gradeTreeRoot
+            3 * testId,                         // groupId
+            testGroups[testId].gradeTreeIndex,  // index
+            gradeCommitment,                    // gradeCommitment
+            newGradeTreeRoot                    // gradeTreeRoot
         );
+
+        testGroups[testId].gradeTreeIndex += 1;
+        testGroups[testId].gradeTreeRoot = newGradeTreeRoot;
     }
 
     /// @dev See {ICredentials-getTest}
@@ -303,6 +306,11 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev See {ICredentials-getTestParameters}
     function getTestParameters(uint256 testId) external view override returns (uint256) {
         return tests[testId].testParameters;
+    }
+
+    /// @dev See {ICredentials-getNonPassingTestParameters}
+    function getNonPassingTestParameters(uint256 testId) external view override returns (uint256) {
+        return tests[testId].nonPassingTestParameters;
     }
 
     /// @dev See {ICredentials-testExists}

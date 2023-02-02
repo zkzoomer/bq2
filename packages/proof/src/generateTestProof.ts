@@ -2,14 +2,13 @@ import { Group, Member } from "@semaphore-protocol/group"
 import type { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { groth16 } from "snarkjs"
-import { TestFullProof, SnarkArtifacts, TestAnswers, TestStruct } from "./types"
+import { TestFullProof, SnarkArtifacts, TestAnswers, TestVariables } from "./types"
 import { packProof } from "./helpers/packProof"
 
 export default async function generateTestProof(
     { trapdoor, nullifier }: Identity,
     { multipleChoiceAnswers, openAnswers }: TestAnswers,
-    { minimumGrade, multipleChoiceWeight, nQuestions, multipleChoiceRoot, openAnswersHashesRoot }: TestStruct,
-    openAnswersHashes: bigint[],
+    { minimumGrade, multipleChoiceWeight, nQuestions, multipleChoiceRoot, openAnswersHashesRoot, openAnswersHashes }: TestVariables,
     identityGroup: Group,
     gradeGroup: Group,
     snarkArtifacts: SnarkArtifacts,
@@ -66,16 +65,10 @@ export default async function generateTestProof(
     )
 
     return {
-        identityCommitmentIndex: publicSignals[0],
         identityCommitment: publicSignals[1],
-        oldIdentityTreeRoot: publicSignals[2],
         newIdentityTreeRoot: publicSignals[3],
-        gradeCommitmentIndex: publicSignals[4],
         gradeCommitment: publicSignals[5],
-        oldGradeTreeRoot: publicSignals[6],
         newGradeTreeRoot: publicSignals[7],
-        testRoot: publicSignals[8],
-        testParameters: publicSignals[9],
         publicSignals,
         proof: packProof(proof)
     }

@@ -24,6 +24,6 @@ interface ITestVerifier {
         uint256[2] calldata a,
         uint256[2][2] calldata b,
         uint256[2] calldata c,
-        uint256[10] calldata input
+        uint256[10] memory input
     ) external view returns (bool);
 }

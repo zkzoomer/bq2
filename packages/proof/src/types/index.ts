@@ -22,16 +22,13 @@ export type TestAnswers = {
     openAnswers: bigint[]
 }
 
-export type TestStruct = {
+export type TestVariables = {
     minimumGrade: number,
     multipleChoiceWeight: number,
     nQuestions: number,
-    timeLimit: number,
-    admin: string,
     multipleChoiceRoot: bigint,
     openAnswersHashesRoot: bigint,
-    testRoot: bigint,
-    testParameters: bigint,
+    openAnswersHashes: bigint[],
 }
 
 export type UpdateGradeFullProof = {
@@ -47,16 +44,10 @@ export type UpdateGradeFullProof = {
 }
 
 export type TestFullProof = {
-    identityCommitmentIndex: bigint
     identityCommitment: bigint
-    oldIdentityTreeRoot: bigint
     newIdentityTreeRoot: bigint
-    gradeCommitmentIndex: bigint
     gradeCommitment: bigint
-    oldGradeTreeRoot: bigint
     newGradeTreeRoot: bigint
-    testRoot: bigint
-    testParameters: bigint
     publicSignals: bigint[]
     proof: Proof
 }

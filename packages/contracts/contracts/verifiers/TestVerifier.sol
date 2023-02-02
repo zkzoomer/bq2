@@ -100,15 +100,19 @@ contract TestVerifier is ITestVerifier {
         );                                      
         
     }
-    function verify(uint[] memory input, Proof memory proof) internal view returns (uint) {
+    function verify(uint[10] memory input, Proof memory proof) internal view returns (uint) {
         uint256 snark_scalar_field = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
         VerifyingKey memory vk = verifyingKey();
         require(input.length + 1 == vk.IC.length,"verifier-bad-input");
         // Compute the linear combination vk_x
         Pairing.G1Point memory vk_x = Pairing.G1Point(0, 0);
-        for (uint i = 0; i < input.length; i++) {
+        for (uint i = 0; i < input.length; ) {
             require(input[i] < snark_scalar_field,"verifier-gte-snark-scalar-field");
             vk_x = Pairing.addition(vk_x, Pairing.scalar_mul(vk.IC[i + 1], input[i]));
+        
+            unchecked {
+                ++i;
+            }
         }
         vk_x = Pairing.addition(vk_x, vk.IC[0]);
         if (!Pairing.pairingProd4(
@@ -121,20 +125,17 @@ contract TestVerifier is ITestVerifier {
     }
     /// @return r  bool true if proof is valid
     function verifyProof(
-            uint[2] memory a,
-            uint[2][2] memory b,
-            uint[2] memory c,
+            uint[2] calldata a,
+            uint[2][2] calldata b,
+            uint[2] calldata c,
             uint[10] memory input
         ) public view override returns (bool r) {
         Proof memory proof;
         proof.A = Pairing.G1Point(a[0], a[1]);
         proof.B = Pairing.G2Point([b[0][0], b[0][1]], [b[1][0], b[1][1]]);
         proof.C = Pairing.G1Point(c[0], c[1]);
-        uint[] memory inputValues = new uint[](input.length);
-        for(uint i = 0; i < input.length; i++){
-            inputValues[i] = input[i];
-        }
-        if (verify(inputValues, proof) == 0) {
+        
+        if (verify(input, proof) == 0) {
             return true;
         } else {
             return false;
