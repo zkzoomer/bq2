@@ -6,7 +6,6 @@
 		"test": "mocha test/*"
 	},
 	"devDependencies": {
-		"@zk-kit/incremental-merkle-tree": "^1.0.0",
 		"circom_tester": "^0.0.14",
 		"circomlibjs": "^0.1.7"
 	}

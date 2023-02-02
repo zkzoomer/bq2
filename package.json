@@ -16,6 +16,7 @@
 		"packages/*"
 	],
 	"devDependencies": {
+		"@types/mocha": "^10.0.1",
 		"chai": "^4.3.7",
 		"dotenv": "^16.0.3",
 		"mocha": "^10.2.0",
