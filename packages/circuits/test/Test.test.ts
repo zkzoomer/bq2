@@ -1,15 +1,14 @@
-import { keccak256 } from "@ethersproject/keccak256"
 import { Identity } from "@semaphore-protocol/identity"
-import { IncrementalMerkleTree } from "@zk-kit/incremental-merkle-tree"
+import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
 import { wasm, WasmTester } from "circom_tester";
-import { utils } from "ethers";
+import { utils } from "ethers"
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
-import { Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray, ZERO_LEAF } from "../../proof/src";
+import { Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray } from "../../proof/src";
 
-describe("Test Circuit", async function () {
+describe("Test Circuit", () => {
     let circuitTester: WasmTester;
     let poseidon: Poseidon;
 
@@ -17,14 +16,14 @@ describe("Test Circuit", async function () {
     let identityNullifier: bigint;
     let identityCommitment: bigint;
 
-    let solutionHash: bigint;
+    let multipleChoiceRoot: bigint;
     let openAnswersHashes: bigint[];
     let openAnswersHashesRoot: bigint;
     let multipleChoiceAnswers: number[];
     let openAnswers: BigInt[];
 
-    let identityTree: IncrementalMerkleTree;
-    let gradeTree: IncrementalMerkleTree;
+    let gradeGroup = new Group(0, 16);
+    let identityGroup = new Group(0, 16);
 
     let inputs: any;
 
@@ -41,17 +40,14 @@ describe("Test Circuit", async function () {
         identityNullifier = identity.getNullifier()
         identityCommitment = identity.getCommitment()
 
-        // Hereon we define a series of tests to be used when testing the smart contracts / scripts
-        // Multiple choice component
-        solutionHash = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
+        multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
 
-        // Open answer component
         const _openAnswersHashes = [
-            poseidon([BigInt(keccak256(utils.toUtf8Bytes("sneed's")))]), 
-            poseidon([BigInt(keccak256(utils.toUtf8Bytes("feed")))]), 
-            poseidon([BigInt(keccak256(utils.toUtf8Bytes("seed")))])
+            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("sneed's")))]), 
+            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
+            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
         ]
-        openAnswersHashes = Array(64).fill( poseidon([BigInt(keccak256(utils.toUtf8Bytes("")))] ))
+        openAnswersHashes = Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))] ))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 
         openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
@@ -60,31 +56,27 @@ describe("Test Circuit", async function () {
 
         openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
 
-        identityTree = new IncrementalMerkleTree(poseidon, 16, ZERO_LEAF)
-        gradeTree = new IncrementalMerkleTree(poseidon, 16, ZERO_LEAF)
+        gradeGroup.addMember(gradeGroup.zeroValue)
+        identityGroup.addMember(identityGroup.zeroValue)
 
-        // We first need to insert the empty leaf, which we'll then overwrite
-        identityTree.insert(ZERO_LEAF)
-        gradeTree.insert(ZERO_LEAF)
-
-        const identityTreeProof = identityTree.createProof(0);
-        const gradeTreeProof = gradeTree.createProof(0);
+        const gradeTreeProof = gradeGroup.generateMerkleProof(0)
+        const identityTreeProof = identityGroup.generateMerkleProof(0)
 
         inputs = {
             minimumGrade: 50,
             multipleChoiceWeight: 50,
             nQuestions: 3,
             multipleChoiceAnswers,
-            solutionHash,
+            multipleChoiceRoot,
             openAnswers: openAnswers,
             openAnswersHashes: openAnswersHashes,
             openAnswersHashesRoot: openAnswersHashesRoot,
             identityNullifier,
             identityTrapdoor,
-            identityTreeEmptyLeaf: ZERO_LEAF,
+            identityTreeEmptyLeaf: identityGroup.zeroValue,
             identityTreePathIndices: identityTreeProof.pathIndices,
             identityTreeSiblings: identityTreeProof.siblings,
-            gradeTreeEmptyLeaf: ZERO_LEAF,
+            gradeTreeEmptyLeaf: gradeGroup.zeroValue,
             gradeTreePathIndices: gradeTreeProof.pathIndices,
             gradeTreeSiblings: gradeTreeProof.siblings
         };
@@ -194,27 +186,27 @@ describe("Test Circuit", async function () {
 
     describe("Verifying the tree root values", async () => {
         it("Outputs the correct `oldIdentityTreeRoot`", async () => {
-            expect(circuitOutputs[2].toString()).to.equal(identityTree.root.toString())
+            expect(circuitOutputs[2].toString()).to.equal(identityGroup.root.toString())
         })
 
         it("Outputs the correct `newIdentityTreeRoot`", async () => {
-            identityTree.update(0, identityCommitment);
-            expect(circuitOutputs[3].toString()).to.equal(identityTree.root.toString())
+            identityGroup.updateMember(0, identityCommitment)
+            expect(circuitOutputs[3].toString()).to.equal(identityGroup.root.toString())
         })
 
         it("Outputs the correct `oldGradeTreeRoot`", async () => {
-            expect(circuitOutputs[6].toString()).to.equal(gradeTree.root.toString())
+            expect(circuitOutputs[6].toString()).to.equal(gradeGroup.root.toString())
         })
 
         it("Outputs the correct `newGradeTreeRoot`", async () => {
-            gradeTree.update(0, gradeCommitment);
-            expect(circuitOutputs[7].toString()).to.equal(gradeTree.root.toString())
+            gradeGroup.updateMember(0, gradeCommitment)
+            expect(circuitOutputs[7].toString()).to.equal(gradeGroup.root.toString())
         })
     })
 
     describe("Verifying the test values", async () => {
         it("Outputs the correct `testRoot`", async () => {
-            expect(circuitOutputs[8].toString()).to.equal(poseidon([solutionHash, openAnswersHashesRoot]).toString())
+            expect(circuitOutputs[8].toString()).to.equal(poseidon([multipleChoiceRoot, openAnswersHashesRoot]).toString())
         })
 
         it("Outputs the correct `testParameters`", async () => {
@@ -264,8 +256,8 @@ describe("Test Circuit", async function () {
             const _gradeCommitment = poseidon([poseidon([identityNullifier, identityTrapdoor]), expectedGrade])
             expect(witness[6].toString()).to.equal(_gradeCommitment.toString())
             
-            gradeTree.update(0, _gradeCommitment)
-            expect(witness[8].toString()).to.equal(gradeTree.root.toString())
+            gradeGroup.updateMember(0, _gradeCommitment)
+            expect(witness[8].toString()).to.equal(gradeGroup.root.toString())
         })
 
         it("Adds the `multipleChoiceWeight` only when obtained", async () => {
@@ -285,8 +277,8 @@ describe("Test Circuit", async function () {
             const _gradeCommitment = poseidon([poseidon([identityNullifier, identityTrapdoor]), expectedGrade])
             expect(witness[6].toString()).to.equal(_gradeCommitment.toString())
         
-            gradeTree.update(0, _gradeCommitment)
-            expect(witness[8].toString()).to.equal(gradeTree.root.toString())
+            gradeGroup.updateMember(0, _gradeCommitment)
+            expect(witness[8].toString()).to.equal(gradeGroup.root.toString())
         })
     })
 })
