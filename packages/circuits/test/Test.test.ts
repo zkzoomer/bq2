@@ -12,9 +12,7 @@ describe("Test Circuit", () => {
     let circuitTester: WasmTester;
     let poseidon: Poseidon;
 
-    let identityTrapdoor: bigint;
-    let identityNullifier: bigint;
-    let identityCommitment: bigint;
+    let identity: Identity;
 
     let multipleChoiceRoot: bigint;
     let openAnswersHashes: bigint[];
@@ -35,10 +33,7 @@ describe("Test Circuit", () => {
         circuitTester = await wasm(path.join(__dirname, "../circuits", "test.circom"))
         poseidon = await buildPoseidon();
 
-        const identity = new Identity("deenz")
-        identityTrapdoor = identity.getTrapdoor()
-        identityNullifier = identity.getNullifier()
-        identityCommitment = identity.getCommitment()
+        identity = new Identity("deenz")
 
         multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
 
@@ -71,8 +66,8 @@ describe("Test Circuit", () => {
             openAnswers: openAnswers,
             openAnswersHashes: openAnswersHashes,
             openAnswersHashesRoot: openAnswersHashesRoot,
-            identityNullifier,
-            identityTrapdoor,
+            identityNullifier: identity.nullifier,
+            identityTrapdoor: identity.trapdoor,
             identityTreeEmptyLeaf: identityGroup.zeroValue,
             identityTreePathIndices: identityTreeProof.pathIndices,
             identityTreeSiblings: identityTreeProof.siblings,
@@ -175,11 +170,11 @@ describe("Test Circuit", () => {
 
     describe("Verifying the commitment values", async () => {
         it("Outputs the correct `identityCommitment`", async () => {
-            expect(circuitOutputs[1].toString()).to.equal(identityCommitment.toString())
+            expect(circuitOutputs[1].toString()).to.equal(identity.commitment.toString())
         })
 
         it("Outputs the correct `gradeCommitment`, computing the correct grade in the process", async () => {
-            gradeCommitment = poseidon([poseidon([identityNullifier, identityTrapdoor]), 100 * inputs.nQuestions])
+            gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), 100 * inputs.nQuestions])
             expect(circuitOutputs[5].toString()).to.equal(gradeCommitment.toString())
         })
     })
@@ -190,7 +185,7 @@ describe("Test Circuit", () => {
         })
 
         it("Outputs the correct `newIdentityTreeRoot`", async () => {
-            identityGroup.updateMember(0, identityCommitment)
+            identityGroup.updateMember(0, identity.commitment)
             expect(circuitOutputs[3].toString()).to.equal(identityGroup.root.toString())
         })
 
@@ -253,7 +248,7 @@ describe("Test Circuit", () => {
                 (100 - _inputs.multipleChoiceWeight) * (_inputs.nQuestions - 2)
             )
 
-            const _gradeCommitment = poseidon([poseidon([identityNullifier, identityTrapdoor]), expectedGrade])
+            const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), expectedGrade])
             expect(witness[6].toString()).to.equal(_gradeCommitment.toString())
             
             gradeGroup.updateMember(0, _gradeCommitment)
@@ -274,7 +269,7 @@ describe("Test Circuit", () => {
                 (100 - _inputs.multipleChoiceWeight) * _inputs.nQuestions
             )
 
-            const _gradeCommitment = poseidon([poseidon([identityNullifier, identityTrapdoor]), expectedGrade])
+            const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), expectedGrade])
             expect(witness[6].toString()).to.equal(_gradeCommitment.toString())
         
             gradeGroup.updateMember(0, _gradeCommitment)
