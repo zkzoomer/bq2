@@ -11,8 +11,9 @@ template GradeClaim(nLevels) {
 
     signal input grade;
     signal input gradeThreshold;
+    signal input signalHash;
     signal input externalNullifier;
-
+    
     signal output gradeTreeRoot;
     signal output nullifierHash;
 
@@ -35,8 +36,12 @@ template GradeClaim(nLevels) {
 
     gradeGreaterEqThanThreshold.out === 1;
 
+    // Dummy square to prevent tampering signalHash.
+    signal signalHashSquared;
+    signalHashSquared <== signalHash * signalHash;
+
     gradeTreeRoot <== verifyGrade.root;
     nullifierHash <== calculateNullifierHash.out;
 }
 
-component main {public [gradeThreshold, externalNullifier]} = GradeClaim(16);
+component main {public [gradeThreshold, signalHash, externalNullifier]} = GradeClaim(16);
