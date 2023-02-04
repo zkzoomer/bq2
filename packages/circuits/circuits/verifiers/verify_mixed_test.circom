@@ -7,8 +7,8 @@ include "../lib/get_grade.circom";
 include "./verify_multiple_choice.circom";
 include "./verify_open_answers.circom";
 
-template VerifyMixedTest(k) {
-    var maxQuestions = 2**k;
+template VerifyMixedTest(testHeight) {
+    var maxQuestions = 2**testHeight;
 
     // Test parameters
     signal input minimumGrade;
@@ -34,13 +34,13 @@ template VerifyMixedTest(k) {
     signal output identityCommitment;
     signal output gradeCommitment;
 
-    component verifyMultipleChoice = VerifyMultipleChoice(k);
+    component verifyMultipleChoice = VerifyMultipleChoice(testHeight);
     verifyMultipleChoice.multipleChoiceRoot <== multipleChoiceRoot;
     for (var i = 0; i < maxQuestions; i++) {
         verifyMultipleChoice.answers[i] <== multipleChoiceAnswers[i];
     }
 
-    component verifyOpenAnswers = VerifyOpenAnswers(k);
+    component verifyOpenAnswers = VerifyOpenAnswers(testHeight);
     verifyOpenAnswers.answersHashesRoot <== openAnswersHashesRoot;
     for (var i = 0; i < maxQuestions; i++) {
         verifyOpenAnswers.answers[i] <== openAnswers[i];

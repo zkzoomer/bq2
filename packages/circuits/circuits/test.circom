@@ -5,8 +5,8 @@ include "./lib/merkle_inclusion.circom";
 include "./lib/path_indices_to_member_index.circom";
 include "./verifiers/verify_mixed_test.circom";
 
-template Test(k, nLevels) {
-    var maxQuestions = 2**k;
+template Test(testHeight, nLevels) {
+    var maxQuestions = 2**testHeight;
 
     // Test parameters
     signal input minimumGrade;
@@ -48,7 +48,7 @@ template Test(k, nLevels) {
     signal output testRoot;
     signal output testParameters;
 
-    component mixedTest = VerifyMixedTest(k);
+    component mixedTest = VerifyMixedTest(testHeight);
     mixedTest.minimumGrade <== minimumGrade;
     mixedTest.multipleChoiceWeight <== multipleChoiceWeight;
     mixedTest.nQuestions <== nQuestions;

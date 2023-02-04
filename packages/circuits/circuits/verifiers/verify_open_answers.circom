@@ -4,8 +4,8 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/poseidon.circom";
 include "../lib/get_merkle_root.circom";
 
-template VerifyOpenAnswers(k) {
-    var nQuestions = 2**k;
+template VerifyOpenAnswers(testHeight) {
+    var nQuestions = 2**testHeight;
     
     signal input answers[nQuestions];
     signal input answersHashes[nQuestions];
@@ -14,7 +14,7 @@ template VerifyOpenAnswers(k) {
     signal output nCorrect;
 
     // Corresponds to the Merkle root of putting the answers hashes into a tree, checked at smart contract for correctness
-    component merkleRoot = GetMerkleRoot(k);
+    component merkleRoot = GetMerkleRoot(testHeight);
     for (var i = 0; i < nQuestions; i++) {
         merkleRoot.leaves[i] <== answersHashes[i];
     }

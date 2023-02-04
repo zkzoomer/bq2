@@ -6,7 +6,7 @@ import { utils } from "ethers"
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
-import { Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray } from "../../proof/src";
+import { N_LEVELS, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray } from "../../proof/src";
 
 describe("Test Circuit", () => {
     let circuitTester: WasmTester;
@@ -20,8 +20,8 @@ describe("Test Circuit", () => {
     let multipleChoiceAnswers: number[];
     let openAnswers: BigInt[];
 
-    let gradeGroup = new Group(0, 16);
-    let identityGroup = new Group(0, 16);
+    let gradeGroup = new Group(0, N_LEVELS);
+    let identityGroup = new Group(0, N_LEVELS);
 
     let inputs: any;
 
@@ -35,19 +35,19 @@ describe("Test Circuit", () => {
 
         identity = new Identity("deenz")
 
-        multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
+        multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2**TEST_HEIGHT}, (_, i) => 1))
 
         const _openAnswersHashes = [
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("sneed's")))]), 
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
         ]
-        openAnswersHashes = Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))] ))
+        openAnswersHashes = Array(2**TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))] ))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 
         openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
 
-        multipleChoiceAnswers = Array.from({length: 64}, (_, i) => 1)
+        multipleChoiceAnswers = Array.from({length: 2**TEST_HEIGHT}, (_, i) => 1)
 
         openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
 
@@ -213,7 +213,7 @@ describe("Test Circuit", () => {
         it("Throws when the grade obtained is below the specified `minimumGrade`", async () => {
             const _inputs = {
                 ...inputs,
-                multipleChoiceAnswers: Array.from({length: 64}, (_, i) => 2),
+                multipleChoiceAnswers: Array.from({length: 2**TEST_HEIGHT}, (_, i) => 2),
                 openAnswers: generateOpenAnswers([]),
             }
 
@@ -226,7 +226,7 @@ describe("Test Circuit", () => {
             const _inputs = {
                 ...inputs,
                 minimumGrade: 0,
-                multipleChoiceAnswers: Array.from({length: 64}, (_, i) => 2),
+                multipleChoiceAnswers: Array.from({length: 2**TEST_HEIGHT}, (_, i) => 2),
                 openAnswers: generateOpenAnswers([]),
             }
 
@@ -258,7 +258,7 @@ describe("Test Circuit", () => {
         it("Adds the `multipleChoiceWeight` only when obtained", async () => {
             const _inputs = {
                 ...inputs,
-                multipleChoiceAnswers: Array.from({length: 64}, (_, i) => 2),
+                multipleChoiceAnswers: Array.from({length: 2**TEST_HEIGHT}, (_, i) => 2),
                 openAnswers: generateOpenAnswers(["sneed's", "feed", "seed"])
             }
 

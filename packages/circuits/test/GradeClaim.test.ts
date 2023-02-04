@@ -5,7 +5,7 @@ import { wasm, WasmTester } from "circom_tester";
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
-import { Poseidon, buildPoseidon } from "../../proof/src";
+import { N_LEVELS, Poseidon, buildPoseidon } from "../../proof/src";
 
 describe("GradeClaim Circuit", () => {
     let circuitTester: WasmTester;
@@ -13,7 +13,7 @@ describe("GradeClaim Circuit", () => {
 
     let identity: Identity;
 
-    let gradeGroup = new Group(0, 16);
+    let gradeGroup = new Group(0, N_LEVELS);
     
     let grade: number;
     let gradeCommitment: bigint;
