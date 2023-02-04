@@ -5,8 +5,19 @@ import { expect } from "chai";
 import { constants, Signer, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
-import { Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "../../proof/src"
 import { Credentials } from "../typechain-types"
+import {
+    N_LEVELS, 
+    TEST_HEIGHT, 
+    Poseidon, 
+    TestAnswers, 
+    TestVariables, 
+    TestFullProof, 
+    buildPoseidon, 
+    generateOpenAnswers, 
+    generateTestProof, 
+    rootFromLeafArray 
+} from "../../proof/src"
 
 describe("Credentials contract", () => {
     let poseidon: Poseidon; 
@@ -22,9 +33,9 @@ describe("Credentials contract", () => {
     let testParameters: bigint;
     let nonPassingTestParameters: bigint;
 
-    let gradeGroup = new Group(0, 16);
-    let credentialsGroup = new Group(0, 16);
-    let noCredentialsGroup = new Group(0, 16);
+    let gradeGroup = new Group(0, N_LEVELS);
+    let credentialsGroup = new Group(0, N_LEVELS);
+    let noCredentialsGroup = new Group(0, N_LEVELS);
 
     let credentialsContract: Credentials;
     let signers: Signer[];
@@ -56,13 +67,13 @@ describe("Credentials contract", () => {
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
         ]
-        openAnswersHashes = Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
+        openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
-        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
+        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1))
         const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
 
-        const multipleChoiceAnswers = Array.from({length: 64}, (_, i) => 1)
+        const multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
         const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
 
         testAnswers = {
@@ -95,12 +106,12 @@ describe("Credentials contract", () => {
         nonPassingProof = await generateTestProof(
             identity,
             { 
-                multipleChoiceAnswers: Array.from({length: 64}, (_, i) => 2), 
-                openAnswers: Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) ) 
+                multipleChoiceAnswers: Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 2), 
+                openAnswers: Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) ) 
             },
             { ...testVariables, minimumGrade: 0 },
             noCredentialsGroup,
-            new Group(0, 16),
+            new Group(0, N_LEVELS),
             snarkArtifacts
         )
 
@@ -484,7 +495,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `merkleTreeRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    const emptyRoot = (new Group(0, 16)).root
+                    const emptyRoot = (new Group(0, N_LEVELS)).root
 
                     // Grade tree group
                     expect(await credentialsContract.getMerkleTreeRoot(0))
@@ -500,9 +511,9 @@ describe("Credentials contract", () => {
         })
 
         describe("getMerkleTreeDepth", () => {
-            it("returns the default `TREE_DEPTH` set at 16", async () => {
+            it(`returns the default \`TREE_DEPTH\` set at ${N_LEVELS}`, async () => {
                 expect(await credentialsContract.getMerkleTreeDepth(0))
-                    .to.be.equal(16) 
+                    .to.be.equal(N_LEVELS) 
             })
         })
 
@@ -854,5 +865,5 @@ describe("Credentials contract", () => {
         })
     })
 
-    // TREE GOT FULL: the passingProof would revert, as the index inside the smart contract would be set to 2**16, whereas the max index the circuit can output is 2**16 - 1
+    // TREE GOT FULL: the passingProof would revert, as the index inside the smart contract would be set to 2**N_LEVELS, whereas the max index the circuit can output is 2**N_LEVELS - 1
 })

@@ -1,11 +1,22 @@
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
-import { Signer, constants, utils } from "ethers"
+import { Signer, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
-import { Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "../../proof/src"
 import { TestVerifier } from "../typechain-types"
+import {
+    N_LEVELS, 
+    TEST_HEIGHT, 
+    Poseidon, 
+    TestAnswers, 
+    TestVariables, 
+    TestFullProof, 
+    buildPoseidon, 
+    generateOpenAnswers, 
+    generateTestProof, 
+    rootFromLeafArray 
+} from "../../proof/src"
 
 describe("TestVerifier contract", () => {
     let poseidon: Poseidon; 
@@ -50,13 +61,13 @@ describe("TestVerifier contract", () => {
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
             poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
         ]
-        const openAnswersHashes = Array(64).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
+        const openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
-        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 64}, (_, i) => 1))
+        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1))
         const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
 
-        const multipleChoiceAnswers = Array.from({length: 64}, (_, i) => 1)
+        const multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
         const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
 
         testAnswers = {
@@ -73,8 +84,8 @@ describe("TestVerifier contract", () => {
             openAnswersHashes
         }
 
-        identityGroup = new Group(1, 16)
-        gradeGroup = new Group(1, 16)
+        identityGroup = new Group(0, N_LEVELS)
+        gradeGroup = new Group(0, N_LEVELS)
     })
 
     it("Should be able to generate the proof using the prover package", async () => {

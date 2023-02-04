@@ -8,8 +8,8 @@ import "../interfaces/ITestVerifier.sol";
 import { PoseidonT3, PoseidonT4 } from "../lib/Poseidon.sol";
 
 contract Credentials is ICredentials, ISemaphoreGroups, Context {
-    uint256 TREE_DEPTH = 16;
-    uint256 MAX_LEAVES = 2 ** TREE_DEPTH;
+    uint256 constant MAX_QUESTIONS = 2 ** 6;
+    uint256 constant N_LEVELS = 16;
 
     /// @dev Gets a test id and returns the test parameters
     mapping(uint256 => Test) public tests;
@@ -73,7 +73,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert TimeLimitIsInThePast();
         }
 
-        if (nQuestions > 64 || nQuestions == 0 ) {
+        if (nQuestions > 2 ** MAX_QUESTIONS || nQuestions == 0 ) {
             revert InvalidNumberOfQuestions();
         }
 
@@ -87,7 +87,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
         uint256 zeroValue = uint256(keccak256(abi.encodePacked(_nTests))) >> 8;
 
-        for (uint8 i = 0; i < TREE_DEPTH; ) {
+        for (uint8 i = 0; i < N_LEVELS; ) {
             zeroValue = PoseidonT3.poseidon([zeroValue, zeroValue]);
 
             unchecked {
@@ -338,7 +338,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev See {ISemaphoreGroups-getMerkleTreeDepth}
     function getMerkleTreeDepth(uint256 /* testId */) external view override returns (uint256) {
         // Independent of the testId
-        return TREE_DEPTH;
+        return N_LEVELS;
     }
     
     /// @dev See {ISemaphoreGroups-getNumberOfMerkleTreeLeaves}
