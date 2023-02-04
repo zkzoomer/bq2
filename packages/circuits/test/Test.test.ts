@@ -1,3 +1,4 @@
+import { N_LEVELS, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray } from "@bq-core/proof";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
@@ -6,7 +7,6 @@ import { utils } from "ethers"
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
-import { N_LEVELS, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray } from "../../proof/src";
 
 describe("Test Circuit", () => {
     let circuitTester: WasmTester;

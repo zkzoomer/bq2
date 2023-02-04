@@ -1,3 +1,5 @@
+import { N_LEVELS, Poseidon, buildPoseidon, hash } from "@bq-core/proof";
+import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
@@ -5,7 +7,6 @@ import { wasm, WasmTester } from "circom_tester";
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
-import { N_LEVELS, Poseidon, buildPoseidon } from "../../proof/src";
 
 describe("GradeClaim Circuit", () => {
     let circuitTester: WasmTester;
@@ -37,6 +38,8 @@ describe("GradeClaim Circuit", () => {
 
         const gradeTreeProof = gradeGroup.generateMerkleProof(0)
 
+        const signal = formatBytes32String("I need bout tree fiddy")
+
         inputs = {
             identityNullifier: identity.nullifier,
             identityTrapdoor: identity.trapdoor,
@@ -44,6 +47,7 @@ describe("GradeClaim Circuit", () => {
             gradeTreeSiblings: gradeTreeProof.siblings,
             grade,
             gradeThreshold: 50,
+            signalHash: hash(signal),
             externalNullifier
         }
     })
@@ -59,14 +63,23 @@ describe("GradeClaim Circuit", () => {
 
     describe("Verifying that `gradeTreePathIndices` and `gradeTreeSiblings` are correct", async () => {
         it("Throws when using a tree with the wrong height", async () => {
-            const _inputs = {
+            let _inputs = {
                 ...inputs,
                 gradeTreePathIndices: [1],
             }
 
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Not all inputs have been set. Only 22 out of 37");
+            }, "Not all inputs have been set. Only 23 out of 38");
+
+            _inputs = {
+                ...inputs,
+                gradeTreeSiblings: [1],
+            }
+
+            await circuitShouldFail(circuitTester, {
+                ..._inputs,
+            }, "Not all inputs have been set. Only 23 out of 38");
         })
     })
 
