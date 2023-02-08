@@ -134,9 +134,7 @@ interface ICredentials {
     /// @param newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
     /// @param gradeCommitment: new grade commitment to add to the grade tree
     /// @param newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
-    /// @param proofA: SNARK proof
-    /// @param proofB: SNARK proof
-    /// @param proofC: SNARK proof
+    /// @param proof: SNARK proof
     /// @param testPassed: boolean value indicating whether the proof provided corresponds to a passed test or not
     function solveTest(
         uint256 testId,
@@ -144,9 +142,7 @@ interface ICredentials {
         uint256 newIdentityTreeRoot,
         uint256 gradeCommitment,
         uint256 newGradeTreeRoot,
-        uint256[2] calldata proofA,
-        uint256[2][2] calldata proofB,
-        uint256[2] calldata proofC,
+        uint256[8] calldata proof,
         bool testPassed
     ) external;
 

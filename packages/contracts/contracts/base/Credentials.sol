@@ -178,9 +178,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 newIdentityTreeRoot,
         uint256 gradeCommitment,
         uint256 newGradeTreeRoot,
-        uint256[2] calldata proofA,
-        uint256[2][2] calldata proofB,
-        uint256[2] calldata proofC,
+        uint256[8] calldata proof,
         bool testPassed
     ) external override onlyExistingTests(testId) {
         if (tests[testId].minimumGrade == 255) {
@@ -205,7 +203,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
                 tests[testId].testParameters
             ];
 
-            if (!testVerifier.verifyProof(proofA, proofB, proofC, proofInput)) {
+            if (!testVerifier.verifyProof(proof, proofInput)) {
                 revert SolutionIsNotValid();
             }
 
@@ -239,7 +237,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
                 tests[testId].nonPassingTestParameters
             ];
 
-            if (!testVerifier.verifyProof(proofA, proofB, proofC, proofInput)) {
+            if (!testVerifier.verifyProof(proof, proofInput)) {
                 revert SolutionIsNotValid();
             }
 

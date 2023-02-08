@@ -1,3 +1,4 @@
+import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray, BigNumberish, Proof } from "@bq-core/proof"
 import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
@@ -6,18 +7,6 @@ import { constants, Signer, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
 import { Credentials } from "../typechain-types"
-import {
-    N_LEVELS, 
-    TEST_HEIGHT, 
-    Poseidon, 
-    TestAnswers, 
-    TestVariables, 
-    TestFullProof, 
-    buildPoseidon, 
-    generateOpenAnswers, 
-    generateTestProof, 
-    rootFromLeafArray 
-} from "../../proof/src"
 
 describe("Credentials contract", () => {
     let poseidon: Poseidon; 
@@ -28,10 +17,10 @@ describe("Credentials contract", () => {
     let testVariables: TestVariables;
     let testURI = 'https://gateway.ipfs.io/ipfs/QmcniBv7UQ4gGPQQW2BwbD4ZZHzN3o3tPuNLZCbBchd1zh';
     
-    let openAnswersHashes: bigint[];
-    let testRoot: bigint;
-    let testParameters: bigint;
-    let nonPassingTestParameters: bigint;
+    let openAnswersHashes: BigNumberish[];
+    let testRoot: BigNumberish;
+    let testParameters: BigNumberish;
+    let nonPassingTestParameters: BigNumberish;
 
     let gradeGroup = new Group(0, N_LEVELS);
     let credentialsGroup = new Group(0, N_LEVELS);
@@ -44,8 +33,8 @@ describe("Credentials contract", () => {
     let passingProof: TestFullProof;
     let nonPassingProof: TestFullProof;
     
-    let passingGradeCommitment: bigint;
-    let nonPassingGradeCommitment: bigint;
+    let passingGradeCommitment: BigNumberish;
+    let nonPassingGradeCommitment: BigNumberish;
 
     const testVerifierWasmFilePath = "../proof/snark-artifacts/testVerifier.wasm";
     const testVerifierZkeyFilePath = "../proof/snark-artifacts/testVerifier.zkey";
@@ -254,9 +243,7 @@ describe("Credentials contract", () => {
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
                             passingProof.newGradeTreeRoot, 
-                            passingProof.proof.a, 
-                            passingProof.proof.b, 
-                            passingProof.proof.c,
+                            passingProof.proof, 
                             true
                         )
                     ).to.be.revertedWithCustomError(
@@ -281,9 +268,7 @@ describe("Credentials contract", () => {
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
                             passingProof.newGradeTreeRoot, 
-                            passingProof.proof.a, 
-                            passingProof.proof.b, 
-                            passingProof.proof.c,
+                            passingProof.proof,
                             true
                         )
                     ).to.be.revertedWithCustomError(
@@ -700,9 +685,7 @@ describe("Credentials contract", () => {
                                 passingProof.newIdentityTreeRoot,
                                 passingProof.gradeCommitment,
                                 passingProof.newGradeTreeRoot, 
-                                passingProof.proof.a, 
-                                passingProof.proof.b, 
-                                passingProof.proof.c,
+                                passingProof.proof,
                                 true
                             )                        
                         ).to.be.revertedWithCustomError(
@@ -717,8 +700,8 @@ describe("Credentials contract", () => {
         describe("solveTest", () => {
             context("when providing an invalid proof", () => {
                 it("reverts", async () => {
-                    const bogusProofA: [bigint, bigint] = [...passingProof.proof.a]
-                    bogusProofA[0] = passingProof.proof.a[0] + BigInt(1)
+                    const bogusProof: Proof = [...passingProof.proof]
+                    bogusProof[0] = BigInt(passingProof.proof[0]) + BigInt(1)
 
                     await expect(
                         credentialsContract.solveTest(
@@ -727,9 +710,7 @@ describe("Credentials contract", () => {
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
                             passingProof.newGradeTreeRoot, 
-                            bogusProofA,
-                            passingProof.proof.b, 
-                            passingProof.proof.c,
+                            bogusProof,
                             true
                         )
                     ).to.revertedWithoutReason
@@ -747,9 +728,7 @@ describe("Credentials contract", () => {
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
                             passingProof.newGradeTreeRoot, 
-                            passingProof.proof.a, 
-                            passingProof.proof.b, 
-                            passingProof.proof.c,
+                            passingProof.proof,
                             true
                         )                        
 
@@ -792,9 +771,7 @@ describe("Credentials contract", () => {
                             nonPassingProof.newIdentityTreeRoot,
                             nonPassingProof.gradeCommitment,
                             nonPassingProof.newGradeTreeRoot, 
-                            nonPassingProof.proof.a, 
-                            nonPassingProof.proof.b, 
-                            nonPassingProof.proof.c,
+                            nonPassingProof.proof,
                             false
                         )
                         
@@ -836,9 +813,7 @@ describe("Credentials contract", () => {
                         passingProof.newIdentityTreeRoot,
                         passingProof.gradeCommitment,
                         passingProof.newGradeTreeRoot, 
-                        passingProof.proof.a, 
-                        passingProof.proof.b, 
-                        passingProof.proof.c,
+                        passingProof.proof,
                         true
                     )
                     

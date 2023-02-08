@@ -1,3 +1,4 @@
+import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "@bq-core/proof"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
@@ -5,18 +6,8 @@ import { Signer, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
 import { TestVerifier } from "../typechain-types"
-import {
-    N_LEVELS, 
-    TEST_HEIGHT, 
-    Poseidon, 
-    TestAnswers, 
-    TestVariables, 
-    TestFullProof, 
-    buildPoseidon, 
-    generateOpenAnswers, 
-    generateTestProof, 
-    rootFromLeafArray 
-} from "../../proof/src"
+import unpackProof from "packages/proof/src/helpers/unpackProof";
+
 
 describe("TestVerifier contract", () => {
     let poseidon: Poseidon; 
@@ -102,9 +93,7 @@ describe("TestVerifier contract", () => {
     describe("verifyProof", () => {
         it("Should return `true` when verifying a valid proof", async () => {
             const isValid = await testVerifierContract.verifyProof(
-                proof.proof.a,
-                proof.proof.b,
-                proof.proof.c,
+                proof.proof,
                 proof.publicSignals
             ) 
             expect(isValid).to.be.equal(true)
@@ -115,9 +104,7 @@ describe("TestVerifier contract", () => {
             bogusSignals[0] = BigInt(350)  // bout tree fiddy
 
             const notValid = await testVerifierContract.verifyProof(
-                proof.proof.a,
-                proof.proof.b,
-                proof.proof.c,
+                proof.proof,
                 bogusSignals
             ) 
             expect(notValid).to.be.equal(false)

@@ -21,9 +21,7 @@ interface ITestVerifier {
     }
 
     function verifyProof(
-        uint256[2] calldata a,
-        uint256[2][2] calldata b,
-        uint256[2] calldata c,
+        uint256[8] calldata proof,
         uint256[10] memory input
     ) external view returns (bool);
 }

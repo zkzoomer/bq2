@@ -125,15 +125,13 @@ contract TestVerifier is ITestVerifier {
     }
     /// @return r  bool true if proof is valid
     function verifyProof(
-            uint[2] calldata a,
-            uint[2][2] calldata b,
-            uint[2] calldata c,
+            uint[8] calldata _proof,
             uint[10] memory input
         ) public view override returns (bool r) {
         Proof memory proof;
-        proof.A = Pairing.G1Point(a[0], a[1]);
-        proof.B = Pairing.G2Point([b[0][0], b[0][1]], [b[1][0], b[1][1]]);
-        proof.C = Pairing.G1Point(c[0], c[1]);
+        proof.A = Pairing.G1Point(_proof[0], _proof[1]);
+        proof.B = Pairing.G2Point([_proof[2], _proof[3]], [_proof[4], _proof[5]]);
+        proof.C = Pairing.G1Point(_proof[6], _proof[7]);
         
         if (verify(input, proof) == 0) {
             return true;
