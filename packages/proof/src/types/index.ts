@@ -38,7 +38,7 @@ export type TestVariables = {
     openAnswersHashes: BigNumberish[],
 }
 
-export type GradeCommitment = {
+export type FullGradeCommitment = {
     gradeCommitmentValue: BigNumberish
     gradeCommitmentIndex: number
     weightedGrade: number
