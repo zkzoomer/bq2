@@ -59,7 +59,7 @@ describe("Credential Ownership", () => {
             const group = new Group(0, N_LEVELS)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
-            fullProof = await generateCredentialOwnershipProof(identity, group, externalNullifier, signal, snarkArtifacts) as FullProof
+            fullProof = await generateCredentialOwnershipProof(identity, group, externalNullifier, signal, snarkArtifacts)
             expect(fullProof.merkleTreeRoot).to.be.equal(group.root.toString())
         })
 
@@ -67,7 +67,7 @@ describe("Credential Ownership", () => {
             const group = new Group(0, N_LEVELS)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
-            fullProof = await generateCredentialOwnershipProof(identity, group.generateMerkleProof(2), externalNullifier, signal, snarkArtifacts) as FullProof
+            fullProof = await generateCredentialOwnershipProof(identity, group.generateMerkleProof(2), externalNullifier, signal, snarkArtifacts)
             expect(fullProof.merkleTreeRoot).to.be.equal(group.root.toString())
         })
     })
