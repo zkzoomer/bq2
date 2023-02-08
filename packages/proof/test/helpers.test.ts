@@ -136,7 +136,7 @@ describe("Helper functions", () => {
         it("Gets the correct grade commitment from a tree", async () => {
             const gradeGroup = new Group(0, N_LEVELS)
     
-            const weightedGrade = multipleChoiceWeight * nQuestions + (100 - multipleChoiceWeight) * (60 + nQuestions - 64)
+            const weightedGrade = multipleChoiceWeight * nQuestions + (100 - multipleChoiceWeight) * (nQuestions - 1)
             const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
     
             gradeGroup.addMembers([BigInt(1), BigInt(2), _gradeCommitment])
