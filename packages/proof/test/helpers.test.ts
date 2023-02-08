@@ -120,11 +120,21 @@ describe("Helper functions", () => {
     })
 
     describe("getGradeCommitment", () => {
-        it("Gets the correct grade commitment from a tree", async () => {
+        const multipleChoiceWeight = 40;
+        const nQuestions = 10;
+        
+        it("Throws when the user does not have a grade commitment", async () => {
             const gradeGroup = new Group(0, N_LEVELS)
 
-            const multipleChoiceWeight = 40;
-            const nQuestions = 10;
+            gradeGroup.addMembers([BigInt(1), BigInt(2)])
+            
+            await expect(
+                getGradeCommitment(identity, gradeGroup, multipleChoiceWeight, nQuestions)
+            ).to.be.rejectedWith("The user did not obtain a grade for this test")
+        })
+
+        it("Gets the correct grade commitment from a tree", async () => {
+            const gradeGroup = new Group(0, N_LEVELS)
     
             const weightedGrade = multipleChoiceWeight * nQuestions + (100 - multipleChoiceWeight) * (60 + nQuestions - 64)
             const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
