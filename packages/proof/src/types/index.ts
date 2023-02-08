@@ -1,53 +1,64 @@
+export type BigNumberish = string | bigint
+
 export type SnarkArtifacts = {
     wasmFilePath: string
     zkeyFilePath: string
 }
 
 export type SnarkJSProof = {
-    pi_a: bigint[]
-    pi_b: bigint[][]
-    pi_c: bigint[]
+    pi_a: BigNumberish[]
+    pi_b: BigNumberish[][]
+    pi_c: BigNumberish[]
     protocol: string
     curve: string
 }
 
-export type Proof = {
-    a: [bigint, bigint],
-    b: [[bigint, bigint], [bigint, bigint]],
-    c: [bigint, bigint]
-}
+export type Proof = [
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish,
+    BigNumberish
+]
 
 export type TestAnswers = {
     multipleChoiceAnswers: number[],
-    openAnswers: bigint[]
+    openAnswers: BigNumberish[]
 }
 
 export type TestVariables = {
     minimumGrade: number,
     multipleChoiceWeight: number,
     nQuestions: number,
-    multipleChoiceRoot: bigint,
-    openAnswersHashesRoot: bigint,
-    openAnswersHashes: bigint[],
+    multipleChoiceRoot: BigNumberish,
+    openAnswersHashesRoot: BigNumberish,
+    openAnswersHashes: BigNumberish[],
 }
 
-export type UpdateGradeFullProof = {
-    gradeCommitmentIndex: bigint
-    oldGradeCommitment: bigint
-    newGradeCommitment: bigint
-    oldGradeTreeRoot: bigint
-    newGradeTreeRoot: bigint
-    testRoot: bigint
-    testParameters: bigint
-    publicSignals: bigint[]
-    proof: Proof
+export type GradeCommitment = {
+    gradeCommitmentValue: BigNumberish
+    gradeCommitmentIndex: number
+    weightedGrade: number
+    grade: number
 }
 
 export type TestFullProof = {
-    identityCommitment: bigint
-    newIdentityTreeRoot: bigint
-    gradeCommitment: bigint
-    newGradeTreeRoot: bigint
-    publicSignals: bigint[]
+    identityCommitment: BigNumberish
+    newIdentityTreeRoot: BigNumberish
+    gradeCommitment: BigNumberish
+    newGradeTreeRoot: BigNumberish
+    publicSignals: BigNumberish[]
+    proof: Proof
+}
+
+export type GradeClaimFullProof = {
+    gradeTreeRoot: BigNumberish,
+    nullifierHash: BigNumberish,
+    gradeThreshold: BigNumberish,
+    signal: BigNumberish,
+    externalNullifier: BigNumberish,
     proof: Proof
 }
