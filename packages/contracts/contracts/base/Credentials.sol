@@ -73,7 +73,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert TimeLimitIsInThePast();
         }
 
-        if (nQuestions > 2 ** MAX_QUESTIONS || nQuestions == 0 ) {
+        if (nQuestions > MAX_QUESTIONS || nQuestions == 0 ) {
             revert InvalidNumberOfQuestions();
         }
 
@@ -336,7 +336,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
 
     /// @dev See {ISemaphoreGroups-getMerkleTreeDepth}
-    function getMerkleTreeDepth(uint256 /* testId */) external view override returns (uint256) {
+    function getMerkleTreeDepth(uint256 /* testId */) external pure override returns (uint256) {
         // Independent of the testId
         return N_LEVELS;
     }
