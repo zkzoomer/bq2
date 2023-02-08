@@ -55,46 +55,20 @@ describe("Credential Ownership", () => {
             ).to.be.rejectedWith("ENOENT: no such file or directory")
         })
 
-        it("Should generate one or several Semaphore proofs passing a group or groups as parameter", async () => {
+        it("Should generate a Semaphore proof passing a group as parameter", async () => {
             const group = new Group(0, N_LEVELS)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             fullProof = await generateCredentialOwnershipProof(identity, group, externalNullifier, signal, snarkArtifacts) as FullProof
             expect(fullProof.merkleTreeRoot).to.be.equal(group.root.toString())
-
-            const altGroup = new Group(0, N_LEVELS)
-            altGroup.addMembers([BigInt(1), identity.commitment])
-
-            fullProofs = await generateCredentialOwnershipProof(identity, [group, altGroup], externalNullifier, signal, snarkArtifacts) as FullProof[]
-            expect(fullProofs[0].merkleTreeRoot).to.be.equal(group.root.toString())
-            expect(fullProofs[1].merkleTreeRoot).to.be.equal(altGroup.root.toString())
         })
 
-        it("Should generate one or several Semaphore proofs passing a Merkle proof or proofs as parameter", async () => {
+        it("Should generate a Semaphore proof passing a Merkle proof as parameter", async () => {
             const group = new Group(0, N_LEVELS)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             fullProof = await generateCredentialOwnershipProof(identity, group.generateMerkleProof(2), externalNullifier, signal, snarkArtifacts) as FullProof
             expect(fullProof.merkleTreeRoot).to.be.equal(group.root.toString())
-
-            const altGroup = new Group(0, N_LEVELS)
-            altGroup.addMembers([BigInt(1), identity.commitment])
-
-            fullProofs = await generateCredentialOwnershipProof(identity, [group.generateMerkleProof(2), altGroup.generateMerkleProof(1)], externalNullifier, signal, snarkArtifacts) as FullProof[]
-            expect(fullProofs[0].merkleTreeRoot).to.be.equal(group.root.toString())
-            expect(fullProofs[1].merkleTreeRoot).to.be.equal(altGroup.root.toString())
-        })
-
-        it("Should generate several Semaphore proofs passing groups or Merkle proofs as parameters", async () => {
-            const group = new Group(0, N_LEVELS)
-            group.addMembers([BigInt(1), BigInt(2), identity.commitment])
-
-            const altGroup = new Group(0, N_LEVELS)
-            altGroup.addMembers([BigInt(1), identity.commitment])
-
-            fullProofs = await generateCredentialOwnershipProof(identity, [group.generateMerkleProof(2), altGroup], externalNullifier, signal, snarkArtifacts) as FullProof[]
-            expect(fullProofs[0].merkleTreeRoot).to.be.equal(group.root.toString())
-            expect(fullProofs[1].merkleTreeRoot).to.be.equal(altGroup.root.toString())
         })
     })
 
@@ -103,12 +77,6 @@ describe("Credential Ownership", () => {
             const response = await verifyCredentialOwnershipProof(fullProof)
 
             expect(response).to.be.true
-        })
-
-        it("Should verify several Semaphore proofs", async () => {
-            const response = await verifyCredentialOwnershipProof(fullProofs)
-
-            expect(response).to.deep.equal([true, true])
         })
     })
 })
