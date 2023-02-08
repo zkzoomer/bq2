@@ -29,6 +29,11 @@ export type TestAnswers = {
     openAnswers: BigNumberish[]
 }
 
+export type TestGradingVariables = {
+    multipleChoiceWeight: number,
+    nQuestions: number,
+}
+
 export type TestVariables = {
     minimumGrade: number,
     multipleChoiceWeight: number,
