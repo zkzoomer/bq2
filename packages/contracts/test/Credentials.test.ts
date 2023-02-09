@@ -36,11 +36,9 @@ describe("Credentials contract", () => {
     let passingGradeCommitment: BigNumberish;
     let nonPassingGradeCommitment: BigNumberish;
 
-    const testVerifierWasmFilePath = "../proof/snark-artifacts/testVerifier.wasm";
-    const testVerifierZkeyFilePath = "../proof/snark-artifacts/testVerifier.zkey";
     const snarkArtifacts = {
-        wasmFilePath: testVerifierWasmFilePath,
-        zkeyFilePath: testVerifierZkeyFilePath
+        wasmFilePath: "../proof/snark-artifacts/test.wasm",
+        zkeyFilePath: "../proof/snark-artifacts/test.zkey"
     };
 
     before(async () => {
