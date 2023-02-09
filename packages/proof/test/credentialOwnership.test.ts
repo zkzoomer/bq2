@@ -21,7 +21,6 @@ describe("Credential Ownership", () => {
     const identity = new Identity()
 
     let fullProof: FullProof
-    let fullProofs: FullProof[]
     let curve: any
 
     const expect = chai.expect

@@ -35,7 +35,6 @@ describe("Grade Claim", () => {
     let gradeCommitment: FullGradeCommitment
 
     let fullProof: GradeClaimFullProof
-    let fullProofs: GradeClaimFullProof[]
     let curve: any
 
     const expect = chai.expect
