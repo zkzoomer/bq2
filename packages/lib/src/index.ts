@@ -7,6 +7,7 @@ import getGradeCommitment from "./helpers/getGradeCommitment"
 import generateTestProof from "./provers/generateTestProof"
 import generateCredentialOwnershipProof from "./provers/generateCredentialOwnershipProof"
 import generateGradeClaimProof from "./provers/generateGradeClaimProof"
+import generateRateCredentialIssuerProof from "./provers/generateRateCredentialIssuerProof"
 import verifyCredentialOwnershipProof from "./verifiers/verifyCredentialOwnershipProof"
 import verifyGradeClaimProof from "./verifiers/verifyGradeClaimProof"
 import verifyTestProof from "./verifiers/verifyTestProof"
@@ -22,6 +23,7 @@ export {
     getGradeCommitment,
     generateTestProof, 
     generateCredentialOwnershipProof,
+    generateRateCredentialIssuerProof,
     generateGradeClaimProof,
     verifyCredentialOwnershipProof,
     verifyGradeClaimProof,
