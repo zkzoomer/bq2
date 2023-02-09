@@ -815,7 +815,7 @@ describe("Credentials contract", () => {
                         true
                     )
                     
-                    credentialsGroup.addMember(identity.commitment)
+                    credentialsGroup.updateMember(0, identity.commitment)
                     gradeGroup.updateMember(0, passingGradeCommitment)
                 })
 
