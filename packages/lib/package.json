@@ -1,5 +1,5 @@
 {
-	"name": "@bq-core/proof",
+	"name": "@bq-core/lib",
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {

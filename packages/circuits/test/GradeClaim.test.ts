@@ -1,4 +1,4 @@
-import { N_LEVELS, Poseidon, buildPoseidon, hash } from "@bq-core/proof";
+import { N_LEVELS, Poseidon, buildPoseidon, hash } from "@bq-core/lib";
 import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";

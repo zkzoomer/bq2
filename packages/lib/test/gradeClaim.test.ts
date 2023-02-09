@@ -1,4 +1,4 @@
-import { generateGradeClaimProof, verifyGradeClaimProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestGradingVariables, GradeClaimFullProof } from "@bq-core/proof"
+import { generateGradeClaimProof, verifyGradeClaimProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestGradingVariables, GradeClaimFullProof } from "@bq-core/lib"
 import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"

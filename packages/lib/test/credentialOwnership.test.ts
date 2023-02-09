@@ -1,4 +1,4 @@
-import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, N_LEVELS } from "@bq-core/proof"
+import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, N_LEVELS } from "@bq-core/lib"
 import { FullProof } from "@semaphore-protocol/proof"
 import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"

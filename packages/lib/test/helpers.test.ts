@@ -1,4 +1,4 @@
-import { buildPoseidon, generateCredentialOwnershipProof, generateOpenAnswers, getGradeCommitment, hash, N_LEVELS, Poseidon, TEST_HEIGHT } from "@bq-core/proof"
+import { buildPoseidon, generateCredentialOwnershipProof, generateOpenAnswers, getGradeCommitment, hash, N_LEVELS, Poseidon, TEST_HEIGHT } from "@bq-core/lib"
 import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"

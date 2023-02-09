@@ -1,4 +1,4 @@
-import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "@bq-core/proof"
+import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
@@ -6,8 +6,6 @@ import { Signer, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
 import { TestVerifier } from "../typechain-types"
-import unpackProof from "packages/proof/src/helpers/unpackProof";
-
 
 describe("TestVerifier contract", () => {
     let poseidon: Poseidon; 
