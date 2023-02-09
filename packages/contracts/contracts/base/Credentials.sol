@@ -96,6 +96,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         }
 
         uint256 testParameters = PoseidonT4.poseidon([uint256(minimumGrade), uint256(multipleChoiceWeight), uint256(nQuestions)]);
+        uint256 nonPassingTestParameters;
+
+        if (minimumGrade != 0) {
+            nonPassingTestParameters = PoseidonT4.poseidon([uint256(0), uint256(multipleChoiceWeight), uint256(nQuestions)]);
+        } else {
+            nonPassingTestParameters = testParameters;
+        }
 
         tests[_nTests] = Test(
             minimumGrade,
@@ -107,10 +114,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             openAnswersHashesRoot,
             PoseidonT3.poseidon([multipleChoiceRoot, openAnswersHashesRoot]),
             testParameters,
-            minimumGrade == 0 ? 
-                testParameters
-            :
-                PoseidonT4.poseidon([uint256(0), uint256(multipleChoiceWeight), uint256(nQuestions)])
+            nonPassingTestParameters
         );
 
         testGroups[_nTests] = TestGroup(
