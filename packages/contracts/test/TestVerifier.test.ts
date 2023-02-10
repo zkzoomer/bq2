@@ -1,4 +1,4 @@
-import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray } from "@bq-core/lib"
+import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray, hash } from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
@@ -44,9 +44,9 @@ describe("TestVerifier contract", () => {
         identity = new Identity("deenz")
 
         const _openAnswersHashes = [
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("sneed's")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
+            poseidon([hash("sneed's")]), 
+            poseidon([hash("feed")]), 
+            poseidon([hash("seed")])
         ]
         const openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})

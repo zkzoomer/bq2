@@ -1,4 +1,4 @@
-import { generateTestProof, verifyTestProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestAnswers, TestVariables, TEST_HEIGHT, generateOpenAnswers, rootFromLeafArray, TestFullProof } from "@bq-core/lib"
+import { generateTestProof, verifyTestProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestAnswers, TestVariables, TEST_HEIGHT, generateOpenAnswers, rootFromLeafArray, TestFullProof, hash } from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    
@@ -40,11 +40,11 @@ describe("Test Proof", () => {
         curve = await getCurveFromName("bn128")
 
         const _openAnswersHashes = [
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("sneed's")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
+            poseidon([hash("sneed's")]), 
+            poseidon([hash("feed")]), 
+            poseidon([hash("seed")])
         ]
-        const openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
+        const openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([hash("")]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
         testVariables = {

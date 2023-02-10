@@ -38,7 +38,7 @@ describe("GradeClaim Circuit", () => {
 
         const gradeTreeProof = gradeGroup.generateMerkleProof(0)
 
-        const signal = formatBytes32String("I need bout tree fiddy")
+        const signal = "I need bout tree fiddy"
 
         inputs = {
             identityNullifier: identity.nullifier,

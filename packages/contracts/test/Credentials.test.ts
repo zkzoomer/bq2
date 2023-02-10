@@ -1,4 +1,4 @@
-import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray, BigNumberish, Proof } from "@bq-core/lib"
+import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray, BigNumberish, Proof, hash } from "@bq-core/lib"
 import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
@@ -50,11 +50,11 @@ describe("Credentials contract", () => {
         identity = new Identity("deenz")
 
         const _openAnswersHashes = [
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("sneed's")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
+            poseidon([hash("sneed's")]), 
+            poseidon([hash("feed")]), 
+            poseidon([hash("seed")])
         ]
-        openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
+        openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([hash("")]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
         const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1))
@@ -94,7 +94,7 @@ describe("Credentials contract", () => {
             identity,
             { 
                 multipleChoiceAnswers: Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 2), 
-                openAnswers: Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) ) 
+                openAnswers: Array(2 ** TEST_HEIGHT).fill( poseidon([hash("")]) ) 
             },
             { ...testVariables, minimumGrade: 0 },
             noCredentialsGroup,

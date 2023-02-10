@@ -1,4 +1,4 @@
-import { N_LEVELS, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray } from "@bq-core/lib";
+import { N_LEVELS, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray, hash } from "@bq-core/lib";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
@@ -38,11 +38,11 @@ describe("Test Circuit", () => {
         multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2**TEST_HEIGHT}, (_, i) => 1))
 
         const _openAnswersHashes = [
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("sneed's")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("feed")))]), 
-            poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("seed")))])
+            poseidon([hash("sneed's")]), 
+            poseidon([hash("feed")]), 
+            poseidon([hash("seed")])
         ]
-        openAnswersHashes = Array(2**TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))] ))
+        openAnswersHashes = Array(2**TEST_HEIGHT).fill(poseidon([hash("")]))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 
         openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)

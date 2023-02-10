@@ -112,8 +112,8 @@ describe("Helper functions", () => {
 
         it("Fills up an incomplete open answers array", () => {
             const fullOpenAnswers = generateOpenAnswers(['deenz'])
-            const expectedOpenAnswers = Array(2 ** TEST_HEIGHT).fill(BigInt(utils.keccak256(utils.toUtf8Bytes(""))))
-            expectedOpenAnswers[0] = BigInt(utils.keccak256(utils.toUtf8Bytes("deenz")))
+            const expectedOpenAnswers = Array(2 ** TEST_HEIGHT).fill(hash(utils.toUtf8Bytes("")))
+            expectedOpenAnswers[0] =hash(utils.toUtf8Bytes("deenz"))
 
             expect(fullOpenAnswers).to.deep.equal(expectedOpenAnswers)
         })
