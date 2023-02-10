@@ -1,5 +1,4 @@
 import { generateRateCredentialIssuerProof, N_LEVELS, Poseidon, buildPoseidon, hash } from "@bq-core/lib"
-import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { FullProof, verifyProof } from "@semaphore-protocol/proof"
@@ -13,7 +12,7 @@ describe("Grade Claim", () => {
     let poseidon: Poseidon
 
     const rate = 35
-    const externalNullifier = formatBytes32String("bq-rate")
+    const externalNullifier = "bq-rate"
 
     const snarkArtifacts = {
         wasmFilePath: './snark-artifacts/semaphore.wasm',

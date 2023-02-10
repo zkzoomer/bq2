@@ -3,7 +3,6 @@ import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
-import { utils } from "ethers"
 import { getCurveFromName } from "ffjavascript"
 
 chai.use(chaiAsPromised)

@@ -1,6 +1,5 @@
 import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, N_LEVELS } from "@bq-core/lib"
 import { FullProof } from "@semaphore-protocol/proof"
-import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    
@@ -10,8 +9,8 @@ import { getCurveFromName } from "ffjavascript"
 chai.use(chaiAsPromised)
 
 describe("Credential Ownership", () => {
-    const externalNullifier = formatBytes32String("Topic")
-    const signal = formatBytes32String("Hello world")
+    const externalNullifier = "Topic"
+    const signal = "Hello world"
 
     const snarkArtifacts = {
         wasmFilePath: './snark-artifacts/semaphore.wasm',

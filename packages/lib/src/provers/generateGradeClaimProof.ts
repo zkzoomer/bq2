@@ -24,8 +24,8 @@ export default async function generateGradeClaimProof(
     identity: Identity,
     gradeGroupOrMerkleProof: Group | MerkleProof,
     gradeThreshold: number | number,
-    externalNullifier: BytesLike | Hexable | number | bigint,
-    signal: BytesLike | Hexable | number | bigint,
+    externalNullifier: BytesLike | Hexable | number | bigint | string,
+    signal: BytesLike | Hexable | number | bigint | string,
     gradeCommitmentOrTestGradingVariables: TestGradingVariables | FullGradeCommitment,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<GradeClaimFullProof> {
@@ -81,8 +81,8 @@ export default async function generateGradeClaimProof(
         gradeTreeRoot: publicSignals[0],
         nullifierHash: publicSignals[1],
         gradeThreshold: publicSignals[2],
-        signal: BigNumber.from(signal).toString(),
-        externalNullifier: BigNumber.from(externalNullifier).toString(),
+        signal: signal,
+        externalNullifier: externalNullifier,
         proof: packProof(proof)
     }
 }

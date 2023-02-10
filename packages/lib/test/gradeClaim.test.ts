@@ -1,5 +1,4 @@
 import { generateGradeClaimProof, verifyGradeClaimProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestGradingVariables, GradeClaimFullProof } from "@bq-core/lib"
-import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    
@@ -12,8 +11,8 @@ describe("Grade Claim", () => {
     let poseidon: Poseidon
 
     const gradeThreshold = 80
-    const externalNullifier = formatBytes32String("Topic")
-    const signal = formatBytes32String("Hello world")
+    const externalNullifier = "Topic"
+    const signal = "Hello world"
 
     const snarkArtifacts = {
         wasmFilePath: './snark-artifacts/gradeClaim.wasm',

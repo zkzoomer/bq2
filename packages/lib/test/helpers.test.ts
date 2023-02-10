@@ -1,5 +1,4 @@
 import { buildPoseidon, generateCredentialOwnershipProof, generateOpenAnswers, getGradeCommitment, hash, N_LEVELS, Poseidon, TEST_HEIGHT } from "@bq-core/lib"
-import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { FullProof } from "@semaphore-protocol/proof"
@@ -15,8 +14,8 @@ chai.use(chaiAsPromised)
 describe("Helper functions", () => {
     let poseidon: Poseidon 
 
-    const externalNullifier = formatBytes32String("Topic")
-    const signal = formatBytes32String("Hello world")
+    const externalNullifier = "Topic"
+    const signal = "Hello world"
 
     const snarkArtifacts = {
         wasmFilePath: './snark-artifacts/semaphore.wasm',
@@ -112,8 +111,8 @@ describe("Helper functions", () => {
 
         it("Fills up an incomplete open answers array", () => {
             const fullOpenAnswers = generateOpenAnswers(['deenz'])
-            const expectedOpenAnswers = Array(2 ** TEST_HEIGHT).fill(hash(utils.toUtf8Bytes("")))
-            expectedOpenAnswers[0] =hash(utils.toUtf8Bytes("deenz"))
+            const expectedOpenAnswers = Array(2 ** TEST_HEIGHT).fill(hash(""))
+            expectedOpenAnswers[0] =hash("deenz")
 
             expect(fullOpenAnswers).to.deep.equal(expectedOpenAnswers)
         })

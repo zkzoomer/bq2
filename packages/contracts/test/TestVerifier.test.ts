@@ -25,8 +25,8 @@ describe("TestVerifier contract", () => {
     let proof: TestFullProof;
 
     const snarkArtifacts = {
-        wasmFilePath: "../proof/snark-artifacts/test.wasm",
-        zkeyFilePath: "../proof/snark-artifacts/test.zkey"
+        wasmFilePath: "../lib/snark-artifacts/test.wasm",
+        zkeyFilePath: "../lib/snark-artifacts/test.zkey"
     }
 
     before(async () => {

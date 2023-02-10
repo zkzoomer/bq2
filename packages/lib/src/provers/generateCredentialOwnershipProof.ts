@@ -1,4 +1,5 @@
 import { BytesLike, Hexable } from "@ethersproject/bytes"
+import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
 import { generateProof, FullProof } from "@semaphore-protocol/proof"
@@ -18,8 +19,8 @@ import { N_LEVELS } from "../constants"
 export default async function generateCredentialOwnershipProof(
     identity: Identity,
     groupOrMerkleProof: Group | MerkleProof,
-    externalNullifier: BytesLike | Hexable | number | bigint,
-    signal: BytesLike | Hexable | number | bigint,
+    externalNullifier: BytesLike | Hexable | number | bigint | string,
+    signal: BytesLike | Hexable | number | bigint | string,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<FullProof> {
     if (!snarkArtifacts) {
@@ -27,6 +28,14 @@ export default async function generateCredentialOwnershipProof(
             wasmFilePath: `https://www.trusted-setup-pse.org/semaphore/${N_LEVELS}/semaphore.wasm`,
             zkeyFilePath: `https://www.trusted-setup-pse.org/semaphore/${N_LEVELS}/semaphore.zkey`
         }
+    }
+
+    if (typeof externalNullifier === 'string') {
+        externalNullifier = formatBytes32String(externalNullifier)
+    }
+    
+    if(typeof signal === 'string') {
+        signal = formatBytes32String(signal)
     }
      
     return generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)

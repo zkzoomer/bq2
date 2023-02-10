@@ -1,3 +1,5 @@
+import { BytesLike, Hexable } from "@ethersproject/bytes"
+
 export type BigNumberish = string | bigint
 
 export type SnarkArtifacts = {
@@ -63,7 +65,7 @@ export type GradeClaimFullProof = {
     gradeTreeRoot: BigNumberish,
     nullifierHash: BigNumberish,
     gradeThreshold: BigNumberish,
-    signal: BigNumberish,
-    externalNullifier: BigNumberish,
+    signal: BytesLike | Hexable | number | bigint | string,
+    externalNullifier: BytesLike | Hexable | number | bigint | string,
     proof: Proof
 }
