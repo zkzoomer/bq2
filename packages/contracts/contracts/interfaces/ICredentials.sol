@@ -96,7 +96,7 @@ interface ICredentials {
     /// @param admin: see the `Test` struct
     /// @param multipleChoiceRoot: see the `Test` struct
     /// @param openAnswersHashesRoot: see the `Test` struct
-    /// @param testURI: see the `Test` struct
+    /// @param testURI: external resource containing the actual test and more information about the credential.
     function createTest(
         uint8 minimumGrade,
         uint8 multipleChoiceWeight,
