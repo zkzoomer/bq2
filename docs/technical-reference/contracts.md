@@ -44,6 +44,7 @@ Depending on the value for `testPassed`, the user will get their Semaphore ident
   <img src="./commitment-diagram.png" width=70% />
 </p>
 
+The height of these three trees is set by the `N_LEVELS` parameter, fixed at 16. This gives us a maximum of 65536 leaves.
 
 ### Verify a Test
 The admin of a test can choose to _verify it_ by providing the open answer hashes needed to solve this teset directly on-chain, which is done by calling the function `verifyTest`.
