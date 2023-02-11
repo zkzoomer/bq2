@@ -20,21 +20,9 @@ Anyone can create a new Block Qualified Test by calling the `createTest` functio
 
 The resulting test is given a unique `testId`. The function will then compute and store the `testRoot` and `testParameters` as specified in [Block Qualified Tests](block-qualified-tests.md), and define three new groups:
 
-- The grade Semaphore-like group, that will contain all the grade commitments for every solving attempt, and whose 
-$
-  \texttt{groupId} = 3 \cdot \texttt{testId}
-$
-.
-- The credentials Semaphore group, that will contain all the identity commitments of the users that obtain the credential, and whose 
-$
-  \texttt{groupId} = 3 \cdot \texttt{testId} + 1
-$
-.
-- The no-credentials Semaphore group, that will contain all the identity commitments of the users that do not obtain the credential, and whose 
-$
-  \texttt{groupId} = 3 \cdot \texttt{testId} + 2
-$
-.
+- The grade Semaphore-like group, that will contain all the grade commitments for every solving attempt, and whose `groupId = 3 ⋅ testId`.
+- The credentials Semaphore group, that will contain all the identity commitments of the users that obtain the credential, and whose `groupId = 3 ⋅ testId + 1`.
+- The no-credentials Semaphore group, that will contain all the identity commitments of the users that do not obtain the credential, and whose `groupId = 3 ⋅ testId + 2`.
 
 Note that, although these three groups are all given different `groupId`s, they are all constructed using the same `zeroLeaf` for gas saving purposes:
 $$

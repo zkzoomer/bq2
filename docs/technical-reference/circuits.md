@@ -9,11 +9,7 @@ The [Test circuit](../../packages/circuits/circuits/test.circom) is how users pr
 - [Grade tree inclusion](#grade-tree-inclusion)
 
 ### Proof of Knowledge
-To solve a test, users provide as private inputs to the proof their `multipleChoiceAnswers` and `openAnswers`. The circuit then computes the resulting 
-$
-    \textrm{grade} \cdot \textrm{nQuestions}
-$ 
-as specified by the [Block Qualified Test](block-qualified-tests.md). This is the value that is later commited to the grade tree, alongside the user's identity secret. The circuit outputs the value for the `testRoot` and the `testParameters` as specified for the Block Qualified Test.
+To solve a test, users provide as private inputs to the proof their `multipleChoiceAnswers` and `openAnswers`. The circuit then computes the resulting `grade ⋅ nQuestions` as specified by the [Block Qualified Test](block-qualified-tests.md). This is the value that is later commited to the grade tree, alongside the user's identity secret. The circuit outputs the value for the `testRoot` and the `testParameters` as specified for the Block Qualified Test.
 
 ### Identity Tree Inclusion
 As part of the proof, the user updates an empty leaf (`identityTreeEmptyLeaf`) inside a [Semaphore Group](http://semaphore.appliedzkp.org/docs/guides/groups) by including their [identity commitment](http://semaphore.appliedzkp.org/docs/glossary#semaphore-identity). Depending on whether the user passed the test or not, their identity commitment will be included in the credentials group or in the no-credentials group, respectively. The circuit outputs the old Merkle root of the Group (`oldIdentityTreeRoot`), the new Merkle root of the group (`newIdentityTreeRoot`), the user's identity commitment (`identityCommitment`), and its index within the tree (`identityCommitmentIndex`).

@@ -28,7 +28,7 @@ Where:
 
 Note that, because of the formula above, `nQuestions` must always be greater than one. As such, for tests that only contain a multiple choice component, `multipleChoiceWeight` must be set to 100, while `nQuestions` must be set to 1; for tests that only contain an open answer component, `multipleChoiceWeight` must be set to 0.
 
-Inside of the circuit, we compute the value for [`grade` * `nQuestions`](../../packages/circuits/circuits/lib/get_grade.circom) to avoid non-quadratic constraints. This is the value that is later commited to the grade group, alongside the user's identity secret. 
+Inside of the circuit, we compute the value for [`grade ⋅ nQuestions`](../../packages/circuits/circuits/lib/get_grade.circom) to avoid non-quadratic constraints. This is the value that is later commited to the grade group, alongside the user's identity secret. 
 
 When the user's grade is over a defined `minimumGrade`, they have gained the credentials, and their identity commitment gets added to the credentials group. Otherwise, their identity commitment gets added to the no-credentials group. These parameters that define the criteria to pass a test get encoded into the variable `testParameters`:
 
