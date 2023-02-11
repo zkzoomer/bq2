@@ -64,7 +64,8 @@ export type TestFullProof = {
 export type GradeClaimFullProof = {
     gradeTreeRoot: BigNumberish,
     nullifierHash: BigNumberish,
-    gradeThreshold: BigNumberish,
+    gradeThreshold: number,
+    weightedGradeThreshold: BigNumberish,
     signal: BytesLike | Hexable | number | bigint | string,
     externalNullifier: BytesLike | Hexable | number | bigint | string,
     proof: Proof

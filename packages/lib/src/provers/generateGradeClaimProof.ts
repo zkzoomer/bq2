@@ -23,13 +23,14 @@ import hash from "../helpers/hash"
 export default async function generateGradeClaimProof(
     identity: Identity,
     gradeGroupOrMerkleProof: Group | MerkleProof,
-    gradeThreshold: number | number,
+    gradeThreshold: number,
     externalNullifier: BytesLike | Hexable | number | bigint | string,
     signal: BytesLike | Hexable | number | bigint | string,
     gradeCommitmentOrTestGradingVariables: TestGradingVariables | FullGradeCommitment,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<GradeClaimFullProof> {
     let gradeMerkleProof: MerkleProof
+    let weightedGradeThreshold: number
     let gradeCommitment: FullGradeCommitment
 
     if (!snarkArtifacts) {
@@ -48,8 +49,11 @@ export default async function generateGradeClaimProof(
                 gradeCommitmentOrTestGradingVariables.multipleChoiceWeight,
                 gradeCommitmentOrTestGradingVariables.nQuestions
             )
+
+            weightedGradeThreshold = gradeThreshold * gradeCommitmentOrTestGradingVariables.nQuestions
         } else {
             gradeCommitment = gradeCommitmentOrTestGradingVariables
+            weightedGradeThreshold = gradeThreshold * gradeCommitmentOrTestGradingVariables.weightedGrade / gradeCommitmentOrTestGradingVariables.grade
         }
 
         gradeMerkleProof = gradeGroupOrMerkleProof.generateMerkleProof(gradeCommitment.gradeCommitmentIndex)
@@ -60,6 +64,7 @@ export default async function generateGradeClaimProof(
 
         gradeCommitment = gradeCommitmentOrTestGradingVariables
         gradeMerkleProof = gradeGroupOrMerkleProof
+        weightedGradeThreshold = gradeThreshold * gradeCommitmentOrTestGradingVariables.weightedGrade / gradeCommitmentOrTestGradingVariables.grade
     }
 
     const { proof, publicSignals } = await groth16.fullProve(
@@ -68,8 +73,8 @@ export default async function generateGradeClaimProof(
             identityTrapdoor: identity.trapdoor,
             gradeTreePathIndices: gradeMerkleProof.pathIndices,
             gradeTreeSiblings: gradeMerkleProof.siblings,
-            grade: gradeCommitment.weightedGrade,
-            gradeThreshold,
+            weightedGrade: gradeCommitment.weightedGrade,
+            weightedGradeThreshold,
             signalHash: hash(signal),
             externalNullifier: hash(externalNullifier)
         },
@@ -80,7 +85,8 @@ export default async function generateGradeClaimProof(
     return {
         gradeTreeRoot: publicSignals[0],
         nullifierHash: publicSignals[1],
-        gradeThreshold: publicSignals[2],
+        gradeThreshold,
+        weightedGradeThreshold: publicSignals[2],
         signal: signal,
         externalNullifier: externalNullifier,
         proof: packProof(proof)

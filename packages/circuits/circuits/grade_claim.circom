@@ -9,8 +9,8 @@ template GradeClaim(nLevels) {
     signal input gradeTreePathIndices[nLevels];
     signal input gradeTreeSiblings[nLevels];
 
-    signal input grade;
-    signal input gradeThreshold;
+    signal input weightedGrade;
+    signal input weightedGradeThreshold;
     signal input signalHash;
     signal input externalNullifier;
     
@@ -24,15 +24,15 @@ template GradeClaim(nLevels) {
         verifyGrade.gradeTreePathIndices[i] <== gradeTreePathIndices[i];
         verifyGrade.gradeTreeSiblings[i] <== gradeTreeSiblings[i];
     }
-    verifyGrade.currentGrade <== grade;
+    verifyGrade.currentGrade <== weightedGrade;
 
     component calculateNullifierHash = CalculateNullifierHash();
     calculateNullifierHash.externalNullifier <== externalNullifier;
     calculateNullifierHash.identityNullifier <== identityNullifier;
 
     component gradeGreaterEqThanThreshold = GreaterEqThan(13);  // Max value is 100 * 64 = 6400 < 2**13 - 1 = 8191
-    gradeGreaterEqThanThreshold.in[0] <== grade;
-    gradeGreaterEqThanThreshold.in[1] <== gradeThreshold;
+    gradeGreaterEqThanThreshold.in[0] <== weightedGrade;
+    gradeGreaterEqThanThreshold.in[1] <== weightedGradeThreshold;
 
     gradeGreaterEqThanThreshold.out === 1;
 
@@ -44,4 +44,4 @@ template GradeClaim(nLevels) {
     nullifierHash <== calculateNullifierHash.out;
 }
 
-component main {public [gradeThreshold, signalHash, externalNullifier]} = GradeClaim(16);
+component main {public [weightedGradeThreshold, signalHash, externalNullifier]} = GradeClaim(16);

@@ -10,11 +10,11 @@ import verificationKey from "../../snark-artifacts/gradeClaimKey.json"
  * @returns True if the proof is valid, false otherwise.
  */
 export default async function verifyGradeClaimProof(
-    { gradeTreeRoot, nullifierHash, gradeThreshold, signal, externalNullifier, proof }: GradeClaimFullProof,
+    { gradeTreeRoot, nullifierHash, weightedGradeThreshold, signal, externalNullifier, proof }: GradeClaimFullProof,
 ): Promise<boolean> {
     return groth16.verify(
         verificationKey,
-        [gradeTreeRoot, nullifierHash, gradeThreshold, hash(signal), hash(externalNullifier)],
+        [gradeTreeRoot, nullifierHash, weightedGradeThreshold, hash(signal), hash(externalNullifier)],
         unpackProof(proof)
     )
 }
