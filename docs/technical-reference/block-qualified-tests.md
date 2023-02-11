@@ -16,10 +16,7 @@ The `TREE_HEIGHT` constant determines the maximum number of questions possible f
 The final grade of a test is calculated as a weighted sum of these two components, using the following formula:
 
 $$
-    \textrm{grade} = 
-        \textrm{result} \cdot \texttt{multipleChoiceWeight} + 
-        \max((\texttt{nCorrect} + \texttt{nQuestions} - \texttt{maxQuestions}) \cdot 
-        \frac{100 - \texttt{multipleChoiceWeight}}{\texttt{nQuestions}}, 0)
+  \textrm{grade} = \textrm{result} \cdot \texttt{multipleChoiceWeight} + \max((\texttt{nCorrect} + \texttt{nQuestions} - \texttt{maxQuestions}) \cdot \frac{100 - \texttt{multipleChoiceWeight}}{\texttt{nQuestions}}, 0)
 $$
 
 Where:
@@ -31,10 +28,14 @@ Where:
 
 Note that, because of the formula above, `nQuestions` must always be greater than one. As such, for tests that only contain a multiple choice component, `multipleChoiceWeight` must be set to 100, while `nQuestions` must be set to 1; for tests that only contain an open answer component, `multipleChoiceWeight` must be set to 0.
 
-Inside of the circuit, we compute the value for [$\textrm{grade} \cdot \textrm{nQuestions}$](../../packages/circuits/circuits/lib/get_grade.circom) to avoid non-quadratic constraints. This is the value that is later commited to the grade group, alongside the user's identity secret. 
+Inside of the circuit, we compute the value for [
+$
+  \textrm{grade} \cdot \textrm{nQuestions}
+$
+](../../packages/circuits/circuits/lib/get_grade.circom) to avoid non-quadratic constraints. This is the value that is later commited to the grade group, alongside the user's identity secret. 
 
 When the user's grade is over a defined `minimumGrade`, they have gained the credentials, and their identity commitment gets added to the credentials group. Otherwise, their identity commitment gets added to the no-credentials group. These parameters that define the criteria to pass a test get encoded into the variable `testParameters`:
 
 $$
-    \texttt{testParameters} = \textrm{Poseidon}(\texttt{minimumGrade}, \texttt{multipleChoiceWeight}, \texttt{nQuestions})
+  \texttt{testParameters} = \textrm{Poseidon}(\texttt{minimumGrade}, \texttt{multipleChoiceWeight}, \texttt{nQuestions})
 $$

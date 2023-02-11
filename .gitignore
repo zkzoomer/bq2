@@ -28,3 +28,6 @@ build
 artifacts
 cache
 typechain-types
+
+# Gitbook
+_book/
