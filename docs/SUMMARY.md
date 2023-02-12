@@ -3,9 +3,16 @@
 ## Getting started
 * [About this documentation](README.md)
 
-<!-- ## Quick Setup
+<!-- ## Quick Setup -->
 
-## Guides -->
+## Guides
+
+* [Proofs](./guides/proofs/README.md)
+    * [Block Qualified Test Proof](./guides/proofs/bq-test-proof.md)
+    * [Grade Claim Proof](./guides/proofs/grade-claim-proof.md)
+    * [Semaphore Inclusion Proof](./guides/proofs/semaphore-inclusion-proof.md)
+* [Other Functionalities](./guides/functionalities/README.md)
+    * [Credential Issuer Rating](./guides/functionalities/credential-issuer-rating.md)
 
 ## Technical Reference
 

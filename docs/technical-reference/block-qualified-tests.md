@@ -9,7 +9,7 @@ Each test contains two distinct components, each forming a Merkle tree formed wi
 </p>
 
 - A **multiple choice** component, where the answer to each question is part of a given finite set. The resulting Merkle root is named `multipleChoiceRoot`. The grade for this component is only awarded if the user gets all the answers right: if they know a tree with `multipleChoiceRoot` at its root.
-- An **open answer** component, where the answer to each question can be any value. The leaves of the tree are the [keccak256](../../packages/lib/src/helpers/hash.ts) hashes of the answers, made compatible with the SNARK scalar modulus. The resulting Merkle root is named `openAnswersRoot`. The grade for this component is awarded incrementally per answer that the user gets right: every matched leaf.
+- An **open answer** component, where the answer to each question can be any value. The leaves of the tree are the [keccak256](../../packages/lib/src/helpers/hash.ts) hashes of the answers, made compatible with the SNARK scalar modulus. The resulting Merkle root of the correct answers is named `openAnswersHashesRoot`. The grade for this component is awarded incrementally per answer that the user gets right: every matched hash with the correct `openAnswerHashes`, with the preimage being the users' answer.
 
 The `TREE_HEIGHT` constant determines the maximum number of questions possible for each component. This value is set to 6, giving us a maximum of 64 questions per component. If the credential issuer does not set up the whole 128 questions, each tree gets padded to 64 with the default value: `0` for multiple choice questions, and `keccak256("")` for open answer questions. The value of the `testRoot` is used to define and identify the test. 
 
