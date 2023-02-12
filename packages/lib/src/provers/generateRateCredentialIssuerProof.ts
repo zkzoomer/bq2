@@ -10,7 +10,6 @@ import { N_LEVELS } from "../constants"
  * Rates a credential issuer by generating a Semaphore proof of credential ownership.
  * @param identity The Semaphore identity.
  * @param groupOrMerkleProof The Semaphore group or its Merkle proof.
- * @param externalNullifier The external nullifier.
  * @param rate The rating given to the credential issuer, from 0 to 100.
  * @param snarkArtifacts The SNARK artifacts.
  * @returns The Semaphore proof ready to be verified.
