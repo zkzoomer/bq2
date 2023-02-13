@@ -3,7 +3,7 @@ import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
-import { constants, Signer, utils } from "ethers"
+import { constants, Signer } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
 import { Credentials } from "../typechain-types"

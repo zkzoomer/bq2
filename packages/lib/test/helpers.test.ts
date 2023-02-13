@@ -4,7 +4,6 @@ import { Identity } from "@semaphore-protocol/identity"
 import { FullProof } from "@semaphore-protocol/proof"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
-import { utils } from "ethers";
 import { getCurveFromName } from "ffjavascript"
 import packProof from "../src/helpers/packProof"
 import unpackProof from "../src/helpers/unpackProof"

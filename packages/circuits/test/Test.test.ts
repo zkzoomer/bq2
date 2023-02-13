@@ -3,7 +3,6 @@ import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
 import { wasm, WasmTester } from "circom_tester";
-import { utils } from "ethers"
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
