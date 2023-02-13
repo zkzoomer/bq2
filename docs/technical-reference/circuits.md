@@ -36,6 +36,8 @@ Similarly to the Semaphore circuit, users can use the [Grade Claim circuit](../.
 
 - The user then proves that the grade linked to their grade commitment is above a certain threshold of their choosing.
 
-Note that since the grade inside the grade commitment was weighted with the number of questions of the test, so should be the grade threshold that the user inputs. This is to avoid non-quadratic constaints, as covered in [Block Qualified Tests](block-qualified-tests.md).
+{% hint style="warning" %}
+Since the grade inside the grade commitment was weighted with the number of questions of the test, so should be the grade threshold that the user inputs. This is to avoid non-quadratic constaints, as covered in [Block Qualified Tests](block-qualified-tests.md).
+{% endhint %}
 
 Besides the public signals characteristic of a Semaphore proof of ownership, the circuit also outputs this weighted grade threshold, `weightedGradeThreshold`.

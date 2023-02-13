@@ -18,6 +18,10 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
 - `snarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/test.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/test.wasm) trusted setup files.
 - `testId`: the ID for this test, used to compute the value for the empty leaf when Merkle proofs are provided instead of groups.
 
+{% hint style="warning" %}
+When providing a group to this function, an empty leaf is added in order to generate the corresponding Merkle proofs. If the proof is later accepted by the smart contract and the corresponding on-chain groups get updated, developers should use the `updateMember` function to update the off-chain groups. Using the `addMember` function instead would create a new leaf after the empty leaf that was added before.
+{% endhint %}
+
 ## Verifying a Proof Off-Chain
 
 You can use the `@bq-core/lib` library to verify a generated proof via the `verifyTestProof` function: 

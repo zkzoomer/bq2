@@ -24,10 +24,13 @@ The resulting test is given a unique `testId`. The function will then compute an
 - The credentials Semaphore group, that will contain all the identity commitments of the users that obtain the credential, and whose `groupId = 3 ⋅ testId + 1`.
 - The no-credentials Semaphore group, that will contain all the identity commitments of the users that do not obtain the credential, and whose `groupId = 3 ⋅ testId + 2`.
 
-Note that, although these three groups are all given different `groupId`s, they are all constructed using the same `zeroLeaf` for gas saving purposes:
+{% hint style="warning" %}
+Although these three groups are all given different `groupId`s, they are all constructed using the same `zeroLeaf` for gas saving purposes:
+
 $$
     \texttt{zeroLeaf} = \textrm{keccak256}(\texttt{testId}) >> 8
 $$
+{% endhint %}
 
 ### Solving a Test
 To obtain a credential, the user must call the `solveTest` function, providing a valid proof for the [Test circuit](circuits.md#the-test-circuit) that verifies their proof of knowledge of their solution. The user must specify in the `testPassed` boolean parameter for this function if their solution achieves a grade over `minimumGrade` or not.
@@ -36,7 +39,9 @@ The way this is enforced is by setting the `testParameters` public signal of the
 - If the user sets `testPassed` to true, the value used for `testParameters` when verifying the proof will make it **invalid** if the grade obtained is below `minimumGrade`.
 - If the user sets `testPassed` to false, the value usedd for `testParamters` will set the `minimumGrade` to 0, so the user will always obtain a greater grade.
 
-Note that this means that a user can potentially provide a passing solution and still decide to add themselves to the no-credentials group.
+{% hint style="warning" %}
+This means that a user can potentially provide a passing solution and still decide to add themselves to the no-credentials group.
+{% endhint %}
 
 Depending on the value for `testPassed`, the user will get their Semaphore identity commitment added to the credentials group or to the no-credentials group, respectively. Their grade commitment will be added to the grade group either way.
 
