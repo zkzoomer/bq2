@@ -13,6 +13,7 @@ import "solidity-coverage"
 import { config } from "./package.json"
 import "./tasks/accounts"
 import "./tasks/deploy-credentials"
+import "./tasks/deploy-grade-claim-verifier"
 import "./tasks/deploy-test-verifier"
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
