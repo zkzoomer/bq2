@@ -3,8 +3,8 @@ pragma solidity ^0.8.4;
 
 import "../lib/Pairing.sol";
 
-/// @title Verifier interface.
-/// @dev Interface of Verifier contract.
+/// @title Test Verifier interface.
+/// @dev Interface of Test Verifier contract.
 interface ITestVerifier {
     struct VerifyingKey {
         Pairing.G1Point alfa1;
