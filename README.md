@@ -25,4 +25,4 @@ yarn test
 
 ### Documentation
 
-You can access a full version of the documentation on [Gitbook](https://deenz.gitbook.io/bq-core-v2/getting-started/readme), or navigate to the [docs](./docs/) folder.
+You can access a full version of the documentation on [Gitbook](https://deenz.gitbook.io/bq2/), or navigate to the [docs](./docs/) folder.
