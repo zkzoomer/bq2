@@ -2,7 +2,7 @@
 
 ### Overview
 
-Block Qualified aims to become an open education platform where users can create their own learning experience. Anyone can gain credentials that attest to their knowledge, or verify the qualifications of others. All of this being done directly on-chain, with verifiable data, and preserving the privacy of users via zk proofs.
+Block Qualified aims to become an open education platform where users can create their own learning experience. Anyone can gain credentials that attest to their knowledge, or verify the qualifications of others. All of this being done directly on-chain, with verifiable data, and preserving the privacy of users via zero-knowledge proofs.
 
 ### Features
 
@@ -10,7 +10,7 @@ Users can define their own on-chain exams where they evaluate some kind of knowl
 
 By leveraging [Semaphore](http://semaphore.appliedzkp.org/) we add an additional privacy layer when proving ownership of credentials.
 
-Block Qualified allows you to design your own open education platform where you and your users can:
+Block Qualified allows you to design your own open education platform where users can:
 - Earn credentials attesting to their knowledge.
 - Prove ownership of their credentials without revealing anything else about themselves.
 - Prove that the grade they obtained on a given credential is above a certain threshold.
@@ -20,4 +20,4 @@ Block Qualified allows you to design your own open education platform where you 
 
 ### About the Code
 
-The base logic of the protocol is reflected in the [circuits](../packages/circuits/), which interacts with the core [smart contracts](../packages/contracts/). A series of [JavaScript libraries](../packages/lib/) will also be provided, enabling developers to easily generate and verify all the proofs that power Block Qualified.
+The base logic of the protocol is reflected in the [circuits](../packages/circuits/), which interact with the core [smart contracts](../packages/contracts/). A series of [JavaScript libraries](../packages/lib/) are also provided, enabling developers to easily generate and verify all the proofs that power Block Qualified.

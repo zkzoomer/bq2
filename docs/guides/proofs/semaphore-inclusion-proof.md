@@ -8,7 +8,7 @@ Once a user has added their identity commitment to either the credentials or no-
 
 Similar to a Semaphore proof, you can use the `@bq-core/lib` library to generate such proofs, passing the following parameters to the `generateCredentialOwnershipProof` function: 
 
-- `identity`: the Semaphore identity of the user broadcasting the signal and generating the proof.
+- `identity`: the [Semaphore identity](https://semaphore.appliedzkp.org/docs/guides/identities) of the user broadcasting the signal and generating the proof.
 - `groupOrMerkleProof`: the group to which the user belongs, either the credentials or no-credentials group, or the corresponding Merkle proof.
 - `externalNullifier`: the value that prevents double-signaling.
 - `signal`: the signal the user wants to send anonymously.

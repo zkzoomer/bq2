@@ -3,16 +3,18 @@
 Circuits implement the base logic of the protocol, and are used to obtain credentials and prove ownership of them.
 
 ## The Test Circuit
-The [Test circuit](../../packages/circuits/circuits/test.circom) is how users prove that they have the necessary knowledge to obtain a credential. It consists of three parts:
+The [Test circuit](../../packages/circuits/circuits/test.circom) is how users prove that they have the necessary knowledge to pass a test and obtain a credential. It consists of three parts:
 - [Proof of knowledge](#proof-of-knowledge)
 - [Identity tree inclusion](#identity-tree-inclusion)
 - [Grade tree inclusion](#grade-tree-inclusion)
 
 ### Proof of Knowledge
-To solve a test, users provide as private inputs to the proof their `multipleChoiceAnswers` and `openAnswers`. The circuit then computes the resulting `grade ⋅ nQuestions` as specified by the [Block Qualified Test](block-qualified-tests.md). This is the value that is later commited to the grade tree, alongside the user's identity secret. The circuit outputs the value for the `testRoot` and the `testParameters` as specified for the Block Qualified Test.
+To solve a test, users provide as private inputs to the proof their `multipleChoiceAnswers` and `openAnswers`. The circuit then computes the resulting `grade ⋅ nQuestions` as specified by the [Block Qualified Test](block-qualified-tests.md). This is the value that is later commited to the grade tree, alongside the user's identity secret. The circuit outputs the value for the `testRoot` and the `testParameters`, as specified by the [Block Qualified Test](block-qualified-tests.md). These values are then verified inside the [smart contracts](contracts.md).
 
 ### Identity Tree Inclusion
-As part of the proof, the user updates an empty leaf (`identityTreeEmptyLeaf`) inside a [Semaphore Group](http://semaphore.appliedzkp.org/docs/guides/groups) by including their [identity commitment](http://semaphore.appliedzkp.org/docs/glossary#semaphore-identity). Depending on whether the user passed the test or not, their identity commitment will be included in the credentials group or in the no-credentials group, respectively. The circuit outputs the old Merkle root of the Group (`oldIdentityTreeRoot`), the new Merkle root of the group (`newIdentityTreeRoot`), the user's identity commitment (`identityCommitment`), and its index within the tree (`identityCommitmentIndex`).
+As part of the proof, the user updates an empty leaf (`identityTreeEmptyLeaf`) inside a [Semaphore Group](http://semaphore.appliedzkp.org/docs/guides/groups) by including their [identity commitment](http://semaphore.appliedzkp.org/docs/glossary#semaphore-identity). Depending on whether the user passed the test or not, this Semaphore group will be the credentials group or the no-credentials group, respectively. This is enforced inside of the [smart contracts](contracts.md).
+
+The circuit outputs the old Merkle root of the Group (`oldIdentityTreeRoot`), the new Merkle root of the group (`newIdentityTreeRoot`), the user's identity commitment (`identityCommitment`), and its index within the tree (`identityCommitmentIndex`).
 
 ### Grade Tree Inclusion
 Similarly to the identity tree inclusion, as part of the proof the user updates an empty leaf `gradeTreeEmptyLeaf` inside a Semaphore-like Group by including their grade commitment. Unlike a Semaphore [identity commitment](http://semaphore.appliedzkp.org/docs/guides/identities#create-identities), which is computed as the Poseidon hash of the identity secret, a Block Qualified grade commitment is computed as:
@@ -40,4 +42,4 @@ Similarly to the Semaphore circuit, users can use the [Grade Claim circuit](../.
 Since the grade inside the grade commitment was weighted with the number of questions of the test, so should be the grade threshold that the user inputs. This is to avoid non-quadratic constaints, as covered in [Block Qualified Tests](block-qualified-tests.md).
 {% endhint %}
 
-Besides the public signals characteristic of a Semaphore proof of ownership, the circuit also outputs this weighted grade threshold, `weightedGradeThreshold`.
+The public signals for this circuit include those [_inherited_](http://semaphore.appliedzkp.org/docs/technical-reference/circuits#proof-of-membership) from the Semaphore proof of ownership: `gradeTreeRoot` (the Merkle root of the grade tree), `nullifierHash`, `signalHash`, and `externalNullifier`. The circuit also outputs the weighted grade threshold, `weightedGradeThreshold`.

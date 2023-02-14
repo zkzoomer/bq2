@@ -8,8 +8,8 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
 
 - `identity`: the [Semaphore identity](https://semaphore.appliedzkp.org/docs/guides/identities) of the user generating the proof.
 - `testAnswers`: composed of:
-    - `multipleChoiceAnswers`: list containing the users' answers to the multiple choice component.
-    - `openAnswers`: list containing the users' answers to the open answers component.
+    - `multipleChoiceAnswers`: list containing the user's answers to the multiple choice component.
+    - `openAnswers`: list containing the user's answers to the open answers component.
 - `testVariables`: the parameters that define the test, these being the `minimumGrade`, `multipleChoiceWeight`, `nQuestions`, `multipleChoiceRoot`, `openAnswersHashesRoot`, and `openAnswersHashes`; as described in [Block Qualified Tests](../../technical-reference/block-qualified-tests.md).
 - `identityGroup`: the group to which the user will be added, this logic being enforced by [the smart contract](../../technical-reference/contracts.md#solving-a-test):
     - If the grade obtained is above the specified `minimumGrade` for this test, this will be the credentials group.
@@ -21,7 +21,7 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
 {% hint style="warning" %}
 When providing a group to this function, an empty leaf is added in order to generate the corresponding Merkle proofs. 
 
-If the proof is later accepted by the smart contract and the corresponding on-chain groups get updated, developers should use the [`updateMember`](https://github.com/semaphore-protocol/semaphore/blob/main/packages/group/src/group.ts#L86) function to update their off-chain groups. Using the [`addMember`](https://github.com/semaphore-protocol/semaphore/blob/main/packages/group/src/group.ts#L67) function instead would create a new leaf after the empty leaf that was added before.
+If the proof is later accepted by the smart contract and the corresponding on-chain groups get updated, developers should use the [`updateMember`](https://github.com/semaphore-protocol/semaphore/blob/main/packages/group/src/group.ts#L86) function to update their off-chain groups. Using the [`addMember`](https://github.com/semaphore-protocol/semaphore/blob/main/packages/group/src/group.ts#L67) function instead would create a new leaf _after_ the empty leaf that was added before.
 {% endhint %}
 
 ## Verifying a Proof Off-Chain
