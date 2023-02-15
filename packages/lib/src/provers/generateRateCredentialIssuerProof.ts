@@ -1,10 +1,11 @@
 import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
-import { generateProof, FullProof } from "@semaphore-protocol/proof"
+import { generateProof } from "@semaphore-protocol/proof"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
-import { SnarkArtifacts } from "../types"
-import { N_LEVELS } from "../constants"
+import { utils } from "ethers"
+import { RateFullProof, SnarkArtifacts } from "../types"
+import { MAX_COMMENT_LENGTH, N_LEVELS } from "../constants"
 
 /**
  * Rates a credential issuer by generating a Semaphore proof of credential ownership.
@@ -18,12 +19,20 @@ export default async function generateRateCredentialIssuerProof(
     identity: Identity,
     groupOrMerkleProof: Group | MerkleProof,
     rate: number,
+    comment: string,
     snarkArtifacts?: SnarkArtifacts
-): Promise<FullProof> {
+): Promise<RateFullProof> {
     const externalNullifier = formatBytes32String("bq-rate")
 
+    const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rate, comment])
+    const signal = BigInt(utils.keccak256(encodedRating)) >> BigInt(8)
+    
     if (rate > 100 || rate < 0) {
         throw new Error("Rating value is not supported")
+    }
+
+    if (comment.length > MAX_COMMENT_LENGTH) {
+        throw new Error("Comment length is too long")
     }
 
     if (!snarkArtifacts) {
@@ -33,5 +42,11 @@ export default async function generateRateCredentialIssuerProof(
         }
     }
 
-    return generateProof(identity, groupOrMerkleProof, externalNullifier, Math.floor(rate), snarkArtifacts)
+    const fullProof = await generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)
+
+    return {
+        rate,
+        comment,
+        fullProof
+    }
 }

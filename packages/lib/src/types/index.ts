@@ -1,4 +1,5 @@
 import { BytesLike, Hexable } from "@ethersproject/bytes"
+import { FullProof } from "@semaphore-protocol/proof"
 
 export type BigNumberish = string | bigint
 
@@ -69,4 +70,10 @@ export type GradeClaimFullProof = {
     signal: BytesLike | Hexable | number | bigint | string,
     externalNullifier: BytesLike | Hexable | number | bigint | string,
     proof: Proof
+}
+
+export type RateFullProof = {
+    rate: number,
+    comment: string,
+    fullProof: FullProof
 }
