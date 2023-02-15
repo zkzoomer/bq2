@@ -1,9 +1,9 @@
 {
-	"name": "bq-core-v2",
+	"name": "bq2",
 	"version": "1.0.0",
 	"description": "Block Qualified v2 implementing Semaphore for increased privacy and functionality",
 	"main": "index.js",
-	"repository": "https://github.com/0xdeenz/bq-core-v2.git",
+	"repository": "https://github.com/0xdeenz/bq2.git",
 	"author": "0xdeenz sergio@deenz.dev",
 	"license": "MIT",
 	"private": "true",

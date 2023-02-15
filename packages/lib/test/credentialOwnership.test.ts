@@ -1,4 +1,4 @@
-import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, N_LEVELS } from "@bq-core/lib"
+import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, N_LEVELS } from "@bq2/lib"
 import { FullProof } from "@semaphore-protocol/proof"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"

@@ -1,5 +1,5 @@
 {
-	"name": "@bq-core/lib",
+	"name": "@bq2/lib",
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {

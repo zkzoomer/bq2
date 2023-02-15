@@ -1,4 +1,4 @@
-import { generateTestProof, verifyTestProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestAnswers, TestVariables, TEST_HEIGHT, generateOpenAnswers, rootFromLeafArray, TestFullProof, hash } from "@bq-core/lib"
+import { generateTestProof, verifyTestProof, N_LEVELS, Poseidon, buildPoseidon, FullGradeCommitment, TestAnswers, TestVariables, TEST_HEIGHT, generateOpenAnswers, rootFromLeafArray, TestFullProof, hash } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    

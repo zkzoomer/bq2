@@ -1,10 +1,9 @@
 import { assert, expect } from "chai";
 import { WasmTester } from "circom_tester";
-/* import { bqTestPrivateInputs, UpdateGradePrivateInputs } from "packages/proof/src"; */
 
 export const circuitShouldFail = async (
 	circuitTester: WasmTester,
-	inputs: any/* bqTestPrivateInputs | UpdateGradePrivateInputs */,
+	inputs: any,
 	message: string,
 	log = false
 ) => {

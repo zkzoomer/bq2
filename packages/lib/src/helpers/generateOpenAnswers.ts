@@ -1,4 +1,3 @@
-import { utils } from "ethers";
 import { TEST_HEIGHT } from "../constants";
 import hash from "./hash";
 

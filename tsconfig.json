@@ -15,7 +15,7 @@
         "declarationDir": "types",
         "typeRoots": ["node_modules/@types", "types"],
         "paths": {
-            "@bq-core/*": ["packages/*/src"]
+            "@bq2/*": ["packages/*/src"]
         }
     },
     "ts-node": {
