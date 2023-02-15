@@ -18,7 +18,7 @@ task("deploy:credentials", "Deploy the credentials contract")
             { ethers }
         ): Promise<any> => {
             if (!pairingAddress) {
-                const PairingFactory = await ethers.getContractFactory("Pairing")
+                const PairingFactory = await ethers.getContractFactory("contracts/lib/Pairing.sol:Pairing")
                 const pairing = await PairingFactory.deploy()
 
                 await pairing.deployed()
@@ -31,7 +31,11 @@ task("deploy:credentials", "Deploy the credentials contract")
             }
 
             if (!testVerifierAddress) {
-                const TestVerifierFactory = await ethers.getContractFactory("TestVerifier")
+                const TestVerifierFactory = await ethers.getContractFactory("TestVerifier", {
+                    libraries: {
+                        Pairing: pairingAddress
+                    }
+                })
     
                 const testVerifier = await TestVerifierFactory.deploy()
     

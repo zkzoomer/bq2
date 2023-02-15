@@ -10,7 +10,24 @@ task("deploy:test-verifier", "Deploy the test verifier contract")
             },
             { ethers }
         ): Promise<any> => {    
-            const TestVerifierFactory = await ethers.getContractFactory("TestVerifier")
+            if (!pairingAddress) {
+                const PairingFactory = await ethers.getContractFactory("contracts/lib/Pairing.sol:Pairing")
+                const pairing = await PairingFactory.deploy()
+
+                await pairing.deployed()
+
+                if (logs) {
+                    console.info(`Pairing library has been deployed to: ${pairing.address}`)
+                }
+
+                pairingAddress = pairing.address
+            }
+
+            const TestVerifierFactory = await ethers.getContractFactory("TestVerifier", {
+                libraries: {
+                    Pairing: pairingAddress
+                }
+            })
 
             const testVerifier = await TestVerifierFactory.deploy()
 

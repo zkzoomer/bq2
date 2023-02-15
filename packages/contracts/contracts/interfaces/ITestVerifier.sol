@@ -6,7 +6,7 @@ import "../lib/Pairing.sol";
 /// @title Test Verifier interface.
 /// @dev Interface of Test Verifier contract.
 interface ITestVerifier {
-    struct VerifyingKey {
+    struct VerificationKey  {
         Pairing.G1Point alfa1;
         Pairing.G2Point beta2;
         Pairing.G2Point gamma2;
@@ -23,5 +23,5 @@ interface ITestVerifier {
     function verifyProof(
         uint256[8] calldata proof,
         uint256[10] memory input
-    ) external view returns (bool);
+    ) external view;
 }

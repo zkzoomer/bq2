@@ -10,7 +10,24 @@ task("deploy:grade-claim-verifier", "Deploy the grade claim verifier contract")
             },
             { ethers }
         ): Promise<any> => {    
-            const GradeClaimVerifierFactory = await ethers.getContractFactory("GradeClaimVerifier")
+            if (!pairingAddress) {
+                const PairingFactory = await ethers.getContractFactory("contracts/lib/Pairing.sol:Pairing")
+                const pairing = await PairingFactory.deploy()
+
+                await pairing.deployed()
+
+                if (logs) {
+                    console.info(`Pairing library has been deployed to: ${pairing.address}`)
+                }
+
+                pairingAddress = pairing.address
+            }
+            
+            const GradeClaimVerifierFactory = await ethers.getContractFactory("GradeClaimVerifier", {
+                libraries: {
+                    Pairing: pairingAddress
+                }
+            })
 
             const gradeClaimVerifier = await GradeClaimVerifierFactory.deploy()
 

@@ -17,8 +17,6 @@ interface ICredentials {
     error TestWasInvalidated();
     error TimeLimitReached();
     
-    error SolutionIsNotValid();
-
     error TestDoesNotExist();
 
     /// It defines all the test parameters

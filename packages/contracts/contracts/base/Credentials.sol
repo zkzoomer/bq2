@@ -207,9 +207,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
                 tests[testId].testParameters
             ];
 
-            if (!testVerifier.verifyProof(proof, proofInput)) {
-                revert SolutionIsNotValid();
-            }
+            testVerifier.verifyProof(proof, proofInput);
 
             // Member added to credentials tree
             emit MemberAdded(
@@ -241,9 +239,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
                 tests[testId].nonPassingTestParameters
             ];
 
-            if (!testVerifier.verifyProof(proof, proofInput)) {
-                revert SolutionIsNotValid();
-            }
+            testVerifier.verifyProof(proof, proofInput);
 
             // Member added to no credentials tree
             emit MemberAdded(
