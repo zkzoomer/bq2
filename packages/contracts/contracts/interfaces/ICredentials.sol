@@ -126,9 +126,9 @@ interface ICredentials {
     /// @param testId: id of the test
     function invalidateTest(uint256 testId) external;
 
-    /// @dev If the given proof of knowledge of the solution is valid, adds the gradeCommitment to the gradeTree
-    /// and the identityCommitment to the credentialsTree; otherwise, it adds the identityCommitment to the 
-    /// no-credentials tree
+    /// @dev If the given proof of knowledge of the solution is valid, adds the identityCommitment to the credentialsTree; 
+    /// otherwise, it adds the identityCommitment to the no-credentials tree. In either case, the gradeCommitment gets
+    /// added to the grade tree.
     /// @param testId: id of the test
     /// @param identityCommitment: new identity commitment to add to the identity tree (credentials or no credentials tree)
     /// @param newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
