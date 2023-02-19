@@ -68,8 +68,8 @@ describe("Grade Claim", () => {
 
             rateFullProof = await generateRateCredentialIssuerProof(identity, group, rate, comment, snarkArtifacts)
 
-            expect(rateFullProof.signal).to.be.equal(expectedSignal.toString())
-            expect(rateFullProof.nullifierHash).to.be.equal(expectedNullifierHash.toString())
+            expect(rateFullProof.semaphoreFullProof.signal).to.be.equal(expectedSignal.toString())
+            expect(rateFullProof.semaphoreFullProof.nullifierHash).to.be.equal(expectedNullifierHash.toString())
         })
 
         it("Should include in the full proof the original rate and comment", async () => {

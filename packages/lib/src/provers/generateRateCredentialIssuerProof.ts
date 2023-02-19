@@ -46,11 +46,6 @@ export default async function generateRateCredentialIssuerProof(
     return {
         rating,
         comment,
-        merkleTreeRoot: semaphoreFullProof.merkleTreeRoot,
-        signal: semaphoreFullProof.signal,
-        nullifierHash: semaphoreFullProof.nullifierHash,
-        externalNullifier: semaphoreFullProof.externalNullifier,
-        proof: semaphoreFullProof.proof,
         semaphoreFullProof
     }
 }

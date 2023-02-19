@@ -63,14 +63,7 @@ export type TestFullProof = {
 }
 
 export type RestrictedTestFullProof = {
-    identityCommitment: BigNumberish
-    newIdentityTreeRoot: BigNumberish
-    gradeCommitment: BigNumberish
-    newGradeTreeRoot: BigNumberish
-    publicSignals: BigNumberish[]
-    testProof: Proof
-    nullifierHash: BigNumberish,
-    semaphoreProof: Proof
+    testFullProof: TestFullProof
     semaphoreFullProof: FullProof
 }
 
@@ -87,10 +80,5 @@ export type GradeClaimFullProof = {
 export type RateFullProof = {
     rating: number,
     comment: string,
-    merkleTreeRoot: BigNumberish,
-    signal: BigNumberish,
-    nullifierHash: BigNumberish,
-    externalNullifier: BigNumberish,
-    proof: Proof,
     semaphoreFullProof: FullProof
 }
