@@ -21,7 +21,7 @@ describe("Grade Claim", () => {
         zkeyFilePath: `./snark-artifacts/semaphore.zkey`
     }
 
-    const identity = new Identity()
+    const identity = new Identity("deenz")
 
     let rateFullProof: RateFullProof
     let curve: any
