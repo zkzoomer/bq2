@@ -1,4 +1,3 @@
-import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
 import { generateProof } from "@semaphore-protocol/proof"
@@ -22,7 +21,7 @@ export default async function generateRateCredentialIssuerProof(
     comment: string,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<RateFullProof> {
-    const externalNullifier = formatBytes32String("bq-rate")
+    const externalNullifier = utils.formatBytes32String("bq-rate")
 
     const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rating, comment])
     const signal = BigInt(utils.keccak256(encodedRating))
