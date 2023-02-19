@@ -61,9 +61,6 @@ describe("Test Proof", () => {
         )
 
         gradeCommitmentValue = poseidon([poseidon([identity.nullifier, identity.trapdoor]), expectedGrade])
-    
-        /* group.addMember(group.zeroValue)
-        gradeGroup.addMember(gradeGroup.zeroValue) */
     })
 
     after(async () => {
