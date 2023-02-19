@@ -1,23 +1,23 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../lib/Pairing.sol";
+import "../lib/PairingLib.sol";
 
 /// @title Test Verifier interface.
 /// @dev Interface of Test Verifier contract.
 interface IGradeClaimVerifier {
     struct VerifyingKey {
-        Pairing.G1Point alfa1;
-        Pairing.G2Point beta2;
-        Pairing.G2Point gamma2;
-        Pairing.G2Point delta2;
-        Pairing.G1Point[] IC;
+        PairingLib.G1Point alfa1;
+        PairingLib.G2Point beta2;
+        PairingLib.G2Point gamma2;
+        PairingLib.G2Point delta2;
+        PairingLib.G1Point[] IC;
     }
     
     struct Proof {
-        Pairing.G1Point A;
-        Pairing.G2Point B;
-        Pairing.G1Point C;
+        PairingLib.G1Point A;
+        PairingLib.G2Point B;
+        PairingLib.G1Point C;
     }
 
     function verifyProof(

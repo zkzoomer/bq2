@@ -6,7 +6,7 @@ task("deploy:test-verifier", "Deploy the test verifier contract")
         async (
             {
                 logs,
-                pairing: pairingAddress
+                pairingLib: pairingLibAddress,
             },
             { ethers }
         ): Promise<any> => {    
@@ -22,7 +22,7 @@ task("deploy:test-verifier", "Deploy the test verifier contract")
 
             return {
                 testVerifier,
-                pairingAddress,
+                pairingLibAddress,
             }
         }
     )

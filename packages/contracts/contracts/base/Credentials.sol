@@ -3,19 +3,25 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
+import "@semaphore-protocol/contracts/interfaces/ISemaphoreVerifier.sol";
 import "../interfaces/ICredentials.sol";
-import "../interfaces/ITestVerifier.sol";
+import "../verifiers/TestVerifier.sol";
+import "../verifiers/GradeClaimVerifier.sol";
 import { PoseidonT3, PoseidonT4 } from "../lib/Poseidon.sol";
 
 contract Credentials is ICredentials, ISemaphoreGroups, Context {
     uint256 constant MAX_QUESTIONS = 2 ** 6;
     uint256 constant N_LEVELS = 16;
+    uint256 constant MERKLE_TREE_DURATION = 15 minutes;
 
     /// @dev Gets a test id and returns the test parameters
     mapping(uint256 => Test) public tests;
 
     /// @dev Gets a test id and returns the corresponding group parameters
     mapping(uint256 => TestGroup) public testGroups;
+
+    /// @dev Gests a test id and returns the corresponding ratings received
+    mapping(uint256 => TestRating) public testRatings;
 
     /// @dev Gets a test id and returns the list of open answer hashes
     mapping(uint256 => uint256[]) public openAnswersHashes;
@@ -24,8 +30,12 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// an external resource containing the actual test and more information about the credential
     mapping(uint256 => string) public testURIs;
 
+    /// @dev SemaphoreVerifier smartcontract
+    ISemaphoreVerifier public semaphoreVerifier;
     /// @dev TestVerifier smart contract
-    ITestVerifier testVerifier;
+    ITestVerifier public testVerifier;
+    /// @dev GradeClaimVerifier smart contract
+    IGradeClaimVerifier public gradeClaimVerifier;
 
     /// @dev Number of tests that have been created
     uint256 private _nTests;
@@ -49,11 +59,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
 
     /// @dev Initializes the Credentials smart contract
-    /// @param _testVerifier: address of the TestVerifier contract
-    constructor(
-        address _testVerifier
+/*     /// @param _semaphoreVerifier: contract address of the SemaphoreVerifier contract
+ */    constructor(
+        address _semaphoreVerifier
     ) {
-        testVerifier = ITestVerifier(_testVerifier);
+        semaphoreVerifier = ISemaphoreVerifier(_semaphoreVerifier);
+        testVerifier = new TestVerifier();
+        gradeClaimVerifier = new GradeClaimVerifier();
     }
 
     /// @dev See {ICredentials-createTest}
@@ -62,7 +74,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
         uint32 timeLimit,
-        address admin,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
@@ -109,7 +120,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             multipleChoiceWeight,
             nQuestions,
             timeLimit,
-            admin,
+            _msgSender(),
             multipleChoiceRoot,
             openAnswersHashesRoot,
             PoseidonT3.poseidon([multipleChoiceRoot, openAnswersHashesRoot]),
@@ -117,20 +128,16 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             nonPassingTestParameters
         );
 
-        testGroups[_nTests] = TestGroup(
-            0,
-            0,
-            0,
-            zeroValue,
-            zeroValue,
-            zeroValue
-        );
+        testGroups[_nTests].credentialsTreeIndex = 0;
+        testGroups[_nTests].noCredentialsTreeIndex = 0;
+        testGroups[_nTests].gradeTreeIndex = 0;
+        testGroups[_nTests].gradeTreeRoot = zeroValue;
+        testGroups[_nTests].credentialsTreeRoot = zeroValue;
+        testGroups[_nTests].noCredentialsTreeRoot = zeroValue;
 
         testURIs[_nTests] = testURI;
 
         emit TestCreated(_nTests);
-
-        emit TestAdminUpdated(_nTests, address(0), admin);
 
         _nTests++;
     }       
@@ -150,16 +157,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         }
 
         openAnswersHashes[testId] = answerHashes;
-    }
-
-    /// @dev See {ICredentials-updateTestAdmin}
-    function updateTestAdmin(
-        uint256 testId, 
-        address newAdmin
-    ) external override onlyExistingTests(testId) onlyTestAdmin(testId) {
-        tests[testId].admin = newAdmin;
-
-        emit TestAdminUpdated(testId, tests[testId].admin, newAdmin);
     }
 
     /// @dev See {ICredentials-invalidateTest}
@@ -273,46 +270,113 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
         testGroups[testId].gradeTreeIndex += 1;
         testGroups[testId].gradeTreeRoot = newGradeTreeRoot;
+        testGroups[testId].merkleRootCreationDates[newIdentityTreeRoot] = block.timestamp;
+        testGroups[testId].merkleRootCreationDates[newGradeTreeRoot] = block.timestamp;
+    }
+
+    /// @dev See {ICredentials-rateIssuer}
+    function rateIssuer(
+        uint256 testId,
+        uint128 rating,
+        string calldata comment,
+        uint256 merkleTreeRoot,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) external override onlyExistingTests(testId) {
+        if(rating > 100) {
+            revert InvalidRating();
+        }
+
+        uint256 signal = uint(keccak256(abi.encode(rating, comment)));
+        uint256 externalNullifier = 0x62712d7261746500000000000000000000000000000000000000000000000000;  // formatBytes32String("bq-rate")
+
+        // A proof could have used an old Merkle tree root.
+        // https://github.com/semaphore-protocol/semaphore/issues/98
+        if (merkleTreeRoot != testGroups[testId].credentialsTreeRoot) {
+            uint256 merkleRootCreationDate = testGroups[testId].merkleRootCreationDates[merkleTreeRoot];
+
+            if (merkleRootCreationDate == 0) {
+                revert MerkleTreeRootIsNotPartOfTheGroup();
+            }
+
+            if (block.timestamp > merkleRootCreationDate + MERKLE_TREE_DURATION) {
+                revert MerkleTreeRootIsExpired();
+            }
+        }
+
+        if (testGroups[testId].nullifierHashes[nullifierHash]) {
+            revert UsingSameNullifierTwice();
+        }
+
+        semaphoreVerifier.verifyProof(merkleTreeRoot, nullifierHash, signal, externalNullifier, proof, N_LEVELS);
+
+        testGroups[testId].nullifierHashes[nullifierHash] = true;
+        testRatings[testId].totalRating += rating;
+        testRatings[testId].nRatings++;
+
+        emit NewRating(testId, tests[testId].admin, rating, comment);
+    }
+
+    /// @dev See {ICredentials-getTestAverageRating}
+    function getTestAverageRating(uint256 testId) external view override onlyExistingTests(testId) returns (uint256) {
+        uint256 nRatings = testRatings[testId].nRatings;
+        return nRatings == 0 ? nRatings : testRatings[testId].totalRating / nRatings;
     }
 
     /// @dev See {ICredentials-getTest}
-    function getTest(uint256 testId) external view override returns (Test memory) {
+    function getTest(uint256 testId) external view override onlyExistingTests(testId) returns (Test memory)  {
         return tests[testId];
     }
 
     /// @dev See {ICredentials-getTestURI}
-    function getTestURI(uint256 testId) external view override returns (string memory) {
+    function getTestURI(uint256 testId) external view override onlyExistingTests(testId) returns (string memory) {
         return testURIs[testId];
     }
 
     /// @dev See {ICredentials-getMultipleChoiceRoot}
-    function getMultipleChoiceRoot(uint256 testId) external view override returns (uint256) {
+    function getMultipleChoiceRoot(uint256 testId) external view override onlyExistingTests(testId) returns (uint256) {
         return tests[testId].multipleChoiceRoot;
     }
 
     /// @dev See {ICredentials-getopenAnswersHashesRoot}
-    function getopenAnswersHashesRoot(uint256 testId) external view override returns (uint256) {
+    function getopenAnswersHashesRoot(uint256 testId) external view override onlyExistingTests(testId) returns (uint256) {
         return tests[testId].openAnswersHashesRoot;
     }
 
     /// @dev See {ICredentials-getOpenAnswersHashes}
-    function getOpenAnswersHashes(uint256 testId) external view override returns (uint256[] memory) {
+    function getOpenAnswersHashes(uint256 testId) external view override onlyExistingTests(testId) returns (uint256[] memory) {
         return openAnswersHashes[testId];
     }
 
     /// @dev See {ICredentials-getTestRoot}
-    function getTestRoot(uint256 testId) external view override returns (uint256) {
+    function getTestRoot(uint256 testId) external view override onlyExistingTests(testId) returns (uint256) {
         return tests[testId].testRoot;
     }
 
     /// @dev See {ICredentials-getTestParameters}
-    function getTestParameters(uint256 testId) external view override returns (uint256) {
+    function getTestParameters(uint256 testId) external view override onlyExistingTests(testId) returns (uint256) {
         return tests[testId].testParameters;
     }
 
     /// @dev See {ICredentials-getNonPassingTestParameters}
-    function getNonPassingTestParameters(uint256 testId) external view override returns (uint256) {
+    function getNonPassingTestParameters(uint256 testId) external view override onlyExistingTests(testId) returns (uint256) {
         return tests[testId].nonPassingTestParameters;
+    }
+
+    /// @dev See {ICredentials-getMerkleRootCreationDate}
+    function getMerkleRootCreationDate(uint256 testId, uint256 merkleRoot) external view override onlyExistingTests(testId) returns (uint256 creationDate) {
+        creationDate = testGroups[testId].merkleRootCreationDates[merkleRoot];
+
+        if (creationDate == 0) {
+            revert MerkleTreeRootIsNotPartOfTheGroup();
+        }
+
+        return creationDate;
+    }
+
+    /// @dev See {ICredentials-wasNullifierHashUsed}
+    function wasNullifierHashUsed(uint256 testId, uint256 nullifierHash) external view override onlyExistingTests(testId) returns (bool) {
+        return testGroups[testId].nullifierHashes[nullifierHash];
     }
 
     /// @dev See {ICredentials-testExists}
@@ -321,13 +385,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
 
     /// @dev See {ICredentials-testIsValid}
-    function testIsValid(uint256 testId) external view override returns (bool) {
+    function testIsValid(uint256 testId) external view override onlyExistingTests(testId) returns (bool) {
         return _testExists(testId) && tests[testId].minimumGrade != 255;
     }
 
     /// @dev See {ISemaphoreGroups-getMerkleTreeRoot}
-    function getMerkleTreeRoot(uint256 groupId) external view override returns (uint256) {
-        uint256 testId = groupId / 3;
+    function getMerkleTreeRoot(uint256 groupId) external view override onlyExistingTests(groupId/3) returns (uint256) {
+        uint256 testId = groupId/3;
         if (groupId % 3 == 0) {
             return testGroups[testId].gradeTreeRoot;
         } else if (groupId % 3 == 1) {
@@ -344,7 +408,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
     
     /// @dev See {ISemaphoreGroups-getNumberOfMerkleTreeLeaves}
-    function getNumberOfMerkleTreeLeaves(uint256 groupId) external view override returns (uint256) {
+    function getNumberOfMerkleTreeLeaves(uint256 groupId) external view override onlyExistingTests(groupId/3) returns (uint256) {
         uint256 testId = groupId / 3;
         if (groupId % 3 == 0) {
             return uint256(testGroups[testId].gradeTreeIndex);

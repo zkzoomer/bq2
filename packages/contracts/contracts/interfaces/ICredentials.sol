@@ -19,6 +19,12 @@ interface ICredentials {
     
     error SolutionIsNotValid();
 
+    error InvalidRating();
+
+    error MerkleTreeRootIsNotPartOfTheGroup();
+    error MerkleTreeRootIsExpired();
+    error UsingSameNullifierTwice();
+
     error TestDoesNotExist();
 
     /// It defines all the test parameters
@@ -60,17 +66,23 @@ interface ICredentials {
         uint256 credentialsTreeRoot;
         /// Root hash of the no credentials tree root
         uint256 noCredentialsTreeRoot;
+        /// Creation timestamp for the different Merkle roots the group gets
+        mapping(uint256 => uint256) merkleRootCreationDates;
+        /// Used nullifier hashes when generating Semaphore inclusion/grade claim proofs
+        mapping(uint256 => bool) nullifierHashes;
+    }
+
+    /// It defines the test rating
+    struct TestRating {
+        /// Sum of all the ratings the credential has received
+        uint128 totalRating;
+        /// Number of times the credential has been rated
+        uint128 nRatings;
     }
 
     /// @dev Emitted when a test is created
     /// @param testId: id of the test
     event TestCreated(uint256 indexed testId);
-
-    /// @dev Emitted when an admin is assigned to a group.
-    /// @param testId: id of the test.
-    /// @param oldAdmin: old admin of the group
-    /// @param newAdmin: new admin of the group
-    event TestAdminUpdated(uint256 indexed testId, address indexed oldAdmin, address indexed newAdmin);
 
     /// @dev Emitted when a test is invalidated by its admin
     /// @param testId: id of the test
@@ -88,12 +100,18 @@ interface ICredentials {
     /// @param gradeCommitment: new grade commitment added to the grade tree
     event CredentialsNotGained(uint256 indexed testId, uint256 indexed identityCommitment, uint256 gradeCommitment);
 
+    /// @dev Emitted when a rating is given to a credential issuer
+    /// @param testId: id of the test
+    /// @param admin: address that controls the credential
+    /// @param rating: rating given to the credential issuer for this test
+    /// @param comment: comment given to the credential issuer for this test
+    event NewRating(uint256 indexed testId, address indexed admin, uint256 rating, string comment);
+
     /// @dev Creates a new test with the test parameters as specified in the `Test` struct
     /// @param minimumGrade: see the `Test` struct
     /// @param multipleChoiceWeight: see the `Test` struct
     /// @param nQuestions: see the `Test` struct
     /// @param timeLimit: see the `Test` struct
-    /// @param admin: see the `Test` struct
     /// @param multipleChoiceRoot: see the `Test` struct
     /// @param openAnswersHashesRoot: see the `Test` struct
     /// @param testURI: external resource containing the actual test and more information about the credential.
@@ -102,7 +120,6 @@ interface ICredentials {
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
         uint32 timeLimit,
-        address admin,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
@@ -117,10 +134,6 @@ interface ICredentials {
         uint256 testId,
         uint256[] memory answerHashes
     ) external;
-
-    /// @dev Changes the test admin to the one provided
-    /// @param newAdmin: address of the new admin to manage the test
-    function updateTestAdmin(uint256 testId, address newAdmin) external;
 
     /// @dev Invalidates the test so that it is no longer solvable by anyone by setting its minimum grade to 255
     /// @param testId: id of the test
@@ -145,6 +158,27 @@ interface ICredentials {
         uint256[8] calldata proof,
         bool testPassed
     ) external;
+
+    /// @dev Proves ownership of a credential and gives a rating to a credential issuer
+    /// @param testId: id of the test for which the rating is being done
+    /// @param rating: rating given to the credential issuer for this test, 0-100
+    /// @param comment: comment given to the credential issuer for this test, maximum 280 characters
+    /// @param merkleTreeRoot: root of the Merkle tree
+    /// @param nullifierHash: nullifier hash
+    /// @param proof: Semaphore zero-knowledge proof
+    function rateIssuer(
+        uint256 testId,
+        uint128 rating,
+        string calldata comment,
+        uint256 merkleTreeRoot,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) external;
+
+    /// @dev Returns the average rating that a test has obtained
+    /// @param testId: id of the test
+    /// @return average rating the test received
+    function getTestAverageRating(uint256 testId) external view returns(uint256);
 
     /// @dev Returns the parameters of a given test in the form of the `Test` struct
     /// @param testId: id of the test
@@ -175,16 +209,26 @@ interface ICredentials {
     /// @param testId: id of the test
     /// @return Hash of the multiple choice root and the open answers root
     function getTestRoot(uint256 testId) external view returns (uint256);
+    
+    /// @dev Returns the test parameters, testParameters = Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
+    /// @param testId: id of the test
+    /// @return Hash of the minimum grade, multiple choice weight and the number of questions
+    function getTestParameters(uint256 testId) external view returns (uint256);
 
     /// @dev Returns the non passing test parameters, nonPassingTestParameters = Poseidon(0, multipleChoiceWeight, nQuestions)
     /// @param testId: id of the test
     /// @return Hash of the minimum grade set to 0, multiple choice weight and the number of questions
     function getNonPassingTestParameters(uint256 testId) external view returns (uint256);
 
-    /// @dev Returns the test parameters, testParameters = Poseidon(minimumGrade, multipleChoiceWeight, nQuestions)
+    /// @dev Returns the timestamp when the given Merkle root was validated for a given testId
     /// @param testId: id of the test
-    /// @return Hash of the minimum grade, multiple choice weight and the number of questions
-    function getTestParameters(uint256 testId) external view returns (uint256);
+    /// @param merkleRoot: Merkle root of interest
+    function getMerkleRootCreationDate(uint256 testId, uint256 merkleRoot) external view returns (uint256);
+
+    /// @dev Returns whether a nullifier hash was already voided for a given testId
+    /// @param testId: id of the test
+    /// @param nullifierHash: nullifier hash of interest
+    function wasNullifierHashUsed(uint256 testId, uint256 nullifierHash) external view returns (bool);
 
     /// @dev Returns whether the test exists
     /// @param testId: id of the test

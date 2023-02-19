@@ -18,16 +18,16 @@ import { MAX_COMMENT_LENGTH, N_LEVELS } from "../constants"
 export default async function generateRateCredentialIssuerProof(
     identity: Identity,
     groupOrMerkleProof: Group | MerkleProof,
-    rate: number,
+    rating: number,
     comment: string,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<RateFullProof> {
     const externalNullifier = formatBytes32String("bq-rate")
 
-    const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rate, comment])
-    const signal = BigInt(utils.keccak256(encodedRating)) >> BigInt(8)
+    const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rating, comment])
+    const signal = BigInt(utils.keccak256(encodedRating))
     
-    if (rate > 100 || rate < 0) {
+    if (rating > 100 || rating < 0) {
         throw new Error("Rating value is not supported")
     }
 
@@ -42,11 +42,16 @@ export default async function generateRateCredentialIssuerProof(
         }
     }
 
-    const fullProof = await generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)
+    const semaphoreProof = await generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)
 
     return {
-        rate,
+        rating,
         comment,
-        fullProof
+        merkleTreeRoot: semaphoreProof.merkleTreeRoot,
+        signal: semaphoreProof.signal,
+        nullifierHash: semaphoreProof.nullifierHash,
+        externalNullifier: semaphoreProof.externalNullifier,
+        proof: semaphoreProof.proof,
+        semaphoreProof
     }
 }

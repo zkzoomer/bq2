@@ -73,7 +73,12 @@ export type GradeClaimFullProof = {
 }
 
 export type RateFullProof = {
-    rate: number,
+    rating: number,
     comment: string,
-    fullProof: FullProof
+    merkleTreeRoot: BigNumberish,
+    signal: BigNumberish,
+    nullifierHash: BigNumberish,
+    externalNullifier: BigNumberish,
+    proof: Proof,
+    semaphoreProof: FullProof
 }

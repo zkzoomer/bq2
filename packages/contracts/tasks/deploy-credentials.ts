@@ -2,46 +2,54 @@ import { poseidon_gencontract as poseidonContract } from "circomlibjs"
 import { task, types } from "hardhat/config"
 
 task("deploy:credentials", "Deploy the credentials contract")
-    .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
+    .addOptionalParam<boolean>("pairingLib", "PairingLib library address", undefined, types.string)
     .addOptionalParam<boolean>("semaphoreVerifier", "SemaphoreVerifier contract address", undefined, types.string)
     .addOptionalParam<boolean>("poseidon", "Poseidon library address", undefined, types.string)
     .setAction(
         async (
             {
                 logs,
-                pairing: pairingAddress,
-                testVerifier: testVerifierAddress,
+                semaphoreVerifier: semaphoreVerifierAddress,
+                pairingLib: pairingLibAddress,
                 poseidonT3: poseidonT3Address,
                 poseidonT4: poseidonT4Address,
                 credentials: credentialsAddress
             },
             { ethers }
         ): Promise<any> => {
-            /* if (!pairingAddress) {
-                const PairingFactory = await ethers.getContractFactory("Pairing")
+            if (!semaphoreVerifierAddress) {
+                const PairingFactory = await ethers.getContractFactory("@semaphore-protocol/contracts/base/Pairing.sol:Pairing")
                 const pairing = await PairingFactory.deploy()
 
                 await pairing.deployed()
 
-                if (logs) {
-                    console.info(`Pairing library has been deployed to: ${pairing.address}`)
-                }
-
-                pairingAddress = pairing.address
-            } */
-
-            if (!testVerifierAddress) {
-                const TestVerifierFactory = await ethers.getContractFactory("TestVerifier")
+                const SemaphoreVerifierFactory = await ethers.getContractFactory("@semaphore-protocol/contracts/base/SemaphoreVerifier.sol:SemaphoreVerifier", {
+                    libraries: {
+                        Pairing: pairing.address
+                    }
+                })
+                const semaphoreVerifier = await SemaphoreVerifierFactory.deploy()
     
-                const testVerifier = await TestVerifierFactory.deploy()
-    
-                await testVerifier.deployed()
+                await semaphoreVerifier.deployed()
 
-                testVerifierAddress = testVerifier.address
+                semaphoreVerifierAddress = semaphoreVerifier.address
     
                 if (logs) {
-                    console.info(`TestVerifier contract has been deployed to: ${testVerifier.address}`)
+                    console.info(`SempaphoreVerifier contract has been deployed to: ${semaphoreVerifier.address}`)
                 }
+            }
+
+            if (!pairingLibAddress) {
+                const PairingLibFactory = await ethers.getContractFactory("PairingLib")
+                const pairingLib = await PairingLibFactory.deploy()
+
+                await pairingLib.deployed()
+
+                if (logs) {
+                    console.info(`PairingLib library has been deployed to: ${pairingLib.address}`)
+                }
+
+                pairingLibAddress = pairingLib.address
             }
 
             if (!poseidonT3Address) {
@@ -82,25 +90,28 @@ task("deploy:credentials", "Deploy the credentials contract")
 
             const CredentialsFactory = await ethers.getContractFactory("Credentials", {
                 libraries: {
+                    /* PairingLib: pairingLibAddress, */
                     PoseidonT3: poseidonT3Address,
                     PoseidonT4: poseidonT4Address
                 }
             })
 
-            const credentials = await CredentialsFactory.deploy(testVerifierAddress)
+            const credentials = await CredentialsFactory.deploy(semaphoreVerifierAddress)
 
             await credentials.deployed()
 
+            credentialsAddress = credentials.address
             if (logs) {
-                console.info(`Credentials contract has been deployed to: ${credentials.address}`)
+                console.info(`Credentials contract has been deployed to: ${credentialsAddress}`)
             }
 
             return {
                 credentials,
-                pairingAddress,
-                testVerifierAddress,
+                semaphoreVerifierAddress,
+                pairingLibAddress,
                 poseidonT3Address,
-                poseidonT4Address
+                poseidonT4Address,
+                credentialsAddress
             }
         }
     )

@@ -6,7 +6,7 @@ task("deploy:grade-claim-verifier", "Deploy the grade claim verifier contract")
         async (
             {
                 logs,
-                pairing: pairingAddress
+                pairingLib: pairingLibAddress,
             },
             { ethers }
         ): Promise<any> => {    
@@ -22,7 +22,7 @@ task("deploy:grade-claim-verifier", "Deploy the grade claim verifier contract")
 
             return {
                 gradeClaimVerifier,
-                pairingAddress,
+                pairingLibAddress,
             }
         }
     )

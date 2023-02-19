@@ -64,12 +64,12 @@ describe("Grade Claim", () => {
 
             const expectedNullifierHash = poseidon([hash(externalNullifier), identity.nullifier])
             const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rate, comment])
-            const expectedSignal = BigInt(utils.keccak256(encodedRating)) >> BigInt(8)
+            const expectedSignal = BigInt(utils.keccak256(encodedRating))
 
             rateFullProof = await generateRateCredentialIssuerProof(identity, group, rate, comment, snarkArtifacts)
 
-            expect(rateFullProof.fullProof.signal).to.be.equal(expectedSignal.toString())
-            expect(rateFullProof.fullProof.nullifierHash).to.be.equal(expectedNullifierHash.toString())
+            expect(rateFullProof.signal).to.be.equal(expectedSignal.toString())
+            expect(rateFullProof.nullifierHash).to.be.equal(expectedNullifierHash.toString())
         })
 
         it("Should include in the full proof the original rate and comment", async () => {
@@ -78,14 +78,14 @@ describe("Grade Claim", () => {
 
             rateFullProof = await generateRateCredentialIssuerProof(identity, group, rate, comment, snarkArtifacts)
 
-            expect(rateFullProof.rate).to.be.equal(rate)
+            expect(rateFullProof.rating).to.be.equal(rate)
             expect(rateFullProof.comment).to.be.equal(comment)
         })
     })
 
     describe("Verifying a credential rating", () => {
         it("Should verify the Semaphore proof", async () => {
-            const response = await verifyProof(rateFullProof.fullProof, N_LEVELS)
+            const response = await verifyProof(rateFullProof.semaphoreProof, N_LEVELS)
 
             expect(response).to.be.true
         })
