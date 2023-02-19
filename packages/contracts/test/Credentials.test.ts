@@ -23,9 +23,9 @@ describe("Credentials contract", () => {
     let testParameters: BigNumberish;
     let nonPassingTestParameters: BigNumberish;
 
-    let gradeGroup = new Group(0, N_LEVELS);
-    let credentialsGroup = new Group(0, N_LEVELS);
-    let noCredentialsGroup = new Group(0, N_LEVELS);
+    let gradeGroup = new Group(1, N_LEVELS);
+    let credentialsGroup = new Group(1, N_LEVELS);
+    let noCredentialsGroup = new Group(1, N_LEVELS);
 
     let credentialsContract: Credentials;
     let signers: Signer[];
@@ -116,14 +116,14 @@ describe("Credentials contract", () => {
             },
             { ...testVariables, minimumGrade: 0 },
             noCredentialsGroup,
-            new Group(0, N_LEVELS),
+            new Group(1, N_LEVELS),
             snarkArtifacts
         )
 
         passingGradeCommitment = passingProof.gradeCommitment
         nonPassingGradeCommitment = nonPassingProof.gradeCommitment
 
-        const ratingGroup = new Group(0, N_LEVELS)
+        const ratingGroup = new Group(1, N_LEVELS)
         ratingGroup.addMember(identity.commitment)
         const ratingSnarkArtifacts = {
             wasmFilePath: '../lib/snark-artifacts/semaphore.wasm',
@@ -210,7 +210,7 @@ describe("Credentials contract", () => {
                 it("emits a `TestCreated` event", async () => {
                     await expect(tx)
                         .to.emit(credentialsContract, "TestCreated")
-                        .withArgs('0')
+                        .withArgs('1')
                 })
             })
         })
@@ -219,7 +219,7 @@ describe("Credentials contract", () => {
             context("when attempting to verify a test that doesn't exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.verifyTestAnswers(0, testVariables.openAnswersHashes)
+                        credentialsContract.verifyTestAnswers(1, testVariables.openAnswersHashes)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -232,7 +232,7 @@ describe("Credentials contract", () => {
             context("when attempting to invalidate a test that doesn't exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.invalidateTest(0)
+                        credentialsContract.invalidateTest(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -246,7 +246,7 @@ describe("Credentials contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsContract.solveTest(
-                            0, 
+                            1, 
                             passingProof.identityCommitment, 
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
@@ -271,7 +271,7 @@ describe("Credentials contract", () => {
 
                     await expect(
                         credentialsContract.solveTest(
-                            0, 
+                            1, 
                             passingProof.identityCommitment, 
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
@@ -290,7 +290,7 @@ describe("Credentials contract", () => {
         describe("rateIssuer", () => {
             context("when attempting to give a rating for a test that does not exist", () => {
                 it("reverts", async () => {
-                    const group = new Group(0, N_LEVELS)
+                    const group = new Group(1, N_LEVELS)
                     group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
                     const ratingProof = await generateRateCredentialIssuerProof(
@@ -306,7 +306,7 @@ describe("Credentials contract", () => {
 
                     await expect(
                         credentialsContract.rateIssuer(
-                            0,
+                            1,
                             100,
                             "sneed",
                             group.root,
@@ -325,7 +325,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getTestAverageRating(0)
+                        credentialsContract.getTestAverageRating(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -338,7 +338,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getTest(0)
+                        credentialsContract.getTest(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -350,7 +350,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `Test` struct", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect((await credentialsContract.getTest(0)).slice(0,11).map( n => { return n.toString() }))
+                    expect((await credentialsContract.getTest(1)).slice(0,11).map( n => { return n.toString() }))
                         .to.deep.equal([50, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
                 })
             })
@@ -360,7 +360,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getTestURI(0)
+                        credentialsContract.getTestURI(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -372,7 +372,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding testURI", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getTestURI(0))
+                    expect(await credentialsContract.getTestURI(1))
                         .to.be.equal(testURI)
                 })
             })
@@ -382,7 +382,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getMultipleChoiceRoot(0)
+                        credentialsContract.getMultipleChoiceRoot(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -394,7 +394,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `multipleChoiceRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getMultipleChoiceRoot(0))
+                    expect(await credentialsContract.getMultipleChoiceRoot(1))
                         .to.be.equal(testVariables.multipleChoiceRoot)
                 })
             })
@@ -404,7 +404,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getopenAnswersHashesRoot(0)
+                        credentialsContract.getopenAnswersHashesRoot(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -416,7 +416,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `openAnswersRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getopenAnswersHashesRoot(0))
+                    expect(await credentialsContract.getopenAnswersHashesRoot(1))
                         .to.be.equal(testVariables.openAnswersHashesRoot)
                 })
             })
@@ -426,7 +426,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getOpenAnswersHashes(0)
+                        credentialsContract.getOpenAnswersHashes(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -438,7 +438,7 @@ describe("Credentials contract", () => {
                 it("returns an empty array", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getOpenAnswersHashes(0))
+                    expect(await credentialsContract.getOpenAnswersHashes(1))
                         .to.deep.equal([])
                 })
             })
@@ -448,7 +448,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getTestRoot(0)
+                        credentialsContract.getTestRoot(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -460,7 +460,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `testRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getTestRoot(0))
+                    expect(await credentialsContract.getTestRoot(1))
                         .to.be.equal(testRoot)
                 })
             })
@@ -470,7 +470,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getTestParameters(0)
+                        credentialsContract.getTestParameters(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -482,7 +482,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `testParameters`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getTestParameters(0))
+                    expect(await credentialsContract.getTestParameters(1))
                         .to.be.equal(testParameters)
                 })
             })
@@ -492,7 +492,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getNonPassingTestParameters(0)
+                        credentialsContract.getNonPassingTestParameters(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -504,16 +504,16 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `testParameters`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.getNonPassingTestParameters(0))
+                    expect(await credentialsContract.getNonPassingTestParameters(1))
                         .to.be.equal(nonPassingTestParameters)
                 })
 
                 it("returns the same `testParameters` as getTestParameters when the `minimumGrade` was set to zero", async () => {
                     await credentialsContract.createTest(0, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
                     
-                    expect(await credentialsContract.getTestParameters(0))
+                    expect(await credentialsContract.getTestParameters(1))
                         .to.be.equal(nonPassingTestParameters)
-                    expect(await credentialsContract.getNonPassingTestParameters(0))
+                    expect(await credentialsContract.getNonPassingTestParameters(1))
                         .to.be.equal(nonPassingTestParameters)
                 })
             })
@@ -523,7 +523,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getMerkleRootCreationDate(0, credentialsGroup.root)
+                        credentialsContract.getMerkleRootCreationDate(1, credentialsGroup.root)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -536,7 +536,7 @@ describe("Credentials contract", () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     await expect(
-                        credentialsContract.getMerkleRootCreationDate(0, credentialsGroup.root)
+                        credentialsContract.getMerkleRootCreationDate(1, credentialsGroup.root)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "MerkleTreeRootIsNotPartOfTheGroup"
@@ -549,7 +549,7 @@ describe("Credentials contract", () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     await credentialsContract.solveTest(
-                        0, 
+                        1, 
                         passingProof.identityCommitment, 
                         passingProof.newIdentityTreeRoot,
                         passingProof.gradeCommitment,
@@ -561,7 +561,7 @@ describe("Credentials contract", () => {
                     credentialsGroup.updateMember(0, identity.commitment)
 
                     expect(
-                        await credentialsContract.getMerkleRootCreationDate(0, credentialsGroup.root)
+                        await credentialsContract.getMerkleRootCreationDate(1, credentialsGroup.root)
                     ).to.be.equal((await ethers.provider.getBlock("latest")).timestamp)
                 })
             })
@@ -571,7 +571,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.wasNullifierHashUsed(0, ratingProof.nullifierHash)
+                        credentialsContract.wasNullifierHashUsed(1, ratingProof.nullifierHash)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -584,7 +584,7 @@ describe("Credentials contract", () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     expect(
-                        await credentialsContract.wasNullifierHashUsed(0, ratingProof.nullifierHash)
+                        await credentialsContract.wasNullifierHashUsed(1, ratingProof.nullifierHash)
                     ).to.be.equal(false)
                 })
             })
@@ -594,7 +594,7 @@ describe("Credentials contract", () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     await credentialsContract.solveTest(
-                        0, 
+                        1, 
                         passingProof.identityCommitment, 
                         passingProof.newIdentityTreeRoot,
                         passingProof.gradeCommitment,
@@ -603,10 +603,10 @@ describe("Credentials contract", () => {
                         true
                     )
 
-                    await credentialsContract.rateIssuer(0, ratingProof.rating, ratingProof.comment, ratingProof.merkleTreeRoot, ratingProof.nullifierHash, ratingProof.proof)
+                    await credentialsContract.rateIssuer(1, ratingProof.rating, ratingProof.comment, ratingProof.merkleTreeRoot, ratingProof.nullifierHash, ratingProof.proof)
 
                     expect(
-                        await credentialsContract.wasNullifierHashUsed(0, ratingProof.nullifierHash)
+                        await credentialsContract.wasNullifierHashUsed(1, ratingProof.nullifierHash)
                     ).to.be.equal(true)
                 })
             })
@@ -616,7 +616,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("returns false", async () => {
                     expect(
-                        await credentialsContract.testExists(0)
+                        await credentialsContract.testExists(1)
                     ).to.be.equal(false)
                 })
             })
@@ -625,7 +625,7 @@ describe("Credentials contract", () => {
                 it("returns true", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.testExists(0))
+                    expect(await credentialsContract.testExists(1))
                         .to.be.equal(true)
                 })
             })
@@ -635,7 +635,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.testIsValid(0)
+                        credentialsContract.testIsValid(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -647,7 +647,7 @@ describe("Credentials contract", () => {
                 it("returns true", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect(await credentialsContract.testIsValid(0))
+                    expect(await credentialsContract.testIsValid(1))
                         .to.be.equal(true)
                 })
             })
@@ -657,7 +657,7 @@ describe("Credentials contract", () => {
             context("when the `groupId` given corresponds to a test that does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getMerkleTreeRoot(0)
+                        credentialsContract.getMerkleTreeRoot(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -669,16 +669,16 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `merkleTreeRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    const emptyRoot = (new Group(0, N_LEVELS)).root
+                    const emptyRoot = (new Group(1, N_LEVELS)).root
 
                     // Grade tree group
-                    expect(await credentialsContract.getMerkleTreeRoot(0))
+                    expect(await credentialsContract.getMerkleTreeRoot(1))
                         .to.be.equal(emptyRoot)
                     // Credentials tree group  
-                    expect(await credentialsContract.getMerkleTreeRoot(1))
+                    expect(await credentialsContract.getMerkleTreeRoot(2))
                         .to.be.equal(emptyRoot)  
                     // No credentials tree group
-                    expect(await credentialsContract.getMerkleTreeRoot(2))
+                    expect(await credentialsContract.getMerkleTreeRoot(3))
                         .to.be.equal(emptyRoot)  
                 })
             })
@@ -686,7 +686,7 @@ describe("Credentials contract", () => {
 
         describe("getMerkleTreeDepth", () => {
             it(`returns the default \`TREE_DEPTH\` set at ${N_LEVELS}`, async () => {
-                expect(await credentialsContract.getMerkleTreeDepth(0))
+                expect(await credentialsContract.getMerkleTreeDepth(1))
                     .to.be.equal(N_LEVELS) 
             })
         })
@@ -695,7 +695,7 @@ describe("Credentials contract", () => {
             context("when the `groupId` given corresponds to a test that does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.getNumberOfMerkleTreeLeaves(0)
+                        credentialsContract.getNumberOfMerkleTreeLeaves(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -708,13 +708,13 @@ describe("Credentials contract", () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     // Grade tree group
-                    expect(await credentialsContract.getNumberOfMerkleTreeLeaves(0))
+                    expect(await credentialsContract.getNumberOfMerkleTreeLeaves(1))
                         .to.be.equal(0)
                     // Credentials tree group  
-                    expect(await credentialsContract.getNumberOfMerkleTreeLeaves(1))
+                    expect(await credentialsContract.getNumberOfMerkleTreeLeaves(2))
                         .to.be.equal(0)  
                     // No credentials tree group
-                    expect(await credentialsContract.getNumberOfMerkleTreeLeaves(2))
+                    expect(await credentialsContract.getNumberOfMerkleTreeLeaves(3))
                         .to.be.equal(0)
                 })
             })
@@ -730,7 +730,7 @@ describe("Credentials contract", () => {
             context("when being called by someone other than the admin", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.connect(signers[1]).verifyTestAnswers(0, openAnswersHashes)
+                        credentialsContract.connect(signers[1]).verifyTestAnswers(1, openAnswersHashes)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "CallerIsNotTheTestAdmin"
@@ -741,7 +741,7 @@ describe("Credentials contract", () => {
             context("when providing an invalid number of answer hashes", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.verifyTestAnswers(0, [])
+                        credentialsContract.verifyTestAnswers(1, [])
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "InvalidTestAnswersLength"
@@ -753,12 +753,12 @@ describe("Credentials contract", () => {
 
             context("after verifying the answers for a given test", () => {
                 beforeEach(async () => {
-                    await credentialsContract.verifyTestAnswers(0, openAnswersHashes.slice(0,3))  
+                    await credentialsContract.verifyTestAnswers(1, openAnswersHashes.slice(0,3))  
                 })
 
                 describe("getOpenAnswersHashes", () => {
                     it("returns the corresponding list of open answer hashes", async () => {
-                        expect(await credentialsContract.getOpenAnswersHashes(0))
+                        expect(await credentialsContract.getOpenAnswersHashes(1))
                             .to.deep.equal(openAnswersHashes.slice(0,3))
                     })
                 })
@@ -766,7 +766,7 @@ describe("Credentials contract", () => {
                 describe("verifyTestAnswers", () => {
                     it("reverts when trying to verify an already verified test", async () => {
                         await expect(
-                            credentialsContract.verifyTestAnswers(0, [])
+                            credentialsContract.verifyTestAnswers(1, [])
                         ).to.be.revertedWithCustomError(
                             credentialsContract,
                             "TestAnswersAlreadyVerified"
@@ -780,7 +780,7 @@ describe("Credentials contract", () => {
             context("when being called by someone other than the admin", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.connect(signers[1]).invalidateTest(0)
+                        credentialsContract.connect(signers[1]).invalidateTest(1)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "CallerIsNotTheTestAdmin"
@@ -790,29 +790,29 @@ describe("Credentials contract", () => {
 
             context("when being called by the admin", () => {
                 it("emits a `TestInvalidated` event", async () => {
-                    const tx = await credentialsContract.invalidateTest(0)
+                    const tx = await credentialsContract.invalidateTest(1)
 
                     await expect(tx)
                         .to.emit(credentialsContract, "TestInvalidated")
-                        .withArgs(0)
+                        .withArgs(1)
                 })
             })
 
             context("after invalidating a test", () => {
                 beforeEach(async () => {
-                    await credentialsContract.invalidateTest(0)
+                    await credentialsContract.invalidateTest(1)
                 })
 
                 describe("testIsValid", () => {
                     it("returns false", async () => {
-                        expect(await credentialsContract.testIsValid(0))
+                        expect(await credentialsContract.testIsValid(1))
                             .to.be.equal(false)
                     })
                 })
 
                 describe("getTest", () => {
                     it("shows the minimum grade to be 255 as part of the `Test` struct", async () => {
-                        expect((await credentialsContract.getTest(0)).slice(0,11).map( n => { return n.toString() }))
+                        expect((await credentialsContract.getTest(1)).slice(0,11).map( n => { return n.toString() }))
                         .to.deep.equal([255, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
                     })
                 })
@@ -820,7 +820,7 @@ describe("Credentials contract", () => {
                 describe("invalidateTest", () => {
                     it("reverts", async () => {
                         await expect(
-                            credentialsContract.invalidateTest(0)
+                            credentialsContract.invalidateTest(1)
                         ).to.be.revertedWithCustomError(
                             credentialsContract,
                             "TestWasInvalidated"
@@ -832,7 +832,7 @@ describe("Credentials contract", () => {
                     it("reverts", async () => {
                         await expect(
                             credentialsContract.solveTest(
-                                0, 
+                                1, 
                                 passingProof.identityCommitment, 
                                 passingProof.newIdentityTreeRoot,
                                 passingProof.gradeCommitment,
@@ -857,7 +857,7 @@ describe("Credentials contract", () => {
 
                     await expect(
                         credentialsContract.solveTest(
-                            0, 
+                            1, 
                             passingProof.identityCommitment, 
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
@@ -875,7 +875,7 @@ describe("Credentials contract", () => {
 
                     beforeEach(async () => {
                         tx = await credentialsContract.solveTest(
-                            0, 
+                            1, 
                             passingProof.identityCommitment, 
                             passingProof.newIdentityTreeRoot,
                             passingProof.gradeCommitment,
@@ -889,25 +889,25 @@ describe("Credentials contract", () => {
                     })
 
                     it("increases the `credentialsTreeIndex` by one", async () => {
-                        expect((await credentialsContract.getNumberOfMerkleTreeLeaves(1)))
+                        expect((await credentialsContract.getNumberOfMerkleTreeLeaves(2)))
                             .to.equal(1)
                     })
     
                     it("updates the `credentialsTreeRoot`", async () => {
-                        expect((await credentialsContract.getMerkleTreeRoot(1)))
+                        expect((await credentialsContract.getMerkleTreeRoot(2)))
                             .to.equal(credentialsGroup.root)
                     })
     
                     it("emits a `MemberAdded` event for the credentials tree group", async () => {
                         await expect(tx)
                             .to.emit(credentialsContract, "MemberAdded")
-                            .withArgs(1, 0, identity.commitment, credentialsGroup.root)
+                            .withArgs(2, 0, identity.commitment, credentialsGroup.root)
                     })
 
                     it("emits a `CredentialsGained` event", async () => {
                         await expect(tx)
                             .to.emit(credentialsContract, "CredentialsGained")
-                            .withArgs(0, identity.commitment, passingGradeCommitment)
+                            .withArgs(1, identity.commitment, passingGradeCommitment)
                     })
                 })
             })
@@ -918,7 +918,7 @@ describe("Credentials contract", () => {
 
                     beforeEach(async () => {
                         tx = await credentialsContract.solveTest(
-                            0, 
+                            1, 
                             nonPassingProof.identityCommitment, 
                             nonPassingProof.newIdentityTreeRoot,
                             nonPassingProof.gradeCommitment,
@@ -932,25 +932,25 @@ describe("Credentials contract", () => {
                     })
 
                     it("increases the `noCredentialsTreeIndex` by one", async () => {
-                        expect((await credentialsContract.getNumberOfMerkleTreeLeaves(2)))
+                        expect((await credentialsContract.getNumberOfMerkleTreeLeaves(3)))
                             .to.equal(noCredentialsGroup.members.length)
                     })
     
                     it("updates the `noCredentialsTreeRoot`", async () => {
-                        expect((await credentialsContract.getMerkleTreeRoot(2)))
+                        expect((await credentialsContract.getMerkleTreeRoot(3)))
                             .to.equal(noCredentialsGroup.root)
                     })
     
                     it("emits a `MemberAdded` event for the no credentials tree", async () => {
                         await expect(tx)
                             .to.emit(credentialsContract, "MemberAdded")
-                            .withArgs(2, 0, identity.commitment, noCredentialsGroup.root)
+                            .withArgs(3, 0, identity.commitment, noCredentialsGroup.root)
                     })
 
                     it("emits a `CredentialsNotGained` event", async () => {
                         await expect(tx)
                             .to.emit(credentialsContract, "CredentialsNotGained")
-                            .withArgs(0, identity.commitment, nonPassingGradeCommitment)
+                            .withArgs(1, identity.commitment, nonPassingGradeCommitment)
                     })
                 })
             })
@@ -960,7 +960,7 @@ describe("Credentials contract", () => {
 
                 beforeEach(async () => {
                     tx = await credentialsContract.solveTest(
-                        0, 
+                        1, 
                         passingProof.identityCommitment, 
                         passingProof.newIdentityTreeRoot,
                         passingProof.gradeCommitment,
@@ -974,19 +974,19 @@ describe("Credentials contract", () => {
                 })
 
                 it("increases the `gradeTreeIndex` by one", async () => {
-                    expect((await credentialsContract.getNumberOfMerkleTreeLeaves(0)))
+                    expect((await credentialsContract.getNumberOfMerkleTreeLeaves(1)))
                         .to.equal(1)
                 })
 
                 it("updates the `gradeTreeRoot`", async () => {
-                    expect((await credentialsContract.getMerkleTreeRoot(0)))
+                    expect((await credentialsContract.getMerkleTreeRoot(1)))
                         .to.equal(gradeGroup.root)
                 })
 
                 it("emits a `MemberAdded` event for the grade tree group", async () => {
                     await expect(tx)
                         .to.emit(credentialsContract, "MemberAdded")
-                        .withArgs(0, 0, passingGradeCommitment, gradeGroup.root)
+                        .withArgs(1, 0, passingGradeCommitment, gradeGroup.root)
                 })
             })
         })
@@ -995,7 +995,7 @@ describe("Credentials contract", () => {
 
             beforeEach(async () => {
                 await credentialsContract.solveTest(
-                    0, 
+                    1, 
                     passingProof.identityCommitment, 
                     passingProof.newIdentityTreeRoot,
                     passingProof.gradeCommitment,
@@ -1012,7 +1012,7 @@ describe("Credentials contract", () => {
 
                     await expect(
                         credentialsContract.rateIssuer(
-                            0,
+                            1,
                             ratingProof.rating,
                             ratingProof.comment,
                             ratingProof.merkleTreeRoot,
@@ -1027,7 +1027,7 @@ describe("Credentials contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsContract.rateIssuer(
-                            0,
+                            1,
                             101,
                             ratingProof.comment,
                             ratingProof.merkleTreeRoot,
@@ -1045,7 +1045,7 @@ describe("Credentials contract", () => {
                 it("reverts", async() => {
                     await expect(
                         credentialsContract.rateIssuer(
-                            0,
+                            1,
                             ratingProof.rating,
                             ratingProof.comment,
                             1,
@@ -1064,7 +1064,7 @@ describe("Credentials contract", () => {
                     mine()
                     const currentTimestamp = await time.latest()
                     await credentialsContract.solveTest(
-                        0,
+                        1,
                         altPassingProof.identityCommitment, 
                         altPassingProof.newIdentityTreeRoot,
                         altPassingProof.gradeCommitment,
@@ -1076,7 +1076,7 @@ describe("Credentials contract", () => {
                     mine()
 
                     await credentialsContract.rateIssuer(
-                            0,
+                            1,
                             ratingProof.rating,
                             ratingProof.comment,
                             ratingProof.merkleTreeRoot,
@@ -1086,7 +1086,7 @@ describe("Credentials contract", () => {
 
                     await expect(
                         credentialsContract.rateIssuer(
-                            0,
+                            1,
                             ratingProof.rating,
                             ratingProof.comment,
                             ratingProof.merkleTreeRoot,
@@ -1103,7 +1103,7 @@ describe("Credentials contract", () => {
             context("when providing a used nullifier", () => {
                 it("reverts", async() => {
                     await credentialsContract.rateIssuer(
-                        0,
+                        1,
                         ratingProof.rating,
                         ratingProof.comment,
                         ratingProof.merkleTreeRoot,
@@ -1113,7 +1113,7 @@ describe("Credentials contract", () => {
 
                     await expect(
                         credentialsContract.rateIssuer(
-                            0,
+                            1,
                             ratingProof.rating,
                             ratingProof.comment,
                             ratingProof.merkleTreeRoot,
@@ -1132,7 +1132,7 @@ describe("Credentials contract", () => {
 
                 beforeEach(async () => {
                     tx = await credentialsContract.rateIssuer(
-                        0,
+                        1,
                         ratingProof.rating,
                         ratingProof.comment,
                         ratingProof.merkleTreeRoot,
@@ -1143,20 +1143,20 @@ describe("Credentials contract", () => {
 
                 it("increases the total rating by the rate given", async () => {
                     expect(
-                        (await credentialsContract.testRatings(0))[0]
+                        (await credentialsContract.testRatings(1))[0]
                     ).to.be.equal(ratingProof.rating)
                 })
 
                 it("increases the total number of ratings by one", async () => {
                     expect(
-                        (await credentialsContract.testRatings(0))[1]
+                        (await credentialsContract.testRatings(1))[1]
                     ).to.be.equal(1)
                 })
 
                 it("emits a `NewRating` event", async () => {
                     await expect(tx)
                         .to.emit(credentialsContract, "NewRating")
-                        .withArgs('0', accounts[0], ratingProof.rating, ratingProof.comment)
+                        .withArgs('1', accounts[0], ratingProof.rating, ratingProof.comment)
                 })
             })
         })
@@ -1165,7 +1165,7 @@ describe("Credentials contract", () => {
             context("before any ratings are made", () => {
                 it("returns 0", async () => {
                     expect(
-                        await credentialsContract.getTestAverageRating(0)
+                        await credentialsContract.getTestAverageRating(1)
                     ).to.be.equal(0)
                 })
             })
@@ -1173,7 +1173,7 @@ describe("Credentials contract", () => {
             context("after making ratings", () => {
                 beforeEach(async () => {
                     await credentialsContract.solveTest(
-                        0, 
+                        1, 
                         passingProof.identityCommitment, 
                         passingProof.newIdentityTreeRoot,
                         passingProof.gradeCommitment,
@@ -1183,7 +1183,7 @@ describe("Credentials contract", () => {
                     )
 
                     await credentialsContract.rateIssuer(
-                        0,
+                        1,
                         ratingProof.rating,
                         ratingProof.comment,
                         ratingProof.merkleTreeRoot,
@@ -1192,7 +1192,7 @@ describe("Credentials contract", () => {
                     )
 
                     await credentialsContract.solveTest(
-                        0, 
+                        1, 
                         altPassingProof.identityCommitment, 
                         altPassingProof.newIdentityTreeRoot,
                         altPassingProof.gradeCommitment,
@@ -1202,7 +1202,7 @@ describe("Credentials contract", () => {
                     )
     
                     await credentialsContract.rateIssuer(
-                        0,
+                        1,
                         altRatingProof.rating,
                         altRatingProof.comment,
                         altRatingProof.merkleTreeRoot,
@@ -1213,7 +1213,7 @@ describe("Credentials contract", () => {
 
                 it("returns the average rating given", async () => {
                     expect(
-                        await credentialsContract.getTestAverageRating(0)
+                        await credentialsContract.getTestAverageRating(1)
                     ).to.be.equal(Math.floor((ratingProof.rating + altRatingProof.rating)/2))
                 })
             })

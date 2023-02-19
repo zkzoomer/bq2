@@ -96,6 +96,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert InvalidMultipleChoiceWeight();
         }
 
+        _nTests++;
+
         uint256 zeroValue = uint256(keccak256(abi.encodePacked(_nTests))) >> 8;
 
         for (uint8 i = 0; i < N_LEVELS; ) {
@@ -138,8 +140,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         testURIs[_nTests] = testURI;
 
         emit TestCreated(_nTests);
-
-        _nTests++;
     }       
 
     /// @dev See {ICredentials-verifyTestAnswers}
@@ -210,7 +210,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
             // Member added to credentials tree
             emit MemberAdded(
-                3 * testId + 1,                           // groupId
+                3 * testId - 1,                           // groupId
                 testGroups[testId].credentialsTreeIndex,  // index
                 identityCommitment,                       // identityCommitment
                 newIdentityTreeRoot                       // credentialsTreeRoot
@@ -244,7 +244,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
             // Member added to no credentials tree
             emit MemberAdded(
-                3 * testId + 2,                             // groupId
+                3 * testId,                             // groupId
                 testGroups[testId].noCredentialsTreeIndex,  // index
                 identityCommitment,                         // identityCommitment
                 newIdentityTreeRoot                         // noCredentialsTreeRoot
@@ -262,7 +262,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         
         // Member always gets added to grade tree
         emit MemberAdded(
-            3 * testId,                         // groupId
+            3 * testId - 2,                         // groupId
             testGroups[testId].gradeTreeIndex,  // index
             gradeCommitment,                    // gradeCommitment
             newGradeTreeRoot                    // gradeTreeRoot
@@ -390,13 +390,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
 
     /// @dev See {ISemaphoreGroups-getMerkleTreeRoot}
-    function getMerkleTreeRoot(uint256 groupId) external view override onlyExistingTests(groupId/3) returns (uint256) {
-        uint256 testId = groupId/3;
-        if (groupId % 3 == 0) {
+    function getMerkleTreeRoot(uint256 groupId) external view override onlyExistingTests((groupId + 2) / 3) returns (uint256) {
+        uint256 testId = (groupId + 2) / 3;
+        if (groupId % 3 == 1) {
             return testGroups[testId].gradeTreeRoot;
-        } else if (groupId % 3 == 1) {
+        } else if (groupId % 3 == 2) {
             return testGroups[testId].credentialsTreeRoot;
-        } else {  // groupId % 3 == 2
+        } else {  // groupId % 3 == 0
             return testGroups[testId].noCredentialsTreeRoot;
         }
     }
@@ -408,13 +408,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
     
     /// @dev See {ISemaphoreGroups-getNumberOfMerkleTreeLeaves}
-    function getNumberOfMerkleTreeLeaves(uint256 groupId) external view override onlyExistingTests(groupId/3) returns (uint256) {
-        uint256 testId = groupId / 3;
-        if (groupId % 3 == 0) {
+    function getNumberOfMerkleTreeLeaves(uint256 groupId) external view override onlyExistingTests((groupId + 2) / 3) returns (uint256) {
+        uint256 testId = (groupId + 2) / 3;
+        if (groupId % 3 == 1) {
             return uint256(testGroups[testId].gradeTreeIndex);
-        } else if (groupId % 3 == 1) {
+        } else if (groupId % 3 == 2) {
             return uint256(testGroups[testId].credentialsTreeIndex);
-        } else {  // groupId % 3 == 2
+        } else {  // groupId % 3 == 0
             return uint256(testGroups[testId].noCredentialsTreeIndex);
         }
     }
@@ -423,6 +423,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @param testId: id of the test
     /// @return Test existence
     function _testExists(uint256 testId) internal view virtual returns (bool) {
-        return testId < _nTests;
+        return testId <= _nTests;
     }
 }
