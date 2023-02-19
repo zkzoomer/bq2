@@ -9,7 +9,7 @@ import { getCurveFromName } from "ffjavascript"
 
 chai.use(chaiAsPromised)
 
-describe("Grade Claim", () => {
+describe("Rate Credential Issuer", () => {
     let poseidon: Poseidon
 
     const rate = 35
