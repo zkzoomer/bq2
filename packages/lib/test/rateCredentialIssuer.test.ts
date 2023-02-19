@@ -85,7 +85,7 @@ describe("Grade Claim", () => {
 
     describe("Verifying a credential rating", () => {
         it("Should verify the Semaphore proof", async () => {
-            const response = await verifyProof(rateFullProof.semaphoreProof, N_LEVELS)
+            const response = await verifyProof(rateFullProof.semaphoreFullProof, N_LEVELS)
 
             expect(response).to.be.true
         })

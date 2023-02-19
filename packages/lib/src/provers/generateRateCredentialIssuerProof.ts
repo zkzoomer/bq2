@@ -42,16 +42,16 @@ export default async function generateRateCredentialIssuerProof(
         }
     }
 
-    const semaphoreProof = await generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)
+    const semaphoreFullProof = await generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)
 
     return {
         rating,
         comment,
-        merkleTreeRoot: semaphoreProof.merkleTreeRoot,
-        signal: semaphoreProof.signal,
-        nullifierHash: semaphoreProof.nullifierHash,
-        externalNullifier: semaphoreProof.externalNullifier,
-        proof: semaphoreProof.proof,
-        semaphoreProof
+        merkleTreeRoot: semaphoreFullProof.merkleTreeRoot,
+        signal: semaphoreFullProof.signal,
+        nullifierHash: semaphoreFullProof.nullifierHash,
+        externalNullifier: semaphoreFullProof.externalNullifier,
+        proof: semaphoreFullProof.proof,
+        semaphoreFullProof
     }
 }
