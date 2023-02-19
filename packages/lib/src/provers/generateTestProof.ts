@@ -35,7 +35,7 @@ export default async function generateTestProof(
         identityMerkleProof = identityGroup.generateMerkleProof(identityGroup.members.length - 1)
     } else {
         if (testId === undefined) {
-            throw new Error("The group ID was not provided")
+            throw new Error("The test ID was not provided")
         }
         emptyLeaf = (new Group(testId, N_LEVELS)).root
         identityMerkleProof = identityGroup
@@ -47,7 +47,7 @@ export default async function generateTestProof(
         gradeMerkleProof = gradeGroup.generateMerkleProof(gradeGroup.members.length - 1)
     } else {
         if (testId === undefined) {
-            throw new Error("The group ID was not provided")
+            throw new Error("The test ID was not provided")
         }
         emptyLeaf = (new Group(testId, N_LEVELS)).root
         gradeMerkleProof = gradeGroup

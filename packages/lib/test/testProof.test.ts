@@ -78,7 +78,7 @@ describe("Test Proof", () => {
             
             await expect(
                 generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, snarkArtifacts)
-            ).to.be.rejectedWith("The group ID was not provided")
+            ).to.be.rejectedWith("The test ID was not provided")
             
             _group = new Group(0, N_LEVELS);
             _gradeGroup = new Group(0, N_LEVELS);
@@ -86,7 +86,7 @@ describe("Test Proof", () => {
 
             await expect(
                 generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup.generateMerkleProof(0), snarkArtifacts)
-            ).to.be.rejectedWith("The group ID was not provided")
+            ).to.be.rejectedWith("The test ID was not provided")
         })
 
         it("Should not generate a test proof with default snark artifacts with Node.js", async () => {
