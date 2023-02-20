@@ -9,10 +9,11 @@ import { N_LEVELS } from "../constants"
 /**
  * Generates a proof of knowledge of a solution to a Block Qualified test
  * @param identity The Semaphore identity that will be associated with the solution.
- * @param testAnswers: The answers that the user provided for this test, comprised of the multiple choice and open answers
+ * @param testAnswers: The answers that the user provided for this test, comprised of the multiple choice and open answers.
+ * @param testVariables: The variables that define the test and its grading.
  * @param identityGroup The Semaphore group or its Merkle proof for the corresponding identity group. When providing a passing solution, this group is the credentials group. Otherwise, it is the no credentials group.
  * @param gradeGroup The Semaphore group or its Merkle proof for the grade group.
- * @param testId The ID of the test being solved, used to compute the zero leaf of the Merkle trees
+ * @param testId The ID of the test being solved, used to compute the zero leaf of the Merkle trees.
  * @param snarkArtifacts The SNARK artifacts.
  * @returns The test solution proof ready to be verified.
  */
