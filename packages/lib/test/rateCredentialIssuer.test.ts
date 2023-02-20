@@ -58,7 +58,7 @@ describe("Rate Credential Issuer", () => {
             ).to.be.rejectedWith("Comment length is too long")
         })
 
-        it("Should generate the Semaphore proof with the hash of rating and comment as signal", async () => {
+        it("Should generate the Semaphore proof with the correct nullifier hash and signal", async () => {
             const group = new Group(0, N_LEVELS)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
