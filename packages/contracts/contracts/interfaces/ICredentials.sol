@@ -5,6 +5,7 @@ pragma solidity ^0.8.4;
 /// @dev Interface of a Credentials contract.
 interface ICredentials {
     error CallerIsNotTheTestAdmin();
+    error CallerIsNotTheCredentialManager();
 
     error TimeLimitIsInThePast();
     error InvalidNumberOfQuestions();
@@ -13,6 +14,9 @@ interface ICredentials {
 
     error TestAnswersAlreadyVerified();
     error InvalidTestAnswersLength(uint256 expectedLength, uint256 providedLength);
+
+    error UserMustProveCredentialOwnershipProofFirst(uint40 requiredCredential);
+    error CredentialOwnershipProofNotNeeded();
 
     error TestWasInvalidated();
     error TimeLimitReached();
@@ -125,6 +129,27 @@ interface ICredentials {
         string memory testURI
     ) external;
 
+    /// @dev Creates a new restricted test with the test parameters as specified in the `Test` struct. To solve this test, the user will need
+    /// to call the appropriate function within the `credentialManager` contract, verifying the additional requirement first.
+    /// @param minimumGrade: see the `Test` struct
+    /// @param multipleChoiceWeight: see the `Test` struct
+    /// @param nQuestions: see the `Test` struct
+    /// @param timeLimit: see the `Test` struct
+    /// @param credentialManager: smart contract address that manages the solving of the credential by enforcing an additional requirement -- 0x0 for unrestricted 
+    /// @param multipleChoiceRoot: see the `Test` struct
+    /// @param openAnswersHashesRoot: see the `Test` struct
+    /// @param testURI: external resource containing the actual test and more information about the credential.
+    function createRestrictedTest(
+        uint8 minimumGrade,
+        uint8 multipleChoiceWeight,
+        uint8 nQuestions,
+        uint32 timeLimit,
+        address credentialManager,
+        uint256 multipleChoiceRoot,
+        uint256 openAnswersHashesRoot,
+        string memory testURI
+    ) external;
+
     /// @dev Stores the open answer hashes on-chain, "verifying" the corresponding test
     /// No actual check is made to see if these correspond to the openAnswerHashesRoot, we assume it's in
     /// the credential issuer's best interest to provide the valid open answer hashes
@@ -147,7 +172,7 @@ interface ICredentials {
     /// @param newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
     /// @param gradeCommitment: new grade commitment to add to the grade tree
     /// @param newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
-    /// @param proof: SNARK proof
+    /// @param proof: test zero-knowledge proof
     /// @param testPassed: boolean value indicating whether the proof provided corresponds to a passed test or not
     function solveTest(
         uint256 testId,

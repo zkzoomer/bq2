@@ -63,8 +63,8 @@ describe("Credentials contract", () => {
         openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([hash("")]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
-        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1))
-        const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
+        const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)).toString()
+        const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes).toString()
 
         const multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
         const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
@@ -83,9 +83,9 @@ describe("Credentials contract", () => {
             openAnswersHashes
         }
 
-        testRoot = poseidon([multipleChoiceRoot, openAnswersHashesRoot])
-        testParameters = poseidon([testVariables.minimumGrade, testVariables.multipleChoiceWeight, testVariables.nQuestions])
-        nonPassingTestParameters = poseidon([0, testVariables.multipleChoiceWeight, testVariables.nQuestions])
+        testRoot = poseidon([multipleChoiceRoot, openAnswersHashesRoot]).toString()
+        testParameters = poseidon([testVariables.minimumGrade, testVariables.multipleChoiceWeight, testVariables.nQuestions]).toString()
+        nonPassingTestParameters = poseidon([0, testVariables.multipleChoiceWeight, testVariables.nQuestions]).toString()
 
         passingProof = await generateTestProof(
             identity,
@@ -310,8 +310,8 @@ describe("Credentials contract", () => {
                             100,
                             "sneed",
                             group.root,
-                            ratingProof.nullifierHash,
-                            ratingProof.proof,
+                            ratingProof.semaphoreFullProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.proof,
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -350,7 +350,7 @@ describe("Credentials contract", () => {
                 it("returns the corresponding `Test` struct", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
-                    expect((await credentialsContract.getTest(1)).slice(0,11).map( n => { return n.toString() }))
+                    expect((await credentialsContract.getTest(1)).slice(0,12).map( n => { return n.toString() }))
                         .to.deep.equal([50, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
                 })
             })
@@ -571,7 +571,7 @@ describe("Credentials contract", () => {
             context("when the `testId` given does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        credentialsContract.wasNullifierHashUsed(1, ratingProof.nullifierHash)
+                        credentialsContract.wasNullifierHashUsed(1, ratingProof.semaphoreFullProof.nullifierHash)
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
                         "TestDoesNotExist"
@@ -584,7 +584,7 @@ describe("Credentials contract", () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     expect(
-                        await credentialsContract.wasNullifierHashUsed(1, ratingProof.nullifierHash)
+                        await credentialsContract.wasNullifierHashUsed(1, ratingProof.semaphoreFullProof.nullifierHash)
                     ).to.be.equal(false)
                 })
             })
@@ -603,10 +603,17 @@ describe("Credentials contract", () => {
                         true
                     )
 
-                    await credentialsContract.rateIssuer(1, ratingProof.rating, ratingProof.comment, ratingProof.merkleTreeRoot, ratingProof.nullifierHash, ratingProof.proof)
+                    await credentialsContract.rateIssuer(
+                        1, 
+                        ratingProof.rating, 
+                        ratingProof.comment, 
+                        ratingProof.semaphoreFullProof.merkleTreeRoot, 
+                        ratingProof.semaphoreFullProof.nullifierHash, 
+                        ratingProof.semaphoreFullProof.proof
+                    )
 
                     expect(
-                        await credentialsContract.wasNullifierHashUsed(1, ratingProof.nullifierHash)
+                        await credentialsContract.wasNullifierHashUsed(1, ratingProof.semaphoreFullProof.nullifierHash)
                     ).to.be.equal(true)
                 })
             })
@@ -812,7 +819,7 @@ describe("Credentials contract", () => {
 
                 describe("getTest", () => {
                     it("shows the minimum grade to be 255 as part of the `Test` struct", async () => {
-                        expect((await credentialsContract.getTest(1)).slice(0,11).map( n => { return n.toString() }))
+                        expect((await credentialsContract.getTest(1)).slice(0,12).map( n => { return n.toString() }))
                         .to.deep.equal([255, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
                     })
                 })
@@ -1007,7 +1014,7 @@ describe("Credentials contract", () => {
 
             context("when providing an invalid proof", () => {
                 it("reverts", async () => {
-                    const bogusProof: Proof = [...ratingProof.proof]
+                    const bogusProof: Proof = [...ratingProof.semaphoreFullProof.proof]
                     bogusProof[0] = BigInt(passingProof.proof[0]) + BigInt(1)
 
                     await expect(
@@ -1015,8 +1022,8 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.merkleTreeRoot,
-                            ratingProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.merkleTreeRoot,
+                            ratingProof.semaphoreFullProof.nullifierHash,
                             bogusProof
                         )
                     ).to.revertedWithoutReason
@@ -1030,9 +1037,9 @@ describe("Credentials contract", () => {
                             1,
                             101,
                             ratingProof.comment,
-                            ratingProof.merkleTreeRoot,
-                            ratingProof.nullifierHash,
-                            ratingProof.proof
+                            ratingProof.semaphoreFullProof.merkleTreeRoot,
+                            ratingProof.semaphoreFullProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.proof
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1049,8 +1056,8 @@ describe("Credentials contract", () => {
                             ratingProof.rating,
                             ratingProof.comment,
                             1,
-                            ratingProof.nullifierHash,
-                            ratingProof.proof
+                            ratingProof.semaphoreFullProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.proof
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1079,9 +1086,9 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.merkleTreeRoot,
-                            ratingProof.nullifierHash,
-                            ratingProof.proof
+                            ratingProof.semaphoreFullProof.merkleTreeRoot,
+                            ratingProof.semaphoreFullProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.proof
                         )
 
                     await expect(
@@ -1089,9 +1096,9 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.merkleTreeRoot,
-                            ratingProof.nullifierHash,
-                            ratingProof.proof
+                            ratingProof.semaphoreFullProof.merkleTreeRoot,
+                            ratingProof.semaphoreFullProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.proof
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1106,9 +1113,9 @@ describe("Credentials contract", () => {
                         1,
                         ratingProof.rating,
                         ratingProof.comment,
-                        ratingProof.merkleTreeRoot,
-                        ratingProof.nullifierHash,
-                        ratingProof.proof
+                        ratingProof.semaphoreFullProof.merkleTreeRoot,
+                        ratingProof.semaphoreFullProof.nullifierHash,
+                        ratingProof.semaphoreFullProof.proof
                     )
 
                     await expect(
@@ -1116,9 +1123,9 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.merkleTreeRoot,
-                            ratingProof.nullifierHash,
-                            ratingProof.proof
+                            ratingProof.semaphoreFullProof.merkleTreeRoot,
+                            ratingProof.semaphoreFullProof.nullifierHash,
+                            ratingProof.semaphoreFullProof.proof
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1135,9 +1142,9 @@ describe("Credentials contract", () => {
                         1,
                         ratingProof.rating,
                         ratingProof.comment,
-                        ratingProof.merkleTreeRoot,
-                        ratingProof.nullifierHash,
-                        ratingProof.proof
+                        ratingProof.semaphoreFullProof.merkleTreeRoot,
+                        ratingProof.semaphoreFullProof.nullifierHash,
+                        ratingProof.semaphoreFullProof.proof
                     )
                 })
 
@@ -1186,9 +1193,9 @@ describe("Credentials contract", () => {
                         1,
                         ratingProof.rating,
                         ratingProof.comment,
-                        ratingProof.merkleTreeRoot,
-                        ratingProof.nullifierHash,
-                        ratingProof.proof
+                        ratingProof.semaphoreFullProof.merkleTreeRoot,
+                        ratingProof.semaphoreFullProof.nullifierHash,
+                        ratingProof.semaphoreFullProof.proof
                     )
 
                     await credentialsContract.solveTest(
@@ -1205,9 +1212,9 @@ describe("Credentials contract", () => {
                         1,
                         altRatingProof.rating,
                         altRatingProof.comment,
-                        altRatingProof.merkleTreeRoot,
-                        altRatingProof.nullifierHash,
-                        altRatingProof.proof
+                        altRatingProof.semaphoreFullProof.merkleTreeRoot,
+                        altRatingProof.semaphoreFullProof.nullifierHash,
+                        altRatingProof.semaphoreFullProof.proof
                     )
                 })
 

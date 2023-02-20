@@ -17,6 +17,10 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev Gets a test id and returns the test parameters
     mapping(uint256 => Test) public tests;
 
+    /// @dev Gets a test id and returns the corresponding credential manager contract, which
+    /// are used to check that solvers meet certain criteria before earning the credential.
+    mapping(uint256 => address) public credentialManagers;
+
     /// @dev Gets a test id and returns the corresponding group parameters
     mapping(uint256 => TestGroup) public testGroups;
 
@@ -38,10 +42,10 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     IGradeClaimVerifier public gradeClaimVerifier;
 
     /// @dev Number of tests that have been created
-    uint256 private _nTests;
+    uint256 public nTests;
 
-    /// @dev Checks if the test admin is the transaction sender
-    /// @param testId: Id of the test (Semaphore group)
+    /// @dev Verifies that the test admin is the transaction sender
+    /// @param testId: Id of the test
     modifier onlyTestAdmin(uint256 testId) {
         if (tests[testId].admin != _msgSender()) {
             revert CallerIsNotTheTestAdmin();
@@ -49,8 +53,17 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         _;
     }
 
+    /// @dev Verifies that the test admin is the transaction sender
+    /// @param testId: Id of the test
+    modifier onlyCredentialManager(uint256 testId) {
+        if (credentialManagers[testId] != address(0) && credentialManagers[testId] != _msgSender()) {
+            revert CallerIsNotTheCredentialManager();
+        }
+        _;
+    }
+
     /// @dev Checks if the test exists
-    /// @param testId: Id of the test (Semaphore group)
+    /// @param testId: Id of the test
     modifier onlyExistingTests(uint256 testId) {
         if (!_testExists(testId)) {
             revert TestDoesNotExist();
@@ -59,8 +72,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     }
 
     /// @dev Initializes the Credentials smart contract
-/*     /// @param _semaphoreVerifier: contract address of the SemaphoreVerifier contract
- */    constructor(
+    /// @param _semaphoreVerifier: contract address of the SemaphoreVerifier contract
+    constructor(
         address _semaphoreVerifier
     ) {
         semaphoreVerifier = ISemaphoreVerifier(_semaphoreVerifier);
@@ -78,6 +91,33 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 openAnswersHashesRoot,
         string memory testURI
     ) external override {
+        return _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, address(0), multipleChoiceRoot, openAnswersHashesRoot, testURI);
+    }    
+
+    /// @dev See {ICredentials-createRestrictedTest}
+    function createRestrictedTest(
+        uint8 minimumGrade,
+        uint8 multipleChoiceWeight,
+        uint8 nQuestions,
+        uint32 timeLimit,
+        address credentialManager,
+        uint256 multipleChoiceRoot,
+        uint256 openAnswersHashesRoot,
+        string memory testURI
+    ) external override {
+        return _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, credentialManager, multipleChoiceRoot, openAnswersHashesRoot, testURI);
+    }
+
+    function _createTest(
+        uint8 minimumGrade,
+        uint8 multipleChoiceWeight,
+        uint8 nQuestions,
+        uint32 timeLimit,
+        address credentialManager,
+        uint256 multipleChoiceRoot,
+        uint256 openAnswersHashesRoot,
+        string memory testURI
+    ) internal {
         // If time and credential limits are set to zero then these limits on solving do not get enforced
         // credential limits would still get enforced when adding to the corresponding trees
         if (timeLimit < block.timestamp && timeLimit != 0) {
@@ -96,9 +136,9 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert InvalidMultipleChoiceWeight();
         }
 
-        _nTests++;
+        nTests++;
 
-        uint256 zeroValue = uint256(keccak256(abi.encodePacked(_nTests))) >> 8;
+        uint256 zeroValue = uint256(keccak256(abi.encodePacked(nTests))) >> 8;
 
         for (uint8 i = 0; i < N_LEVELS; ) {
             zeroValue = PoseidonT3.poseidon([zeroValue, zeroValue]);
@@ -117,7 +157,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             nonPassingTestParameters = testParameters;
         }
 
-        tests[_nTests] = Test(
+        tests[nTests] = Test(
             minimumGrade,
             multipleChoiceWeight,
             nQuestions,
@@ -130,17 +170,19 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             nonPassingTestParameters
         );
 
-        testGroups[_nTests].credentialsTreeIndex = 0;
-        testGroups[_nTests].noCredentialsTreeIndex = 0;
-        testGroups[_nTests].gradeTreeIndex = 0;
-        testGroups[_nTests].gradeTreeRoot = zeroValue;
-        testGroups[_nTests].credentialsTreeRoot = zeroValue;
-        testGroups[_nTests].noCredentialsTreeRoot = zeroValue;
+        credentialManagers[nTests] = credentialManager;
 
-        testURIs[_nTests] = testURI;
+        testGroups[nTests].credentialsTreeIndex = 0;
+        testGroups[nTests].noCredentialsTreeIndex = 0;
+        testGroups[nTests].gradeTreeIndex = 0;
+        testGroups[nTests].gradeTreeRoot = zeroValue;
+        testGroups[nTests].credentialsTreeRoot = zeroValue;
+        testGroups[nTests].noCredentialsTreeRoot = zeroValue;
 
-        emit TestCreated(_nTests);
-    }       
+        testURIs[nTests] = testURI;
+
+        emit TestCreated(nTests);
+    }   
 
     /// @dev See {ICredentials-verifyTestAnswers}
     function verifyTestAnswers(
@@ -181,7 +223,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 newGradeTreeRoot,
         uint256[8] calldata proof,
         bool testPassed
-    ) external override onlyExistingTests(testId) {
+    ) external override onlyExistingTests(testId) onlyCredentialManager(testId) {
         if (tests[testId].minimumGrade == 255) {
             revert TestWasInvalidated();
         }
@@ -288,7 +330,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         }
 
         uint256 signal = uint(keccak256(abi.encode(rating, comment)));
-        uint256 externalNullifier = 0x62712d7261746500000000000000000000000000000000000000000000000000;  // formatBytes32String("bq-rate")
+        // formatBytes32String("bq-rate")
+        uint256 externalNullifier = 0x62712d7261746500000000000000000000000000000000000000000000000000;
 
         // A proof could have used an old Merkle tree root.
         // https://github.com/semaphore-protocol/semaphore/issues/98
@@ -423,6 +466,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @param testId: id of the test
     /// @return Test existence
     function _testExists(uint256 testId) internal view virtual returns (bool) {
-        return testId <= _nTests;
+        return testId <= nTests;
     }
 }
