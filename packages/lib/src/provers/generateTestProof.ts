@@ -1,6 +1,6 @@
 import { TestFullProof, SnarkArtifacts, TestAnswers, TestVariables } from "@bq2/lib"
 import { Group, Member } from "@semaphore-protocol/group"
-import type { Identity } from "@semaphore-protocol/identity"
+import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { groth16 } from "snarkjs"
 import { packProof } from "../helpers"
