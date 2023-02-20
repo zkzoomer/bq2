@@ -1,7 +1,6 @@
+import { GradeClaimFullProof } from "@bq2/lib"
 import { groth16 } from "snarkjs"
-import hash from "../helpers/hash"
-import { GradeClaimFullProof } from "../types"
-import unpackProof from "../helpers/unpackProof"
+import { hash, unpackProof } from "../helpers"
 import verificationKey from "../../snark-artifacts/gradeClaimKey.json"
 
 /**

@@ -1,6 +1,6 @@
+import { TestFullProof } from "@bq2/lib"
 import { groth16 } from "snarkjs"
-import { TestFullProof } from "../types"
-import unpackProof from "../helpers/unpackProof"
+import { unpackProof } from "../helpers"
 import verificationKey from "../../snark-artifacts/testKey.json"
 
 /**
