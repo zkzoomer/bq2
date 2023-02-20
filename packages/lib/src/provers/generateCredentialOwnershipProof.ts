@@ -1,10 +1,10 @@
+import { SnarkArtifacts } from "@bq2/lib"
 import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
 import { generateProof, FullProof } from "@semaphore-protocol/proof"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
-import { SnarkArtifacts } from "../types"
 import { N_LEVELS } from "../constants"
 
 /**

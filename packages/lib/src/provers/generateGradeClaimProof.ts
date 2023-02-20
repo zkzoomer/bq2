@@ -1,12 +1,10 @@
+import { GradeClaimFullProof, SnarkArtifacts, TestGradingVariables, FullGradeCommitment } from "@bq2/lib"
 import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { Group } from "@semaphore-protocol/group"
 import type { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { groth16 } from "snarkjs"
-import { GradeClaimFullProof, SnarkArtifacts, TestGradingVariables, FullGradeCommitment } from "../types"
-import packProof from "../helpers/packProof"
-import getGradeCommitment from "../helpers/getGradeCommitment"
-import hash from "../helpers/hash"
+import { packProof, getGradeCommitment, hash } from "../helpers"
 
 /**
  * Generates a proof claiming to have obtained a grade above a certain threshold.

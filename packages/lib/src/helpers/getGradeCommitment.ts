@@ -12,7 +12,7 @@ import { FullGradeCommitment, TestVariables } from "../types";
  * @param nQuestions: Number of questions that make up the open answer component.
  * @returns The grade the user obtained.
  */
-export default async function getGradeCommitment(
+export async function getGradeCommitment(
     { trapdoor, nullifier }: Identity,
     gradeGroup: Group,
     multipleChoiceWeight: number,

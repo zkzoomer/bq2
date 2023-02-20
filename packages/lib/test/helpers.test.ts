@@ -5,8 +5,7 @@ import { FullProof } from "@semaphore-protocol/proof"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
 import { getCurveFromName } from "ffjavascript"
-import packProof from "../src/helpers/packProof"
-import unpackProof from "../src/helpers/unpackProof"
+import { packProof, unpackProof } from "../src/helpers"
 
 chai.use(chaiAsPromised)
 

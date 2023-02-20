@@ -5,7 +5,7 @@ import { Proof, SnarkJSProof } from "../types";
  * @param originalProof The proof generated with SnarkJS.
  * @returns The proof compatible with Block Qualified and Semaphore.
  */
-export default function packProof(originalProof: SnarkJSProof): Proof {
+export function packProof(originalProof: SnarkJSProof): Proof {
     return [
         originalProof.pi_a[0],
         originalProof.pi_a[1],

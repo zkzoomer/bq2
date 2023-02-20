@@ -9,7 +9,7 @@ function pairwiseHash(hash: HashFunction, array: BigNumberish[]): bigint[] {
     return arrayHash
 }
 
-export default function rootFromLeafArray(hash: HashFunction, leafArray: BigNumberish[]): bigint {
+export function rootFromLeafArray(hash: HashFunction, leafArray: BigNumberish[]): bigint {
     const depth = Math.log(leafArray.length) / Math.log(2)
     const tree: bigint[][] = Array(depth);
     tree[depth - 1] = pairwiseHash(hash, leafArray)

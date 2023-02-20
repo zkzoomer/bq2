@@ -62,9 +62,14 @@ export type TestFullProof = {
     proof: Proof
 }
 
-export type RestrictedTestFullProof = {
+export type CredentialRestrictedTestFullProof = {
     testFullProof: TestFullProof
     semaphoreFullProof: FullProof
+}
+
+export type GradeRestrictedTestFullProof = {
+    testFullProof: TestFullProof
+    gradeClaimFullProof: GradeClaimFullProof
 }
 
 export type GradeClaimFullProof = {

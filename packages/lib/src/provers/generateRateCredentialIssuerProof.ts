@@ -1,9 +1,9 @@
+import { RateFullProof, SnarkArtifacts } from "@bq2/lib"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
 import { generateProof } from "@semaphore-protocol/proof"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { utils } from "ethers"
-import { RateFullProof, SnarkArtifacts } from "../types"
 import { MAX_COMMENT_LENGTH, N_LEVELS } from "../constants"
 
 /**

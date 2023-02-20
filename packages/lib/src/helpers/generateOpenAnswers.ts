@@ -1,7 +1,7 @@
 import { TEST_HEIGHT } from "../constants";
-import hash from "./hash";
+import { hash } from "./hash";
 
-export default function generateOpenAnswers( openAnswers: string[] ): bigint[] {
+export function generateOpenAnswers( openAnswers: string[] ): bigint[] {
     if (openAnswers.length > 2 ** TEST_HEIGHT ) {
         throw new Error("More answers were given than supported")
     }

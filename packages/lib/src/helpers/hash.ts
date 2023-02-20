@@ -10,7 +10,7 @@ import { formatBytes32String } from "@ethersproject/strings"
  * @param message The message to be hashed.
  * @returns The message digest.
  */
-export default function hash(message: BytesLike | Hexable | number | bigint | string): bigint {
+export function hash(message: BytesLike | Hexable | number | bigint | string): bigint {
     if (message === "") {
         return BigInt(utils.keccak256(formatBytes32String(message))) >> BigInt(8)
     }
