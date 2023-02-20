@@ -1,5 +1,5 @@
+import { N_LEVELS } from "@bq2/lib"
 import { verifyProof, FullProof } from "@semaphore-protocol/proof"
-import { N_LEVELS } from "../constants"
 
 /**
  * Verifies a Semaphore proof of credential ownership.

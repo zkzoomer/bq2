@@ -1,10 +1,9 @@
-import { TestFullProof, SnarkArtifacts, TestAnswers, TestVariables } from "@bq2/lib"
+import { TestAnswers, TestFullProof, TestVariables, SnarkArtifacts, N_LEVELS } from "@bq2/lib"
 import { Group, Member } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { groth16 } from "snarkjs"
 import { packProof } from "../helpers"
-import { N_LEVELS } from "../constants"
 
 /**
  * Generates a proof of knowledge of a solution to a Block Qualified test

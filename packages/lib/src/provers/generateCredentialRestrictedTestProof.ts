@@ -1,4 +1,4 @@
-import { SnarkArtifacts, TestAnswers, TestVariables, CredentialRestrictedTestFullProof, generateTestProof } from "@bq2/lib"
+import { generateTestProof, CredentialRestrictedTestFullProof, SnarkArtifacts, TestAnswers, TestVariables } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { generateProof } from "@semaphore-protocol/proof"

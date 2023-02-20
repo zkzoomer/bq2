@@ -1,20 +1,20 @@
 import { 
+    buildPoseidon,
     generateCredentialRestrictedTestProof, 
-    verifyTestProof, 
-    Poseidon, 
-    buildPoseidon,  
+    generateOpenAnswers, 
+    hash, 
+    rootFromLeafArray, 
+    verifyTestProof,     
+    CredentialRestrictedTestFullProof, 
+    Poseidon,   
     TestAnswers, 
     TestVariables,
-    generateOpenAnswers, 
-    rootFromLeafArray, 
-    CredentialRestrictedTestFullProof, 
-    hash, 
     N_LEVELS,
     TEST_HEIGHT, 
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
-import { FullProof, verifyProof } from "@semaphore-protocol/proof"
+import { verifyProof } from "@semaphore-protocol/proof"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
 import { utils } from "ethers"

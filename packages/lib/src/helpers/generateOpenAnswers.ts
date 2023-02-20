@@ -1,5 +1,4 @@
-import { TEST_HEIGHT } from "../constants";
-import { hash } from "./hash";
+import { hash, TEST_HEIGHT } from "@bq2/lib";
 
 export function generateOpenAnswers( openAnswers: string[] ): bigint[] {
     if (openAnswers.length > 2 ** TEST_HEIGHT ) {

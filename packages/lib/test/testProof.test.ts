@@ -1,4 +1,17 @@
-import { generateTestProof, verifyTestProof, N_LEVELS, Poseidon, buildPoseidon, TestAnswers, TestVariables, TEST_HEIGHT, generateOpenAnswers, rootFromLeafArray, TestFullProof, hash } from "@bq2/lib"
+import { 
+    buildPoseidon, 
+    generateOpenAnswers, 
+    generateTestProof, 
+    hash,
+    rootFromLeafArray, 
+    verifyTestProof, 
+    Poseidon, 
+    TestAnswers, 
+    TestFullProof, 
+    TestVariables, 
+    N_LEVELS, 
+    TEST_HEIGHT, 
+} from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    

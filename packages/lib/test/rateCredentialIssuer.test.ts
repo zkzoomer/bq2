@@ -1,4 +1,12 @@
-import { generateRateCredentialIssuerProof, N_LEVELS, Poseidon, buildPoseidon, hash, MAX_COMMENT_LENGTH, RateFullProof } from "@bq2/lib"
+import { 
+    buildPoseidon, 
+    generateRateCredentialIssuerProof, 
+    hash, 
+    Poseidon, 
+    RateFullProof,
+    N_LEVELS, 
+    MAX_COMMENT_LENGTH, 
+} from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { verifyProof } from "@semaphore-protocol/proof"

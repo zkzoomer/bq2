@@ -1,8 +1,6 @@
-import { Group, Member } from "@semaphore-protocol/group"
+import { buildPoseidon, FullGradeCommitment, Poseidon, TEST_HEIGHT } from "@bq2/lib"
+import { Group } from "@semaphore-protocol/group"
 import type { Identity } from "@semaphore-protocol/identity"
-import { TEST_HEIGHT } from "../constants";
-import { Poseidon, buildPoseidon } from "./buildPoseidon";
-import { FullGradeCommitment, TestVariables } from "../types";
 
 /**
  * Finds the grade a user obtained from their identity and grade group by doing a brute force search through all the possible grades they could obtain.

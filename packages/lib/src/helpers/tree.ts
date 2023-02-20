@@ -1,5 +1,5 @@
 import { HashFunction } from "@zk-kit/incremental-merkle-tree"
-import { BigNumber, BigNumberish } from "ethers"
+import { BigNumberish } from "ethers"
 
 function pairwiseHash(hash: HashFunction, array: BigNumberish[]): bigint[] {
     const arrayHash: bigint[] = []
