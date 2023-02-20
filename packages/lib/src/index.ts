@@ -2,6 +2,7 @@
 import { Poseidon, buildPoseidon } from "./helpers/buildPoseidon"
 import generateTestProof from "./provers/generateTestProof"
 import generateCredentialRestrictedTestProof from "./provers/generateCredentialRestrictedTestProof"
+import generateGradeRestrictedTestProof from "./provers/generateGradeRestrictedTestProof"
 import generateCredentialOwnershipProof from "./provers/generateCredentialOwnershipProof"
 import generateGradeClaimProof from "./provers/generateGradeClaimProof"
 import generateRateCredentialIssuerProof from "./provers/generateRateCredentialIssuerProof"
@@ -17,6 +18,7 @@ export {
     buildPoseidon, 
     generateTestProof, 
     generateCredentialRestrictedTestProof,
+    generateGradeRestrictedTestProof,
     generateCredentialOwnershipProof,
     generateRateCredentialIssuerProof,
     generateGradeClaimProof,
