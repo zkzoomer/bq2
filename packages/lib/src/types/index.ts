@@ -1,7 +1,7 @@
 import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { FullProof } from "@semaphore-protocol/proof"
 
-export type BigNumberish = string | bigint
+export type BigNumberish = string | bigint | number
 
 export type SnarkArtifacts = {
     wasmFilePath: string
