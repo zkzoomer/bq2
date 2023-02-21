@@ -102,16 +102,16 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint8 nQuestions,
         uint32 timeLimit,
         uint32 requiredCredential,
-        uint8 requiredGradeThreshold,
+        uint8 requiredCredentialGradeThreshold,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
     ) external override onlyExistingTests(requiredCredential) {
-        if (requiredGradeThreshold > 100) {
-            revert InvalidRequiredGradeThreshold();
+        if (requiredCredentialGradeThreshold > 100) {
+            revert InvalidRequiredCredentialGradeThreshold();
         }
 
-        _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, requiredCredential, requiredGradeThreshold, multipleChoiceRoot, openAnswersHashesRoot, testURI);
+        _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, requiredCredential, requiredCredentialGradeThreshold, multipleChoiceRoot, openAnswersHashesRoot, testURI);
     }
 
     /// @dev Verifies the test parameters given and creates a new test accordingly
@@ -121,7 +121,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint8 nQuestions,
         uint32 timeLimit,
         uint32 requiredCredential,
-        uint8 requiredGradeThreshold,
+        uint8 requiredCredentialGradeThreshold,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
@@ -171,7 +171,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             nQuestions,
             timeLimit,
             requiredCredential,
-            requiredGradeThreshold,
+            requiredCredentialGradeThreshold,
             _msgSender(),
             multipleChoiceRoot,
             openAnswersHashesRoot,
@@ -229,10 +229,10 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256[4] calldata testProofInputs,
         bool testPassed
     ) external override {
-        if (tests[testId].requiredCredential != 0 && tests[testId].requiredGradeThreshold == 0) {
+        if (tests[testId].requiredCredential != 0 && tests[testId].requiredCredentialGradeThreshold == 0) {
             revert UserMustProveCredentialOwnership(tests[testId].requiredCredential);
-        } else if (tests[testId].requiredCredential != 0 && tests[testId].requiredGradeThreshold != 0) {
-            revert UserMustProveGradeThresholdObtained(tests[testId].requiredCredential,tests[testId].requiredGradeThreshold);
+        } else if (tests[testId].requiredCredential != 0 && tests[testId].requiredCredentialGradeThreshold != 0) {
+            revert UserMustProveGradeThresholdObtained(tests[testId].requiredCredential,tests[testId].requiredCredentialGradeThreshold);
         }
         
         _solveTest(testId, testProofInputs, proof, testPassed);
@@ -250,8 +250,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 requiredCredentialTestId = tests[testId].requiredCredential;
         if (requiredCredentialTestId == 0) {
             revert CredentialOwnershipProofNotNeeded();
-        } else if (requiredCredentialTestId != 0 && tests[testId].requiredGradeThreshold != 0) {
-            revert UserMustProveGradeThresholdObtained(requiredCredentialTestId, tests[testId].requiredGradeThreshold);
+        } else if (requiredCredentialTestId != 0 && tests[testId].requiredCredentialGradeThreshold != 0) {
+            revert UserMustProveGradeThresholdObtained(requiredCredentialTestId, tests[testId].requiredCredentialGradeThreshold);
         }
 
         if (testGroups[requiredCredentialTestId].nullifierHashes[semaphoreProofInputs[1]]) {
@@ -291,10 +291,10 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     ) external override {
         // TODO: look into gas savings by doing uint40 & uint8 here and the corresponding casts later
         uint256 requiredCredentialTestId = tests[testId].requiredCredential;
-        uint256 requiredGradeThreshold = tests[testId].requiredGradeThreshold;
+        uint256 requiredCredentialGradeThreshold = tests[testId].requiredCredentialGradeThreshold;
         if (requiredCredentialTestId == 0) {
             revert GradeThresholdProofNotNeeded();
-        } else if (requiredCredentialTestId != 0 && requiredGradeThreshold == 0) {
+        } else if (requiredCredentialTestId != 0 && requiredCredentialGradeThreshold == 0) {
             revert UserMustProveCredentialOwnership(requiredCredentialTestId);
         }
 
@@ -319,14 +319,14 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
         // Grade threshold needs to be weighted by the number of questions
         uint256 nQuestions = tests[requiredCredentialTestId].nQuestions;
-        uint256 weightedRequiredGradeThreshold = requiredGradeThreshold * nQuestions;
+        uint256 weightedRequiredCredentialGradeThreshold = requiredCredentialGradeThreshold * nQuestions;
 
         gradeClaimVerifier.verifyProof(
             gradeClaimProof,
             [
                 gradeClaimProofInputs[0],
                 gradeClaimProofInputs[1],
-                weightedRequiredGradeThreshold,
+                weightedRequiredCredentialGradeThreshold,
                 _hash(signal),
                 externalNullifierHash
             ]

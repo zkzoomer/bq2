@@ -10,13 +10,13 @@ interface ICredentials {
     error InvalidNumberOfQuestions();
     error InvalidMinimumGrade();
     error InvalidMultipleChoiceWeight();
-    error InvalidRequiredGradeThreshold();
+    error InvalidRequiredCredentialGradeThreshold();
 
     error TestAnswersAlreadyVerified();
     error InvalidTestAnswersLength(uint256 expectedLength, uint256 providedLength);
 
     error UserMustProveCredentialOwnership(uint256 requiredCredential);
-    error UserMustProveGradeThresholdObtained(uint256 requiredCredential, uint256 requiredGradeThreshold);
+    error UserMustProveGradeThresholdObtained(uint256 requiredCredential, uint256 requiredCredentialGradeThreshold);
     error CredentialOwnershipProofNotNeeded();
     error GradeThresholdProofNotNeeded();
 
@@ -47,7 +47,7 @@ interface ICredentials {
         /// The testId of the credential that needs to be obtained before this one -- set 0 for unrestricted
         uint32 requiredCredential;
         /// Minimum grade that must be obtained for the required credential -- set 0 for unrestricted
-        uint8 requiredGradeThreshold;
+        uint8 requiredCredentialGradeThreshold;
         /// Address that controls this credential
         address admin;
         /// Root of the multiple choice Merkle tree, where each leaf is the correct choice out of the given ones
@@ -163,7 +163,7 @@ interface ICredentials {
     /// @param nQuestions: see the `Test` struct
     /// @param timeLimit: see the `Test` struct
     /// @param requiredCredential: see the `Test` struct
-    /// @param requiredGradeThreshold: see the `Test` struct
+    /// @param requiredCredentialGradeThreshold: see the `Test` struct
     /// @param multipleChoiceRoot: see the `Test` struct
     /// @param openAnswersHashesRoot: see the `Test` struct
     /// @param testURI: external resource containing the actual test and more information about the credential.
@@ -173,7 +173,7 @@ interface ICredentials {
         uint8 nQuestions,
         uint32 timeLimit,
         uint32 requiredCredential,
-        uint8 requiredGradeThreshold,
+        uint8 requiredCredentialGradeThreshold,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI

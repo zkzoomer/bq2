@@ -61,7 +61,7 @@ describe("Credentials contract", () => {
     let ratingProof: RateFullProof
     let altRatingProof: RateFullProof
 
-    let requiredGradeThreshold = 60;
+    let requiredCredentialGradeThreshold = 60;
 
     const gradeClaimSnarkArtifacts = {
         wasmFilePath: '../lib/snark-artifacts/gradeClaim.wasm',
@@ -1537,7 +1537,7 @@ describe("Credentials contract", () => {
                 context("when the `requiredCredential` given is 0", () => {
                     it("reverts", async () => {
                         await expect(
-                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 0, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 0, requiredCredentialGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
                         ).to.be.revertedWithCustomError(
                             credentialsContract,
                             "TestDoesNotExist"
@@ -1548,7 +1548,7 @@ describe("Credentials contract", () => {
                 context("when the `requiredCredential` given does not exist", () => {
                     it("reverts", async () => {
                         await expect(
-                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 2, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 2, requiredCredentialGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
                         ).to.be.revertedWithCustomError(
                             credentialsContract,
                             "TestDoesNotExist"
@@ -1556,13 +1556,13 @@ describe("Credentials contract", () => {
                     })
                 })
     
-                context("when the `requiredGradeThreshold` is greater than 100", () => {
+                context("when the `requiredCredentialGradeThreshold` is greater than 100", () => {
                     it("reverts", async () => {
                         await expect(
                             credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, 101, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
                         ).to.be.revertedWithCustomError(
                             credentialsContract,
-                            "InvalidRequiredGradeThreshold"
+                            "InvalidRequiredCredentialGradeThreshold"
                         )
                     })
                 })
@@ -1571,7 +1571,7 @@ describe("Credentials contract", () => {
                     let tx;
     
                     beforeEach(async () => {
-                        tx = await credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                        tx = await credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, requiredCredentialGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
                     })
     
                     it("increases the `nTests` variable", async () => {
@@ -1591,7 +1591,7 @@ describe("Credentials contract", () => {
 
         context("with grade restricted tests created", () => {
             beforeEach(async () => {
-                await credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                await credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, requiredCredentialGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
                 await credentialsContract.solveTest(
                     1, 
                     passingProof.proof,
@@ -1619,7 +1619,7 @@ describe("Credentials contract", () => {
                             credentialsContract,
                             "UserMustProveGradeThresholdObtained"
                         ).withArgs(
-                            '1', requiredGradeThreshold
+                            '1', requiredCredentialGradeThreshold
                         )
                     })
                 })
@@ -1641,7 +1641,7 @@ describe("Credentials contract", () => {
                             credentialsContract,
                             "UserMustProveGradeThresholdObtained"
                         ).withArgs(
-                            '1', requiredGradeThreshold
+                            '1', requiredCredentialGradeThreshold
                         )
                     })
                 })
@@ -1664,7 +1664,7 @@ describe("Credentials contract", () => {
                         restrictedCredentialsGroup,
                         restrictedGradeGroup,
                         gradeClaimGroup,
-                        requiredGradeThreshold,
+                        requiredCredentialGradeThreshold,
                         { multipleChoiceWeight: 50, nQuestions: 3 },
                         testSnarkArtifacts,
                         gradeClaimSnarkArtifacts
