@@ -1,4 +1,11 @@
-import { N_LEVELS, Poseidon, buildPoseidon, hash, generateGradeClaimProof, GradeClaimFullProof } from "@bq2/lib"
+import {  
+    buildPoseidon,
+    generateGradeClaimProof, 
+    hash, 
+    GradeClaimFullProof, 
+    Poseidon, 
+    N_LEVELS,
+} from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";

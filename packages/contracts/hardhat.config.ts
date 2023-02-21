@@ -1,6 +1,6 @@
-import "@nomicfoundation/hardhat-chai-matchers";
-import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-chai-matchers"
 import "@nomicfoundation/hardhat-network-helpers"
+import "@nomicfoundation/hardhat-toolbox"
 import "@nomiclabs/hardhat-ethers"
 import "@nomiclabs/hardhat-etherscan"
 import "@typechain/hardhat"
