@@ -1,11 +1,32 @@
-import { N_LEVELS, TEST_HEIGHT, Poseidon, TestAnswers, TestVariables, TestFullProof, buildPoseidon, generateOpenAnswers, generateTestProof, rootFromLeafArray, BigNumberish, Proof, hash, generateRateCredentialIssuerProof, RateFullProof } from "@bq2/lib"
+import { 
+    buildPoseidon,
+    generateCredentialRestrictedTestProof,
+    generateGradeRestrictedTestProof,
+    generateOpenAnswers, 
+    generateRateCredentialIssuerProof, 
+    generateTestProof, 
+    hash,
+    rootFromLeafArray,  
+    BigNumberish,
+    CredentialRestrictedTestFullProof,
+    GradeRestrictedTestFullProof,
+    Proof,   
+    Poseidon, 
+    RateFullProof,
+    TestAnswers, 
+    TestFullProof,
+    TestVariables, 
+    N_LEVELS, 
+    TEST_HEIGHT
+} from "@bq2/lib"
 import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
+import { generateProof, FullProof } from "@semaphore-protocol/proof";
 import { expect } from "chai";
-import { constants, Signer } from "ethers"
+import { Signer } from "ethers"
 import { ethers, run } from "hardhat";
-import { Test, describe } from "mocha";
+import { describe } from "mocha";
 import { Credentials } from "../typechain-types"
 
 describe("Credentials contract", () => {
@@ -41,7 +62,19 @@ describe("Credentials contract", () => {
     let ratingProof: RateFullProof
     let altRatingProof: RateFullProof
 
-    const snarkArtifacts = {
+    let requiredGradeThreshold = 60;
+
+    const gradeClaimSnarkArtifacts = {
+        wasmFilePath: '../lib/snark-artifacts/gradeClaim.wasm',
+        zkeyFilePath: `../lib/snark-artifacts/gradeClaim.zkey`
+    }
+    
+    const semaphoreSnarkArtifacts = {
+        wasmFilePath: '../lib/snark-artifacts/semaphore.wasm',
+        zkeyFilePath: `../lib/snark-artifacts/semaphore.zkey`
+    };
+
+    const testSnarkArtifacts = {
         wasmFilePath: "../lib/snark-artifacts/test.wasm",
         zkeyFilePath: "../lib/snark-artifacts/test.zkey"
     };
@@ -93,7 +126,7 @@ describe("Credentials contract", () => {
             testVariables,
             credentialsGroup,
             gradeGroup,
-            snarkArtifacts
+            testSnarkArtifacts
         )
 
         credentialsGroup.updateMember(0, identity.commitment)
@@ -105,7 +138,7 @@ describe("Credentials contract", () => {
             testVariables,
             credentialsGroup,
             gradeGroup,
-            snarkArtifacts
+            testSnarkArtifacts
         )
 
         nonPassingProof = await generateTestProof(
@@ -117,7 +150,7 @@ describe("Credentials contract", () => {
             { ...testVariables, minimumGrade: 0 },
             noCredentialsGroup,
             new Group(1, N_LEVELS),
-            snarkArtifacts
+            testSnarkArtifacts
         )
 
         passingGradeCommitment = passingProof.gradeCommitment
@@ -125,14 +158,10 @@ describe("Credentials contract", () => {
 
         const ratingGroup = new Group(1, N_LEVELS)
         ratingGroup.addMember(identity.commitment)
-        const ratingSnarkArtifacts = {
-            wasmFilePath: '../lib/snark-artifacts/semaphore.wasm',
-            zkeyFilePath: `../lib/snark-artifacts/semaphore.zkey`
-        }
 
-        ratingProof = await generateRateCredentialIssuerProof(identity, ratingGroup, 100, "sneed", ratingSnarkArtifacts)
+        ratingProof = await generateRateCredentialIssuerProof(identity, ratingGroup, 100, "sneed", semaphoreSnarkArtifacts)
         ratingGroup.addMember(altIdentity.commitment)
-        altRatingProof = await generateRateCredentialIssuerProof(altIdentity, ratingGroup, 15, "chuck", ratingSnarkArtifacts)
+        altRatingProof = await generateRateCredentialIssuerProof(altIdentity, ratingGroup, 15, "chuck", semaphoreSnarkArtifacts)
     })
 
     beforeEach(async () => {
@@ -143,7 +172,7 @@ describe("Credentials contract", () => {
         credentialsContract = credentials
     })
 
-    context("Without created tests", () => {
+    context("without created tests", () => {
         describe("createTest", () => {
             context("when the time limit given is in the past", () => {
                 it("reverts for `timeLimit` > 0", async () => {
@@ -200,7 +229,7 @@ describe("Credentials contract", () => {
                 })
             })
             
-            context("after minting tests", () => {
+            context("after creating tests", () => {
                 let tx;
 
                 beforeEach(async () => {
@@ -211,6 +240,12 @@ describe("Credentials contract", () => {
                     await expect(tx)
                         .to.emit(credentialsContract, "TestCreated")
                         .withArgs('1')
+                })
+
+                it("increases the `nTests` variable", async () => {
+                    expect(
+                        await credentialsContract.nTests()
+                    ).to.be.equal('1')
                 })
             })
         })
@@ -247,11 +282,13 @@ describe("Credentials contract", () => {
                     await expect(
                         credentialsContract.solveTest(
                             1, 
-                            passingProof.identityCommitment, 
-                            passingProof.newIdentityTreeRoot,
-                            passingProof.gradeCommitment,
-                            passingProof.newGradeTreeRoot, 
                             passingProof.proof, 
+                            [
+                                passingProof.identityCommitment, 
+                                passingProof.newIdentityTreeRoot,
+                                passingProof.gradeCommitment,
+                                passingProof.newGradeTreeRoot
+                            ], 
                             true
                         )
                     ).to.be.revertedWithCustomError(
@@ -272,11 +309,13 @@ describe("Credentials contract", () => {
                     await expect(
                         credentialsContract.solveTest(
                             1, 
-                            passingProof.identityCommitment, 
-                            passingProof.newIdentityTreeRoot,
-                            passingProof.gradeCommitment,
-                            passingProof.newGradeTreeRoot, 
                             passingProof.proof,
+                            [
+                                passingProof.identityCommitment, 
+                                passingProof.newIdentityTreeRoot,
+                                passingProof.gradeCommitment,
+                                passingProof.newGradeTreeRoot
+                            ], 
                             true
                         )
                     ).to.be.revertedWithCustomError(
@@ -309,9 +348,8 @@ describe("Credentials contract", () => {
                             1,
                             100,
                             "sneed",
-                            group.root,
-                            ratingProof.semaphoreFullProof.nullifierHash,
                             ratingProof.semaphoreFullProof.proof,
+                            [group.root, ratingProof.semaphoreFullProof.nullifierHash]
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -346,12 +384,12 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `Test` struct", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     expect((await credentialsContract.getTest(1)).slice(0,12).map( n => { return n.toString() }))
-                        .to.deep.equal([50, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
+                        .to.deep.equal([50, 50, 3, 0, 0, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
                 })
             })
         })
@@ -368,7 +406,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding testURI", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -390,7 +428,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `multipleChoiceRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -412,7 +450,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `openAnswersRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -434,7 +472,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns an empty array", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -456,7 +494,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `testRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -478,7 +516,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `testParameters`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -500,7 +538,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `testParameters`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -531,7 +569,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test and without it getting solved", () => {
+            context("after creating a test and without it getting solved", () => {
                 it("reverts", async() => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -544,17 +582,19 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test and after it gets solved", () => {
+            context("after creating a test and after it gets solved", () => {
                 it("returns the correct creation date", async() => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     await credentialsContract.solveTest(
                         1, 
-                        passingProof.identityCommitment, 
-                        passingProof.newIdentityTreeRoot,
-                        passingProof.gradeCommitment,
-                        passingProof.newGradeTreeRoot, 
                         passingProof.proof,
+                        [
+                            passingProof.identityCommitment, 
+                            passingProof.newIdentityTreeRoot,
+                            passingProof.gradeCommitment,
+                            passingProof.newGradeTreeRoot
+                        ], 
                         true
                     )
 
@@ -579,7 +619,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test and without the nullifiers getting used", () => {
+            context("after creating a test and without the nullifiers getting used", () => {
                 it("returns false", async() => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -589,17 +629,19 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test and after a nullifier is used", () => {
+            context("after creating a test and after a nullifier is used", () => {
                 it("returns true", async() => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
                     await credentialsContract.solveTest(
                         1, 
-                        passingProof.identityCommitment, 
-                        passingProof.newIdentityTreeRoot,
-                        passingProof.gradeCommitment,
-                        passingProof.newGradeTreeRoot, 
                         passingProof.proof,
+                        [
+                            passingProof.identityCommitment, 
+                            passingProof.newIdentityTreeRoot,
+                            passingProof.gradeCommitment,
+                            passingProof.newGradeTreeRoot
+                        ], 
                         true
                     )
 
@@ -607,9 +649,8 @@ describe("Credentials contract", () => {
                         1, 
                         ratingProof.rating, 
                         ratingProof.comment, 
-                        ratingProof.semaphoreFullProof.merkleTreeRoot, 
-                        ratingProof.semaphoreFullProof.nullifierHash, 
-                        ratingProof.semaphoreFullProof.proof
+                        ratingProof.semaphoreFullProof.proof,
+                        [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash], 
                     )
 
                     expect(
@@ -620,6 +661,14 @@ describe("Credentials contract", () => {
         })
 
         describe("testExists", () => {
+            context("when the `testId` given is 0", () => {
+                it("returns false", async () => {
+                    expect(
+                        await credentialsContract.testExists(0)
+                    ).to.be.equal(false)
+                })
+            })
+
             context("when the `testId` given does not exist", () => {
                 it("returns false", async () => {
                     expect(
@@ -628,7 +677,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns true", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -650,7 +699,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns true", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -672,7 +721,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns the corresponding `merkleTreeRoot`", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -710,7 +759,7 @@ describe("Credentials contract", () => {
                 })
             })
 
-            context("after minting a test", () => {
+            context("after creating a test", () => {
                 it("returns 0", async () => {
                     await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI) 
 
@@ -731,6 +780,28 @@ describe("Credentials contract", () => {
     context("with created tests", () => {
         beforeEach(async () => {
             await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+        })
+
+        describe("createTest", () => {
+            context("after creating tests", () => {
+                let tx;
+
+                beforeEach(async () => {
+                    tx = await credentialsContract.createTest(50, 50, 3, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                })
+
+                it("procedurally increases the `nTests` variable", async () => {
+                    expect(
+                        await credentialsContract.nTests()
+                    ).to.be.equal('2')
+                })
+
+                it("emits a `TestCreated` event", async () => {
+                    await expect(tx)
+                        .to.emit(credentialsContract, "TestCreated")
+                        .withArgs('2')
+                })
+            })
         })
 
         describe("verifyTestAnswers", () => {
@@ -820,7 +891,7 @@ describe("Credentials contract", () => {
                 describe("getTest", () => {
                     it("shows the minimum grade to be 255 as part of the `Test` struct", async () => {
                         expect((await credentialsContract.getTest(1)).slice(0,12).map( n => { return n.toString() }))
-                        .to.deep.equal([255, 50, 3, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
+                        .to.deep.equal([255, 50, 3, 0, 0, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
                     })
                 })
 
@@ -840,11 +911,13 @@ describe("Credentials contract", () => {
                         await expect(
                             credentialsContract.solveTest(
                                 1, 
-                                passingProof.identityCommitment, 
-                                passingProof.newIdentityTreeRoot,
-                                passingProof.gradeCommitment,
-                                passingProof.newGradeTreeRoot, 
                                 passingProof.proof,
+                                [
+                                    passingProof.identityCommitment, 
+                                    passingProof.newIdentityTreeRoot,
+                                    passingProof.gradeCommitment,
+                                    passingProof.newGradeTreeRoot
+                                ], 
                                 true
                             )                        
                         ).to.be.revertedWithCustomError(
@@ -865,11 +938,13 @@ describe("Credentials contract", () => {
                     await expect(
                         credentialsContract.solveTest(
                             1, 
-                            passingProof.identityCommitment, 
-                            passingProof.newIdentityTreeRoot,
-                            passingProof.gradeCommitment,
-                            passingProof.newGradeTreeRoot, 
                             bogusProof,
+                            [
+                                passingProof.identityCommitment, 
+                                passingProof.newIdentityTreeRoot,
+                                passingProof.gradeCommitment,
+                                passingProof.newGradeTreeRoot
+                            ], 
                             true
                         )
                     ).to.revertedWithoutReason
@@ -883,11 +958,13 @@ describe("Credentials contract", () => {
                     beforeEach(async () => {
                         tx = await credentialsContract.solveTest(
                             1, 
-                            passingProof.identityCommitment, 
-                            passingProof.newIdentityTreeRoot,
-                            passingProof.gradeCommitment,
-                            passingProof.newGradeTreeRoot, 
                             passingProof.proof,
+                            [
+                                passingProof.identityCommitment, 
+                                passingProof.newIdentityTreeRoot,
+                                passingProof.gradeCommitment,
+                                passingProof.newGradeTreeRoot
+                            ], 
                             true
                         )                        
 
@@ -926,11 +1003,13 @@ describe("Credentials contract", () => {
                     beforeEach(async () => {
                         tx = await credentialsContract.solveTest(
                             1, 
-                            nonPassingProof.identityCommitment, 
-                            nonPassingProof.newIdentityTreeRoot,
-                            nonPassingProof.gradeCommitment,
-                            nonPassingProof.newGradeTreeRoot, 
                             nonPassingProof.proof,
+                            [
+                                nonPassingProof.identityCommitment, 
+                                nonPassingProof.newIdentityTreeRoot,
+                                nonPassingProof.gradeCommitment,
+                                nonPassingProof.newGradeTreeRoot
+                            ], 
                             false
                         )
                         
@@ -967,12 +1046,14 @@ describe("Credentials contract", () => {
 
                 beforeEach(async () => {
                     tx = await credentialsContract.solveTest(
-                        1, 
-                        passingProof.identityCommitment, 
-                        passingProof.newIdentityTreeRoot,
-                        passingProof.gradeCommitment,
-                        passingProof.newGradeTreeRoot, 
+                        1,  
                         passingProof.proof,
+                        [
+                            passingProof.identityCommitment, 
+                            passingProof.newIdentityTreeRoot,
+                            passingProof.gradeCommitment,
+                            passingProof.newGradeTreeRoot
+                        ], 
                         true
                     )
                     
@@ -998,16 +1079,58 @@ describe("Credentials contract", () => {
             })
         })
 
+        describe("solveCredentialRestrictedTest", () => {
+            context("when trying to solve a test that is not credential restricted", () => {
+                it("reverts", async () => {
+                    await expect(
+                        credentialsContract.solveCredentialRestrictedTest(
+                            1,
+                            [1, 2, 3, 4, 5, 6, 7, 8],
+                            [1, 2, 3, 4],
+                            [1, 2, 3, 4, 5, 6, 7, 8],
+                            [1, 2],
+                            true
+                        )
+                    ).to.be.revertedWithCustomError(
+                        credentialsContract,
+                        "CredentialOwnershipProofNotNeeded"
+                    )
+                })
+            })
+        })
+
+        describe("solveGradeRestrictedTest", () => {
+            context("when trying to solve a test that is not grade restricted", () => {
+                it("reverts", async () => {
+                    await expect(
+                        credentialsContract.solveGradeRestrictedTest(
+                            1,
+                            [1, 2, 3, 4, 5, 6, 7, 8],
+                            [1, 2, 3, 4],
+                            [1, 2, 3, 4, 5, 6, 7, 8],
+                            [1, 2],
+                            true
+                        )
+                    ).to.be.revertedWithCustomError(
+                        credentialsContract,
+                        "GradeThresholdProofNotNeeded"
+                    )
+                })
+            })
+        })
+
         describe("rateIssuer", () => {
 
             beforeEach(async () => {
                 await credentialsContract.solveTest(
                     1, 
-                    passingProof.identityCommitment, 
-                    passingProof.newIdentityTreeRoot,
-                    passingProof.gradeCommitment,
-                    passingProof.newGradeTreeRoot, 
                     passingProof.proof,
+                    [
+                        passingProof.identityCommitment, 
+                        passingProof.newIdentityTreeRoot,
+                        passingProof.gradeCommitment,
+                        passingProof.newGradeTreeRoot
+                    ], 
                     true
                 )
             })
@@ -1022,9 +1145,8 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.semaphoreFullProof.merkleTreeRoot,
-                            ratingProof.semaphoreFullProof.nullifierHash,
-                            bogusProof
+                            bogusProof,
+                            [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                         )
                     ).to.revertedWithoutReason
                 })
@@ -1037,9 +1159,8 @@ describe("Credentials contract", () => {
                             1,
                             101,
                             ratingProof.comment,
-                            ratingProof.semaphoreFullProof.merkleTreeRoot,
-                            ratingProof.semaphoreFullProof.nullifierHash,
-                            ratingProof.semaphoreFullProof.proof
+                            ratingProof.semaphoreFullProof.proof,
+                            [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1055,9 +1176,8 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            1,
-                            ratingProof.semaphoreFullProof.nullifierHash,
-                            ratingProof.semaphoreFullProof.proof
+                            ratingProof.semaphoreFullProof.proof,
+                            [1, ratingProof.semaphoreFullProof.nullifierHash],
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1072,11 +1192,13 @@ describe("Credentials contract", () => {
                     const currentTimestamp = await time.latest()
                     await credentialsContract.solveTest(
                         1,
-                        altPassingProof.identityCommitment, 
-                        altPassingProof.newIdentityTreeRoot,
-                        altPassingProof.gradeCommitment,
-                        altPassingProof.newGradeTreeRoot, 
                         altPassingProof.proof,
+                        [
+                            altPassingProof.identityCommitment, 
+                            altPassingProof.newIdentityTreeRoot,
+                            altPassingProof.gradeCommitment,
+                            altPassingProof.newGradeTreeRoot
+                        ], 
                         true
                     )
                     time.setNextBlockTimestamp(currentTimestamp + 16*60*60)
@@ -1086,9 +1208,8 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.semaphoreFullProof.merkleTreeRoot,
-                            ratingProof.semaphoreFullProof.nullifierHash,
-                            ratingProof.semaphoreFullProof.proof
+                            ratingProof.semaphoreFullProof.proof,
+                            [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                         )
 
                     await expect(
@@ -1096,9 +1217,8 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.semaphoreFullProof.merkleTreeRoot,
-                            ratingProof.semaphoreFullProof.nullifierHash,
-                            ratingProof.semaphoreFullProof.proof
+                            ratingProof.semaphoreFullProof.proof,
+                            [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1113,9 +1233,8 @@ describe("Credentials contract", () => {
                         1,
                         ratingProof.rating,
                         ratingProof.comment,
-                        ratingProof.semaphoreFullProof.merkleTreeRoot,
-                        ratingProof.semaphoreFullProof.nullifierHash,
-                        ratingProof.semaphoreFullProof.proof
+                        ratingProof.semaphoreFullProof.proof,
+                        [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                     )
 
                     await expect(
@@ -1123,9 +1242,8 @@ describe("Credentials contract", () => {
                             1,
                             ratingProof.rating,
                             ratingProof.comment,
-                            ratingProof.semaphoreFullProof.merkleTreeRoot,
-                            ratingProof.semaphoreFullProof.nullifierHash,
-                            ratingProof.semaphoreFullProof.proof
+                            ratingProof.semaphoreFullProof.proof,
+                            [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                         )
                     ).to.be.revertedWithCustomError(
                         credentialsContract,
@@ -1142,9 +1260,8 @@ describe("Credentials contract", () => {
                         1,
                         ratingProof.rating,
                         ratingProof.comment,
-                        ratingProof.semaphoreFullProof.merkleTreeRoot,
-                        ratingProof.semaphoreFullProof.nullifierHash,
-                        ratingProof.semaphoreFullProof.proof
+                        ratingProof.semaphoreFullProof.proof,
+                        [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                     )
                 })
 
@@ -1181,11 +1298,13 @@ describe("Credentials contract", () => {
                 beforeEach(async () => {
                     await credentialsContract.solveTest(
                         1, 
-                        passingProof.identityCommitment, 
-                        passingProof.newIdentityTreeRoot,
-                        passingProof.gradeCommitment,
-                        passingProof.newGradeTreeRoot, 
                         passingProof.proof,
+                        [
+                            passingProof.identityCommitment, 
+                            passingProof.newIdentityTreeRoot,
+                            passingProof.gradeCommitment,
+                            passingProof.newGradeTreeRoot
+                        ],
                         true
                     )
 
@@ -1193,18 +1312,19 @@ describe("Credentials contract", () => {
                         1,
                         ratingProof.rating,
                         ratingProof.comment,
-                        ratingProof.semaphoreFullProof.merkleTreeRoot,
-                        ratingProof.semaphoreFullProof.nullifierHash,
-                        ratingProof.semaphoreFullProof.proof
+                        ratingProof.semaphoreFullProof.proof,
+                        [ratingProof.semaphoreFullProof.merkleTreeRoot, ratingProof.semaphoreFullProof.nullifierHash],
                     )
 
                     await credentialsContract.solveTest(
                         1, 
-                        altPassingProof.identityCommitment, 
-                        altPassingProof.newIdentityTreeRoot,
-                        altPassingProof.gradeCommitment,
-                        altPassingProof.newGradeTreeRoot, 
                         altPassingProof.proof, 
+                        [
+                            altPassingProof.identityCommitment, 
+                            altPassingProof.newIdentityTreeRoot,
+                            altPassingProof.gradeCommitment,
+                            altPassingProof.newGradeTreeRoot
+                        ], 
                         true
                     )
     
@@ -1212,9 +1332,8 @@ describe("Credentials contract", () => {
                         1,
                         altRatingProof.rating,
                         altRatingProof.comment,
-                        altRatingProof.semaphoreFullProof.merkleTreeRoot,
-                        altRatingProof.semaphoreFullProof.nullifierHash,
-                        altRatingProof.semaphoreFullProof.proof
+                        altRatingProof.semaphoreFullProof.proof,
+                        [altRatingProof.semaphoreFullProof.merkleTreeRoot, altRatingProof.semaphoreFullProof.nullifierHash],
                     )
                 })
 
@@ -1225,7 +1344,395 @@ describe("Credentials contract", () => {
                 })
             })
         })
-    })
 
+        context("without credential restricted tests created", () => {
+            describe("createCredentialRestrictedTest", () => {
+                context("when the `requiredCredential` given is 0", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.createCredentialRestrictedTest(50, 50, 3, 0, 0, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "TestDoesNotExist"
+                        )
+                    })
+                })
+    
+                context("when the `requiredCredential` given does not exist", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.createCredentialRestrictedTest(50, 50, 3, 0, 2, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "TestDoesNotExist"
+                        )
+                    })
+                })
+    
+                context("after creating tests", () => {
+                    let tx;
+    
+                    beforeEach(async () => {
+                        tx = await credentialsContract.createCredentialRestrictedTest(50, 50, 3, 0, 1, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                    })
+    
+                    it("increases the `nTests` variable", async () => {
+                        expect(
+                            await credentialsContract.nTests()
+                        ).to.be.equal('2')
+                    })
+    
+                    it("emits a `TestCreated` event", async () => {
+                        await expect(tx)
+                            .to.emit(credentialsContract, "TestCreated")
+                            .withArgs('2')
+                    })
+                })
+            })
+        })
+
+        context("with credential restricted tests created", () => {
+            beforeEach(async () => {
+                await credentialsContract.createCredentialRestrictedTest(50, 50, 3, 0, 1, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                await credentialsContract.solveTest(
+                    1, 
+                    passingProof.proof,
+                    [
+                        passingProof.identityCommitment, 
+                        passingProof.newIdentityTreeRoot,
+                        passingProof.gradeCommitment,
+                        passingProof.newGradeTreeRoot
+                    ],
+                    true
+                )
+            })
+    
+            describe("solveTest", () => {
+                context("when trying to solve a test that is credential restricted", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.solveTest(
+                                2,
+                                [1, 2, 3, 4, 5, 6, 7, 8],
+                                [1, 2, 3, 4],
+                                true
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "UserMustProveCredentialOwnership"
+                        ).withArgs(
+                            '1'
+                        )
+                    })
+                })
+            })
+    
+            describe("solveCredentialRestrictedTest", () => {
+                let credentialRestrictedTestProof: CredentialRestrictedTestFullProof;
+
+                let restrictedCredentialsGroup = new Group(2, N_LEVELS);
+                let restrictedGradeGroup = new Group(2, N_LEVELS);
+                let requiredCredentialsGroup = new Group(1, N_LEVELS);
+
+                before(async () => {
+                    requiredCredentialsGroup.addMember(identity.commitment)
+                    
+                    credentialRestrictedTestProof = await generateCredentialRestrictedTestProof(
+                        identity,
+                        testAnswers,
+                        testVariables,
+                        restrictedCredentialsGroup,
+                        restrictedGradeGroup,
+                        requiredCredentialsGroup,
+                        testSnarkArtifacts,
+                        semaphoreSnarkArtifacts
+                    )
+                })
+
+                beforeEach(async () => {
+                    await credentialsContract.solveCredentialRestrictedTest(
+                        2,
+                        credentialRestrictedTestProof.testFullProof.proof,
+                        [
+                            credentialRestrictedTestProof.testFullProof.identityCommitment, 
+                            credentialRestrictedTestProof.testFullProof.newIdentityTreeRoot,
+                            credentialRestrictedTestProof.testFullProof.gradeCommitment,
+                            credentialRestrictedTestProof.testFullProof.newGradeTreeRoot
+                        ],
+                        credentialRestrictedTestProof.semaphoreFullProof.proof,
+                        [
+                            credentialRestrictedTestProof.semaphoreFullProof.merkleTreeRoot,
+                            credentialRestrictedTestProof.semaphoreFullProof.nullifierHash  // used nullifier
+                        ],
+                        true
+                    )
+                })
+
+                context("when providing a used nullifier", () => {
+                    it("reverts", async() => {
+                        await expect(
+                            credentialsContract.solveCredentialRestrictedTest(
+                                2,
+                                credentialRestrictedTestProof.testFullProof.proof,
+                                [
+                                    credentialRestrictedTestProof.testFullProof.identityCommitment, 
+                                    credentialRestrictedTestProof.testFullProof.newIdentityTreeRoot,
+                                    credentialRestrictedTestProof.testFullProof.gradeCommitment,
+                                    credentialRestrictedTestProof.testFullProof.newGradeTreeRoot
+                                ],
+                                credentialRestrictedTestProof.semaphoreFullProof.proof,
+                                [
+                                    credentialRestrictedTestProof.semaphoreFullProof.merkleTreeRoot,
+                                    credentialRestrictedTestProof.semaphoreFullProof.nullifierHash  // used nullifier
+                                ],
+                                true
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "UsingSameNullifierTwice"
+                        )
+                    })
+                })
+    
+                context("after a successful call", () => {
+                    it("voids the nullifier used", async() => {
+                        expect(
+                            await credentialsContract.wasNullifierHashUsed(1, credentialRestrictedTestProof.semaphoreFullProof.nullifierHash)
+                        ).to.be.equal(true)
+                    })
+                })
+            })
+    
+            describe("solveGradeRestrictedTest", () => {
+                context("when trying to solve a test that is credential restricted", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.solveGradeRestrictedTest(
+                                2,
+                                [1, 2, 3, 4, 5, 6, 7, 8],
+                                [1, 2, 3, 4],
+                                [1, 2, 3, 4, 5, 6, 7, 8],
+                                [1, 2],
+                                true
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "UserMustProveCredentialOwnership"
+                        ).withArgs(
+                            '1'
+                        )
+                    })
+                })
+            })
+    
+            describe("getTest", () => {
+                it("returns the corresponding `Test` struct", async () => {
+                    expect((await credentialsContract.getTest(1)).slice(0,12).map( n => { return n.toString() }))
+                        .to.deep.equal([50, 50, 3, 0, 0, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
+                })
+            })
+        })
+
+        context("without grade restricted tests created", () => {
+            describe("createGradeRestrictedTest", () => {
+                context("when the `requiredCredential` given is 0", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 0, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "TestDoesNotExist"
+                        )
+                    })
+                })
+    
+                context("when the `requiredCredential` given does not exist", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 2, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "TestDoesNotExist"
+                        )
+                    })
+                })
+    
+                context("when the `requiredGradeThreshold` is greater than 100", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, 101, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "InvalidRequiredGradeThreshold"
+                        )
+                    })
+                })
+    
+                context("after creating tests", () => {
+                    let tx;
+    
+                    beforeEach(async () => {
+                        tx = await credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                    })
+    
+                    it("increases the `nTests` variable", async () => {
+                        expect(
+                            await credentialsContract.nTests()
+                        ).to.be.equal('2')
+                    })
+    
+                    it("emits a `TestCreated` event", async () => {
+                        await expect(tx)
+                            .to.emit(credentialsContract, "TestCreated")
+                            .withArgs('2')
+                    })
+                })
+            })
+        })
+
+        context("with grade restricted tests created", () => {
+            beforeEach(async () => {
+                await credentialsContract.createGradeRestrictedTest(50, 50, 3, 0, 1, requiredGradeThreshold, testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testURI)
+                await credentialsContract.solveTest(
+                    1, 
+                    passingProof.proof,
+                    [
+                        passingProof.identityCommitment, 
+                        passingProof.newIdentityTreeRoot,
+                        passingProof.gradeCommitment,
+                        passingProof.newGradeTreeRoot
+                    ],
+                    true
+                )
+            })
+    
+            describe("solveTest", () => {
+                context("when trying to solve a test that is grade restricted", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.solveTest(
+                                2,
+                                [1, 2, 3, 4, 5, 6, 7, 8],
+                                [1, 2, 3, 4],
+                                true
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "UserMustProveGradeThresholdObtained"
+                        ).withArgs(
+                            '1', requiredGradeThreshold
+                        )
+                    })
+                })
+            })
+            
+            describe("solveCredentialRestrictedTest", () => {
+                context("when trying to solve a test that is grade restricted", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsContract.solveCredentialRestrictedTest(
+                                2,
+                                [1, 2, 3, 4, 5, 6, 7, 8],
+                                [1, 2, 3, 4],
+                                [1, 2, 3, 4, 5, 6, 7, 8],
+                                [1, 2],
+                                true
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "UserMustProveGradeThresholdObtained"
+                        ).withArgs(
+                            '1', requiredGradeThreshold
+                        )
+                    })
+                })
+            })
+    
+            describe("solveGradeRestrictedTest", () => {
+                let gradeRestrictedTestProof: GradeRestrictedTestFullProof;
+
+                let restrictedCredentialsGroup = new Group(2, N_LEVELS);
+                let restrictedGradeGroup = new Group(2, N_LEVELS);
+                let gradeClaimGroup = new Group(1, N_LEVELS)
+
+                before(async () => {
+                    gradeClaimGroup.addMember(passingProof.gradeCommitment)
+
+                    gradeRestrictedTestProof = await generateGradeRestrictedTestProof(
+                        identity,
+                        testAnswers,
+                        testVariables,
+                        restrictedCredentialsGroup,
+                        restrictedGradeGroup,
+                        gradeClaimGroup,
+                        requiredGradeThreshold,
+                        { multipleChoiceWeight: 50, nQuestions: 3 },
+                        testSnarkArtifacts,
+                        gradeClaimSnarkArtifacts
+                    )
+                })
+
+                beforeEach(async () => {
+                    await credentialsContract.solveGradeRestrictedTest(
+                        2,
+                        gradeRestrictedTestProof.testFullProof.proof,
+                        [
+                            gradeRestrictedTestProof.testFullProof.identityCommitment, 
+                            gradeRestrictedTestProof.testFullProof.newIdentityTreeRoot,
+                            gradeRestrictedTestProof.testFullProof.gradeCommitment,
+                            gradeRestrictedTestProof.testFullProof.newGradeTreeRoot
+                        ],
+                        gradeRestrictedTestProof.gradeClaimFullProof.proof,
+                        [
+                            gradeRestrictedTestProof.gradeClaimFullProof.gradeTreeRoot,
+                            gradeRestrictedTestProof.gradeClaimFullProof.nullifierHash 
+                        ],
+                        true
+                    )
+                })
+
+                context("when providing a used nullifier", () => {
+                    it("reverts", async() => {
+                        await expect(
+                            credentialsContract.solveGradeRestrictedTest(
+                                2,
+                                gradeRestrictedTestProof.testFullProof.proof,
+                                [
+                                    gradeRestrictedTestProof.testFullProof.identityCommitment, 
+                                    gradeRestrictedTestProof.testFullProof.newIdentityTreeRoot,
+                                    gradeRestrictedTestProof.testFullProof.gradeCommitment,
+                                    gradeRestrictedTestProof.testFullProof.newGradeTreeRoot
+                                ],
+                                gradeRestrictedTestProof.gradeClaimFullProof.proof,
+                                [
+                                    gradeRestrictedTestProof.gradeClaimFullProof.gradeTreeRoot,
+                                    gradeRestrictedTestProof.gradeClaimFullProof.nullifierHash  // used nullifier
+                                ],
+                                true
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsContract,
+                            "UsingSameNullifierTwice"
+                        )
+                    })
+                })
+    
+                context("after a successful call", () => {
+                    it("voids the nullifier used", async() => {
+                        expect(
+                            await credentialsContract.wasNullifierHashUsed(1, gradeRestrictedTestProof.gradeClaimFullProof.nullifierHash)
+                        ).to.be.equal(true)
+                    })
+                })
+            })
+    
+            describe("getTest", () => {
+                it("returns the corresponding `Test` struct", async () => {
+                    expect((await credentialsContract.getTest(1)).slice(0,12).map( n => { return n.toString() }))
+                        .to.deep.equal([50, 50, 3, 0, 0, 0, accounts[0], testVariables.multipleChoiceRoot, testVariables.openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters])
+                })
+            })
+        })
+    })
     // TREE GOT FULL: the passingProof would revert, as the index inside the smart contract would be set to 2**N_LEVELS, whereas the max index the circuit can output is 2**N_LEVELS - 1
 })
