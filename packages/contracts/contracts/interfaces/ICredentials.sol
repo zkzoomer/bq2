@@ -5,18 +5,20 @@ pragma solidity ^0.8.4;
 /// @dev Interface of a Credentials contract.
 interface ICredentials {
     error CallerIsNotTheTestAdmin();
-    error CallerIsNotTheCredentialManager();
 
     error TimeLimitIsInThePast();
     error InvalidNumberOfQuestions();
     error InvalidMinimumGrade();
     error InvalidMultipleChoiceWeight();
+    error InvalidRequiredGradeThreshold();
 
     error TestAnswersAlreadyVerified();
     error InvalidTestAnswersLength(uint256 expectedLength, uint256 providedLength);
 
-    error UserMustProveCredentialOwnershipProofFirst(uint40 requiredCredential);
+    error UserMustProveCredentialOwnership(uint256 requiredCredential);
+    error UserMustProveGradeThresholdObtained(uint256 requiredCredential, uint256 requiredGradeThreshold);
     error CredentialOwnershipProofNotNeeded();
+    error GradeThresholdProofNotNeeded();
 
     error TestWasInvalidated();
     error TimeLimitReached();
@@ -42,6 +44,10 @@ interface ICredentials {
         uint8 nQuestions;
         /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited
         uint32 timeLimit;
+        /// The testId of the credential that needs to be obtained before this one -- set 0 for unrestricted
+        uint32 requiredCredential;
+        /// Minimum grade that must be obtained for the required credential -- set 0 for unrestricted
+        uint8 requiredGradeThreshold;
         /// Address that controls this credential
         address admin;
         /// Root of the multiple choice Merkle tree, where each leaf is the correct choice out of the given ones
@@ -129,22 +135,45 @@ interface ICredentials {
         string memory testURI
     ) external;
 
-    /// @dev Creates a new restricted test with the test parameters as specified in the `Test` struct. To solve this test, the user will need
-    /// to call the appropriate function within the `credentialManager` contract, verifying the additional requirement first.
+    /// @dev Creates a new test with the test parameters as specified in the `Test` struct, requiring the user first proves
+    /// that they own another credential before attempting to solve this one
     /// @param minimumGrade: see the `Test` struct
     /// @param multipleChoiceWeight: see the `Test` struct
     /// @param nQuestions: see the `Test` struct
     /// @param timeLimit: see the `Test` struct
-    /// @param credentialManager: smart contract address that manages the solving of the credential by enforcing an additional requirement -- 0x0 for unrestricted 
+    /// @param requiredCredential: see the `Test` struct
     /// @param multipleChoiceRoot: see the `Test` struct
     /// @param openAnswersHashesRoot: see the `Test` struct
     /// @param testURI: external resource containing the actual test and more information about the credential.
-    function createRestrictedTest(
+    function createCredentialRestrictedTest(
         uint8 minimumGrade,
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
         uint32 timeLimit,
-        address credentialManager,
+        uint32 requiredCredential,
+        uint256 multipleChoiceRoot,
+        uint256 openAnswersHashesRoot,
+        string memory testURI
+    ) external;
+
+    /// @dev Creates a new test with the test parameters as specified in the `Test` struct, requiring the user first proves
+    /// that they own another credential before attempting to solve this one
+    /// @param minimumGrade: see the `Test` struct
+    /// @param multipleChoiceWeight: see the `Test` struct
+    /// @param nQuestions: see the `Test` struct
+    /// @param timeLimit: see the `Test` struct
+    /// @param requiredCredential: see the `Test` struct
+    /// @param requiredGradeThreshold: see the `Test` struct
+    /// @param multipleChoiceRoot: see the `Test` struct
+    /// @param openAnswersHashesRoot: see the `Test` struct
+    /// @param testURI: external resource containing the actual test and more information about the credential.
+    function createGradeRestrictedTest(
+        uint8 minimumGrade,
+        uint8 multipleChoiceWeight,
+        uint8 nQuestions,
+        uint32 timeLimit,
+        uint32 requiredCredential,
+        uint8 requiredGradeThreshold,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
@@ -168,19 +197,67 @@ interface ICredentials {
     /// otherwise, it adds the identityCommitment to the no-credentials tree. In either case, the gradeCommitment gets
     /// added to the grade tree.
     /// @param testId: id of the test
-    /// @param identityCommitment: new identity commitment to add to the identity tree (credentials or no credentials tree)
-    /// @param newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
-    /// @param gradeCommitment: new grade commitment to add to the grade tree
-    /// @param newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
     /// @param proof: test zero-knowledge proof
+    /// @param testProofInputs: array containing some of the public inputs for the test proof, these being:
+    ///     - identityCommitment: new identity commitment to add to the identity tree (credentials or no credentials tree)
+    ///     - newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
+    ///     - gradeCommitment: new grade commitment to add to the grade tree
+    ///     - newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
     /// @param testPassed: boolean value indicating whether the proof provided corresponds to a passed test or not
     function solveTest(
         uint256 testId,
-        uint256 identityCommitment,
-        uint256 newIdentityTreeRoot,
-        uint256 gradeCommitment,
-        uint256 newGradeTreeRoot,
         uint256[8] calldata proof,
+        uint256[4] calldata testProofInputs,
+        bool testPassed
+    ) external;
+
+    /// @dev User first proves that they own the `requiredCredential` of this testId via a Semaphore proof, and then provide
+    /// a proof of knowledge of the solution. If it is valid, adds the identityCommitment to the credentialsTree; 
+    /// otherwise, it adds the identityCommitment to the no-credentials tree. In either case, the gradeCommitment gets
+    /// added to the grade tree.
+    /// @param testId: id of the test
+    /// @param testProof: test zero-knowledge proof
+    /// @param testProofInputs: array containing some of the public inputs for the test proof, these being:
+    ///     - identityCommitment: new identity commitment to add to the identity tree (credentials or no credentials tree)
+    ///     - newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
+    ///     - gradeCommitment: new grade commitment to add to the grade tree
+    ///     - newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
+    /// @param semaphoreProof: Semaphore zero-knowledge proof
+    /// @param semaphoreProofInputs: array containing some of the public inputs for the Semaphore proof, these being:
+    ///     - requiredCredentialMerkleTreeRoot: root of the required credential Merkle tree
+    ///     - nullifierHash: nullifier hash
+    /// @param testPassed: boolean value indicating whether the proof provided corresponds to a passed test or not
+    function solveCredentialRestrictedTest(
+        uint256 testId,
+        uint256[8] calldata testProof,
+        uint256[4] calldata testProofInputs,
+        uint256[8] calldata semaphoreProof,
+        uint256[2] calldata semaphoreProofInputs,
+        bool testPassed
+    ) external;
+
+    /// @dev User first proves that they obtained a grade above necessary threshold for the `requiredCredential` of this 
+    /// testId via a grade claim proof, and then provide a proof of knowledge of the solution. If it is valid, adds the 
+    /// identityCommitment to the credentialsTree; otherwise, it adds the identityCommitment to the no-credentials tree. 
+    /// In either case, the gradeCommitment gets added to the grade tree.
+    /// @param testId: id of the test
+    /// @param testProof: test zero-knowledge proof
+    /// @param testProofInputs: array containing some of the public inputs for the test proof, these being:
+    ///     - identityCommitment: new identity commitment to add to the identity tree (credentials or no credentials tree)
+    ///     - newIdentityTreeRoot: new root of the identity tree result of adding the identity commitment (credentials or no credentials tree)
+    ///     - gradeCommitment: new grade commitment to add to the grade tree
+    ///     - newGradeTreeRoot: new root of the grade tree result of adding the grade commitment
+    /// @param gradeClaimProof: grade claim zero-knowledge proof
+    /// @param gradeClaimProofInputs: array containing some of the public inputs for the grade claim proof, these being:
+    ///     - gradeClaimMerkleTreeRoot: root of the grade commitment Merkle tree
+    ///     - nullifierHash: nullifier hash
+    /// @param testPassed: boolean value indicating whether the proof provided corresponds to a passed test or not
+    function solveGradeRestrictedTest(
+        uint256 testId,
+        uint256[8] calldata testProof,
+        uint256[4] calldata testProofInputs,
+        uint256[8] calldata gradeClaimProof,
+        uint256[2] calldata gradeClaimProofInputs,
         bool testPassed
     ) external;
 
@@ -188,16 +265,16 @@ interface ICredentials {
     /// @param testId: id of the test for which the rating is being done
     /// @param rating: rating given to the credential issuer for this test, 0-100
     /// @param comment: comment given to the credential issuer for this test, maximum 280 characters
-    /// @param merkleTreeRoot: root of the Merkle tree
-    /// @param nullifierHash: nullifier hash
     /// @param proof: Semaphore zero-knowledge proof
+    /// @param proofInputs: array containing some of the public inputs for the Semaphore proof, these being:
+    ///     - merkleTreeRoot: root of the Merkle tree
+    ///     - nullifierHash: nullifier hash
     function rateIssuer(
         uint256 testId,
         uint128 rating,
         string calldata comment,
-        uint256 merkleTreeRoot,
-        uint256 nullifierHash,
-        uint256[8] calldata proof
+        uint256[8] calldata proof,
+        uint256[2] calldata proofInputs
     ) external;
 
     /// @dev Returns the average rating that a test has obtained

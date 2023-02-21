@@ -17,10 +17,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev Gets a test id and returns the test parameters
     mapping(uint256 => Test) public tests;
 
-    /// @dev Gets a test id and returns the corresponding credential manager contract, which
-    /// are used to check that solvers meet certain criteria before earning the credential.
-    mapping(uint256 => address) public credentialManagers;
-
     /// @dev Gets a test id and returns the corresponding group parameters
     mapping(uint256 => TestGroup) public testGroups;
 
@@ -44,8 +40,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev Number of tests that have been created
     uint256 public nTests;
 
-    /// @dev Verifies that the test admin is the transaction sender
-    /// @param testId: Id of the test
+    /// @dev Checks if the test admin is the transaction sender
+    /// @param testId: Id of the test (Semaphore group)
     modifier onlyTestAdmin(uint256 testId) {
         if (tests[testId].admin != _msgSender()) {
             revert CallerIsNotTheTestAdmin();
@@ -53,17 +49,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         _;
     }
 
-    /// @dev Verifies that the test admin is the transaction sender
-    /// @param testId: Id of the test
-    modifier onlyCredentialManager(uint256 testId) {
-        if (credentialManagers[testId] != address(0) && credentialManagers[testId] != _msgSender()) {
-            revert CallerIsNotTheCredentialManager();
-        }
-        _;
-    }
-
     /// @dev Checks if the test exists
-    /// @param testId: Id of the test
+    /// @param testId: Id of the test (Semaphore group)
     modifier onlyExistingTests(uint256 testId) {
         if (!_testExists(testId)) {
             revert TestDoesNotExist();
@@ -91,29 +78,50 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 openAnswersHashesRoot,
         string memory testURI
     ) external override {
-        return _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, address(0), multipleChoiceRoot, openAnswersHashesRoot, testURI);
+        _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, 0, 0, multipleChoiceRoot, openAnswersHashesRoot, testURI);
     }    
 
-    /// @dev See {ICredentials-createRestrictedTest}
-    function createRestrictedTest(
+    /// @dev See {ICredentials-createCredentialRestrictedTest}
+    function createCredentialRestrictedTest(
         uint8 minimumGrade,
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
         uint32 timeLimit,
-        address credentialManager,
+        uint32 requiredCredential,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
-    ) external override {
-        return _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, credentialManager, multipleChoiceRoot, openAnswersHashesRoot, testURI);
+    ) external override onlyExistingTests(requiredCredential) {
+        _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, requiredCredential, 0, multipleChoiceRoot, openAnswersHashesRoot, testURI);
     }
 
+    /// @dev See {ICredentials-createGradeRestrictedTest}
+    function createGradeRestrictedTest(
+        uint8 minimumGrade,
+        uint8 multipleChoiceWeight,
+        uint8 nQuestions,
+        uint32 timeLimit,
+        uint32 requiredCredential,
+        uint8 requiredGradeThreshold,
+        uint256 multipleChoiceRoot,
+        uint256 openAnswersHashesRoot,
+        string memory testURI
+    ) external override onlyExistingTests(requiredCredential) {
+        if (requiredGradeThreshold > 100) {
+            revert InvalidRequiredGradeThreshold();
+        }
+
+        _createTest(minimumGrade, multipleChoiceWeight, nQuestions, timeLimit, requiredCredential, requiredGradeThreshold, multipleChoiceRoot, openAnswersHashesRoot, testURI);
+    }
+
+    /// @dev Verifies the test parameters given and creates a new test accordingly
     function _createTest(
         uint8 minimumGrade,
         uint8 multipleChoiceWeight,
         uint8 nQuestions,
         uint32 timeLimit,
-        address credentialManager,
+        uint32 requiredCredential,
+        uint8 requiredGradeThreshold,
         uint256 multipleChoiceRoot,
         uint256 openAnswersHashesRoot,
         string memory testURI
@@ -162,6 +170,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             multipleChoiceWeight,
             nQuestions,
             timeLimit,
+            requiredCredential,
+            requiredGradeThreshold,
             _msgSender(),
             multipleChoiceRoot,
             openAnswersHashesRoot,
@@ -169,8 +179,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             testParameters,
             nonPassingTestParameters
         );
-
-        credentialManagers[nTests] = credentialManager;
 
         testGroups[nTests].credentialsTreeIndex = 0;
         testGroups[nTests].noCredentialsTreeIndex = 0;
@@ -217,13 +225,125 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @dev See {ICredentials-solveTest}
     function solveTest(
         uint256 testId,
-        uint256 identityCommitment,
-        uint256 newIdentityTreeRoot,
-        uint256 gradeCommitment,
-        uint256 newGradeTreeRoot,
+        uint256[8] calldata proof,
+        uint256[4] calldata testProofInputs,
+        bool testPassed
+    ) external override {
+        if (tests[testId].requiredCredential != 0 && tests[testId].requiredGradeThreshold == 0) {
+            revert UserMustProveCredentialOwnership(tests[testId].requiredCredential);
+        } else if (tests[testId].requiredCredential != 0 && tests[testId].requiredGradeThreshold != 0) {
+            revert UserMustProveGradeThresholdObtained(tests[testId].requiredCredential,tests[testId].requiredGradeThreshold);
+        }
+        
+        _solveTest(testId, testProofInputs, proof, testPassed);
+    }
+
+    /// @dev See {ICredentials-solveCredentialRestrictedTest}
+    function solveCredentialRestrictedTest(
+        uint256 testId,
+        uint256[8] calldata testProof,
+        uint256[4] calldata testProofInputs,
+        uint256[8] calldata semaphoreProof,
+        uint256[2] calldata semaphoreProofInputs,
+        bool testPassed
+    ) external override {
+        uint256 requiredCredentialTestId = tests[testId].requiredCredential;
+        if (requiredCredentialTestId == 0) {
+            revert CredentialOwnershipProofNotNeeded();
+        } else if (requiredCredentialTestId != 0 && tests[testId].requiredGradeThreshold != 0) {
+            revert UserMustProveGradeThresholdObtained(requiredCredentialTestId, tests[testId].requiredGradeThreshold);
+        }
+
+        if (testGroups[requiredCredentialTestId].nullifierHashes[semaphoreProofInputs[1]]) {
+            revert UsingSameNullifierTwice();
+        }
+
+        _verifyMerkleRootValidity(
+            requiredCredentialTestId, 
+            semaphoreProofInputs[0], 
+            testGroups[requiredCredentialTestId].credentialsTreeRoot
+        );
+
+        uint256 signal = uint(keccak256(abi.encode(
+            testProofInputs[0], 
+            testProofInputs[1], 
+            testProofInputs[2], 
+            testProofInputs[3]
+        )));
+        // formatBytes32String("bq-credential-restricted-test")
+        uint256 externalNullifier = 0x62712d63726564656e7469616c2d726573747269637465642d74657374000000;
+
+        semaphoreVerifier.verifyProof(semaphoreProofInputs[0], semaphoreProofInputs[1], signal, externalNullifier, semaphoreProof, N_LEVELS);
+        
+        testGroups[requiredCredentialTestId].nullifierHashes[semaphoreProofInputs[1]] = true;
+
+        _solveTest(testId, testProofInputs, testProof, testPassed);
+    }
+
+    /// @dev See {ICredentials-solveGradeRestrictedTest}
+    function solveGradeRestrictedTest(
+        uint256 testId,
+        uint256[8] calldata testProof,
+        uint256[4] calldata testProofInputs,
+        uint256[8] calldata gradeClaimProof,
+        uint256[2] calldata gradeClaimProofInputs,
+        bool testPassed
+    ) external override {
+        // TODO: look into gas savings by doing uint40 & uint8 here and the corresponding casts later
+        uint256 requiredCredentialTestId = tests[testId].requiredCredential;
+        uint256 requiredGradeThreshold = tests[testId].requiredGradeThreshold;
+        if (requiredCredentialTestId == 0) {
+            revert GradeThresholdProofNotNeeded();
+        } else if (requiredCredentialTestId != 0 && requiredGradeThreshold == 0) {
+            revert UserMustProveCredentialOwnership(requiredCredentialTestId);
+        }
+
+        if (testGroups[requiredCredentialTestId].nullifierHashes[gradeClaimProofInputs[1]]) {
+            revert UsingSameNullifierTwice();
+        }
+
+        _verifyMerkleRootValidity(
+            requiredCredentialTestId, 
+            gradeClaimProofInputs[0], 
+            testGroups[requiredCredentialTestId].gradeTreeRoot
+        );
+
+        uint256 signal = uint(keccak256(abi.encode(
+            testProofInputs[0], 
+            testProofInputs[1], 
+            testProofInputs[2], 
+            testProofInputs[3]
+        )));
+        // _hash(formatBytes32String("bq-grade-restricted-test")) == _hash(0x62712d67726164652d726573747269637465642d746573740000000000000000)
+        uint256 externalNullifierHash = 360726937354500291699366262339606603465379696885406079715828419132989363476;
+
+        // Grade threshold needs to be weighted by the number of questions
+        uint256 nQuestions = tests[requiredCredentialTestId].nQuestions;
+        uint256 weightedRequiredGradeThreshold = requiredGradeThreshold * nQuestions;
+
+        gradeClaimVerifier.verifyProof(
+            gradeClaimProof,
+            [
+                gradeClaimProofInputs[0],
+                gradeClaimProofInputs[1],
+                weightedRequiredGradeThreshold,
+                _hash(signal),
+                externalNullifierHash
+            ]
+        );
+
+        testGroups[requiredCredentialTestId].nullifierHashes[gradeClaimProofInputs[1]] = true;
+
+        _solveTest(testId, testProofInputs, testProof, testPassed);
+    }
+
+    /// @dev Verifies the test proof and updates the on-chain credential accordingly
+    function _solveTest(
+        uint256 testId,
+        uint256[4] calldata testProofInputs,
         uint256[8] calldata proof,
         bool testPassed
-    ) external override onlyExistingTests(testId) onlyCredentialManager(testId) {
+    ) internal onlyExistingTests(testId) {
         if (tests[testId].minimumGrade == 255) {
             revert TestWasInvalidated();
         }
@@ -235,13 +355,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         if (testPassed || tests[testId].minimumGrade == 0) {  // test always gets passed when minimumGrade = 0
             uint[10] memory proofInput = [
                 testGroups[testId].credentialsTreeIndex,
-                identityCommitment,
+                testProofInputs[0],
                 testGroups[testId].credentialsTreeRoot,
-                newIdentityTreeRoot,
+                testProofInputs[1],
                 testGroups[testId].gradeTreeIndex,
-                gradeCommitment,
+                testProofInputs[2],
                 testGroups[testId].gradeTreeRoot,
-                newGradeTreeRoot,
+                testProofInputs[3],
                 tests[testId].testRoot,
                 tests[testId].testParameters
             ];
@@ -254,28 +374,28 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             emit MemberAdded(
                 3 * testId - 1,                           // groupId
                 testGroups[testId].credentialsTreeIndex,  // index
-                identityCommitment,                       // identityCommitment
-                newIdentityTreeRoot                       // credentialsTreeRoot
+                testProofInputs[0],                       // identityCommitment
+                testProofInputs[1]                        // credentialsTreeRoot
             );
 
             emit CredentialsGained(
                 testId,              // testId
-                identityCommitment,  // identityCommitment
-                gradeCommitment      // gradeCommitment
+                testProofInputs[0],  // identityCommitment
+                testProofInputs[2]   // gradeCommitment
             );
             
             testGroups[testId].credentialsTreeIndex += 1;
-            testGroups[testId].credentialsTreeRoot = newIdentityTreeRoot;
+            testGroups[testId].credentialsTreeRoot = testProofInputs[1];
         } else {
             uint[10] memory proofInput = [
                 testGroups[testId].noCredentialsTreeIndex,
-                identityCommitment,
+                testProofInputs[0],
                 testGroups[testId].noCredentialsTreeRoot,
-                newIdentityTreeRoot,
+                testProofInputs[1],
                 testGroups[testId].gradeTreeIndex,
-                gradeCommitment,
+                testProofInputs[2],
                 testGroups[testId].gradeTreeRoot,
-                newGradeTreeRoot,
+                testProofInputs[3],
                 tests[testId].testRoot,
                 tests[testId].nonPassingTestParameters
             ];
@@ -286,34 +406,34 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
 
             // Member added to no credentials tree
             emit MemberAdded(
-                3 * testId,                             // groupId
+                3 * testId,                                 // groupId
                 testGroups[testId].noCredentialsTreeIndex,  // index
-                identityCommitment,                         // identityCommitment
-                newIdentityTreeRoot                         // noCredentialsTreeRoot
+                testProofInputs[0],                         // identityCommitment
+                testProofInputs[1]                          // noCredentialsTreeRoot
             );
 
             emit CredentialsNotGained(
                 testId,              // testId
-                identityCommitment,  // identityCommitment
-                gradeCommitment      // gradeCommitment
+                testProofInputs[0],  // identityCommitment
+                testProofInputs[2]   // gradeCommitment
             );
 
             testGroups[testId].noCredentialsTreeIndex += 1;
-            testGroups[testId].noCredentialsTreeRoot = newIdentityTreeRoot;
+            testGroups[testId].noCredentialsTreeRoot = testProofInputs[1];
         }
         
         // Member always gets added to grade tree
         emit MemberAdded(
-            3 * testId - 2,                         // groupId
+            3 * testId - 2,                     // groupId
             testGroups[testId].gradeTreeIndex,  // index
-            gradeCommitment,                    // gradeCommitment
-            newGradeTreeRoot                    // gradeTreeRoot
+            testProofInputs[2],                 // gradeCommitment
+            testProofInputs[3]                  // gradeTreeRoot
         );
 
         testGroups[testId].gradeTreeIndex += 1;
-        testGroups[testId].gradeTreeRoot = newGradeTreeRoot;
-        testGroups[testId].merkleRootCreationDates[newIdentityTreeRoot] = block.timestamp;
-        testGroups[testId].merkleRootCreationDates[newGradeTreeRoot] = block.timestamp;
+        testGroups[testId].gradeTreeRoot = testProofInputs[3];
+        testGroups[testId].merkleRootCreationDates[testProofInputs[1]] = block.timestamp;
+        testGroups[testId].merkleRootCreationDates[testProofInputs[3]] = block.timestamp;
     }
 
     /// @dev See {ICredentials-rateIssuer}
@@ -321,9 +441,8 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 testId,
         uint128 rating,
         string calldata comment,
-        uint256 merkleTreeRoot,
-        uint256 nullifierHash,
-        uint256[8] calldata proof
+        uint256[8] calldata proof,
+        uint256[2] calldata proofInputs
     ) external override onlyExistingTests(testId) {
         if(rating > 100) {
             revert InvalidRating();
@@ -333,10 +452,31 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         // formatBytes32String("bq-rate")
         uint256 externalNullifier = 0x62712d7261746500000000000000000000000000000000000000000000000000;
 
-        // A proof could have used an old Merkle tree root.
-        // https://github.com/semaphore-protocol/semaphore/issues/98
-        if (merkleTreeRoot != testGroups[testId].credentialsTreeRoot) {
-            uint256 merkleRootCreationDate = testGroups[testId].merkleRootCreationDates[merkleTreeRoot];
+        _verifyMerkleRootValidity(testId, proofInputs[0], testGroups[testId].credentialsTreeRoot);
+
+        if (testGroups[testId].nullifierHashes[proofInputs[1]]) {
+            revert UsingSameNullifierTwice();
+        }
+
+        semaphoreVerifier.verifyProof(proofInputs[0], proofInputs[1], signal, externalNullifier, proof, N_LEVELS);
+
+        testGroups[testId].nullifierHashes[proofInputs[1]] = true;
+        testRatings[testId].totalRating += rating;
+        testRatings[testId].nRatings++;
+
+        emit NewRating(testId, tests[testId].admin, rating, comment);
+    }
+
+    /// @dev Verifies that the given Merkle root for proof of inclusions is not expired.
+    /// This check is made so that proofs can use an old Merkle root, see:
+    /// https://github.com/semaphore-protocol/semaphore/issues/98
+    function _verifyMerkleRootValidity(
+        uint256 testId,
+        uint256 usedMerkleRoot,
+        uint256 currentMerkleRoot
+    ) internal view {
+        if (usedMerkleRoot != currentMerkleRoot) {
+            uint256 merkleRootCreationDate = testGroups[testId].merkleRootCreationDates[usedMerkleRoot];
 
             if (merkleRootCreationDate == 0) {
                 revert MerkleTreeRootIsNotPartOfTheGroup();
@@ -346,18 +486,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
                 revert MerkleTreeRootIsExpired();
             }
         }
-
-        if (testGroups[testId].nullifierHashes[nullifierHash]) {
-            revert UsingSameNullifierTwice();
-        }
-
-        semaphoreVerifier.verifyProof(merkleTreeRoot, nullifierHash, signal, externalNullifier, proof, N_LEVELS);
-
-        testGroups[testId].nullifierHashes[nullifierHash] = true;
-        testRatings[testId].totalRating += rating;
-        testRatings[testId].nRatings++;
-
-        emit NewRating(testId, tests[testId].admin, rating, comment);
     }
 
     /// @dev See {ICredentials-getTestAverageRating}
@@ -466,6 +594,13 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
     /// @param testId: id of the test
     /// @return Test existence
     function _testExists(uint256 testId) internal view virtual returns (bool) {
-        return testId <= nTests;
+        return testId <= nTests && testId != 0;
+    }
+
+    /// @dev Creates a keccak256 hash of a message compatible with the SNARK scalar modulus.
+    /// @param message: Message to be hashed.
+    /// @return Message digest.
+    function _hash(uint256 message) private pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(message))) >> 8;
     }
 }
