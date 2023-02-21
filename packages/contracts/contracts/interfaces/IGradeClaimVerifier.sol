@@ -20,6 +20,15 @@ interface IGradeClaimVerifier {
         PairingLib.G1Point C;
     }
 
+    /// @dev Verifies a grade claim proof
+    /// @param proof: SNARk proof
+    /// @param input: public inputs for the proof, these being:
+    ///     - gradeTreeRoot
+    ///     - nullifierHash
+    ///     - weightedGradeThreshold
+    ///     - signalHash
+    ///     - externalNullifier
+    /// @return true if the proof is valid, false otherwise
     function verifyProof(
         uint256[8] calldata proof,
         uint256[5] memory input
