@@ -9,6 +9,7 @@
 
 * [Proofs](./guides/proofs/README.md)
     * [Block Qualified Test Proof](./guides/proofs/bq-test-proof.md)
+    * [Block Qualified Restricted Test Proof](./guides/proofs/bq-restricted-test-proof.md)
     * [Grade Claim Proof](./guides/proofs/grade-claim-proof.md)
     * [Semaphore Inclusion Proof](./guides/proofs/semaphore-inclusion-proof.md)
 * [Other Functionalities](./guides/functionalities/README.md)
