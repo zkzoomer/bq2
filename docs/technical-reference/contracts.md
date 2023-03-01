@@ -72,8 +72,6 @@ Note that every user that provides a valid proof via `solveTest` gets their grad
 ### Solving Restricted Tests
 To obtain a restricted credential, besides providing a proof for the [Test circuit](circuits.md#the-test-circuit), users must provide a proof showing that they pass the restrictions.
 
-
-
 #### Solving a Credential Restricted Test
 To obtain a credential restricted credential, users must call the `solveCredentialRestrictedTest` function, providing a valid proof for the [Test circuit](circuits.md#the-test-circuit) plus an additional [Semaphore proof](https://semaphore.appliedzkp.org/docs/guides/proofs) that verifies that they own the `requiredCredential`.
 
@@ -100,6 +98,12 @@ After verifying the proof, the `rating` is recorded on-chain. The average rating
 {% hint style="info" %}
 The external nullifier being used to prevent double-signaling is the string `bq-grade-restricted-test`.
 {% endhint %}
+
+### Verifying Credential Ownership Proofs
+External contracts can verify credential ownership proofs by calling the `verifyCredentialOwnershipProof` function, providing the `testId` of the credential and a valid [Semaphore proof](https://semaphore.appliedzkp.org/docs/guides/proofs).
+
+### Verifying Grade Claim Proofs
+External contracts can verify grade claim proofs by calling the `verifyGradeClaimProof` function, providing the `testId` of the credential and a valid [grade claim proof](circuits.md#the-grade-claim-circuit) that verifies that they obtained a grade above the `gradeThreshold` they specified.
 
 ### Verifying a Test
 The admin of a test can choose to _verify it_ by providing the open answer hashes needed to solve this test directly on-chain, which is done by calling the function `verifyTest`.
