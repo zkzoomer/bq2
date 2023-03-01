@@ -297,15 +297,11 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         // formatBytes32String("bq-grade-restricted-test")
         uint256 externalNullifier = 0x62712d67726164652d726573747269637465642d746573740000000000000000;
 
-        // Grade threshold needs to be weighted by the number of questions
-        uint256 nQuestions = tests[requiredCredentialTestId].nQuestions;
-        uint256 weightedRequiredCredentialGradeThreshold = requiredCredentialGradeThreshold * nQuestions;
-
         _verifyGradeClaimProof(
             requiredCredentialTestId, 
             gradeClaimProofInputs[0], 
             gradeClaimProofInputs[1], 
-            weightedRequiredCredentialGradeThreshold, 
+            requiredCredentialGradeThreshold, 
             signal, 
             externalNullifier, 
             gradeClaimProof
@@ -463,12 +459,12 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 testId,
         uint256 gradeTreeRoot,
         uint256 nullifierHash,
-        uint256 weightedGradeThreshold,
+        uint256 gradeThreshold,
         uint256 signal,
         uint256 externalNullifier,
         uint256[8] calldata proof
     ) external view override {
-        _verifyGradeClaimProof(testId, gradeTreeRoot, nullifierHash, weightedGradeThreshold, signal, externalNullifier, proof);
+        _verifyGradeClaimProof(testId, gradeTreeRoot, nullifierHash, gradeThreshold, signal, externalNullifier, proof);
     }
 
     /// @dev See {ICredentials-verifyCredentialOwnershipProof}
@@ -498,7 +494,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         uint256 testId,
         uint256 gradeTreeRoot,
         uint256 nullifierHash,
-        uint256 weightedGradeThreshold,
+        uint256 gradeThreshold,
         uint256 signal,
         uint256 externalNullifier,
         uint256[8] calldata proof
@@ -518,7 +514,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             [
                 gradeTreeRoot,
                 nullifierHash,
-                weightedGradeThreshold,
+                gradeThreshold * tests[testId].nQuestions,  // Grade threshold needs to be weighted by the number of questions
                 _hash(signal),
                 _hash(externalNullifier)
             ]

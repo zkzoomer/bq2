@@ -297,7 +297,7 @@ interface ICredentials {
     /// @param testId: id of the test for which the ownership proof is being done
     /// @param gradeTreeRoot: root of the grade Merkle tree
     /// @param nullifierHash: nullifier hash
-    /// @param weightedGradeThreshold: grade threshold the user claims to have obtained
+    /// @param gradeThreshold: grade threshold the user claims to have obtained
     /// @param signal: hashed Semaphore signal
     /// @param externalNullifier: hashed external nullifier
     /// @param proof: zero-knowledge proof
@@ -305,7 +305,7 @@ interface ICredentials {
         uint256 testId,
         uint256 gradeTreeRoot,
         uint256 nullifierHash,
-        uint256 weightedGradeThreshold,
+        uint256 gradeThreshold,
         uint256 signal,
         uint256 externalNullifier,
         uint256[8] calldata proof
