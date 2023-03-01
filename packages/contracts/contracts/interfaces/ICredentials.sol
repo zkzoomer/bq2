@@ -277,6 +277,40 @@ interface ICredentials {
         uint256[2] calldata proofInputs
     ) external;
 
+    /// @dev Verifies whether a Semaphore credential ownership proof is valid
+    /// @param testId: id of the test for which the ownership proof is being done
+    /// @param merkleTreeRoot: root of the Merkle tree
+    /// @param nullifierHash: nullifier hash
+    /// @param signal: semaphore signal
+    /// @param externalNullifier: external nullifier
+    /// @param proof: zero-knowledge proof
+    function verifyCredentialOwnershipProof(
+        uint256 testId,
+        uint256 merkleTreeRoot,
+        uint256 nullifierHash,
+        uint256 signal,
+        uint256 externalNullifier,
+        uint256[8] calldata proof
+    ) external view;
+
+    /// @dev Verifies whether a grade claim proof is valid
+    /// @param testId: id of the test for which the ownership proof is being done
+    /// @param gradeTreeRoot: root of the grade Merkle tree
+    /// @param nullifierHash: nullifier hash
+    /// @param weightedGradeThreshold: grade threshold the user claims to have obtained
+    /// @param signal: hashed Semaphore signal
+    /// @param externalNullifier: hashed external nullifier
+    /// @param proof: zero-knowledge proof
+    function verifyGradeClaimProof(
+        uint256 testId,
+        uint256 gradeTreeRoot,
+        uint256 nullifierHash,
+        uint256 weightedGradeThreshold,
+        uint256 signal,
+        uint256 externalNullifier,
+        uint256[8] calldata proof
+    ) external view;
+
     /// @dev Returns the average rating that a test has obtained
     /// @param testId: id of the test
     /// @return average rating the test received

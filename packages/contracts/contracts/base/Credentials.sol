@@ -254,16 +254,6 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert UserMustProveGradeThresholdObtained(requiredCredentialTestId, tests[testId].requiredCredentialGradeThreshold);
         }
 
-        if (testGroups[requiredCredentialTestId].nullifierHashes[semaphoreProofInputs[1]]) {
-            revert UsingSameNullifierTwice();
-        }
-
-        _verifyMerkleRootValidity(
-            requiredCredentialTestId, 
-            semaphoreProofInputs[0], 
-            testGroups[requiredCredentialTestId].credentialsTreeRoot
-        );
-
         uint256 signal = uint(keccak256(abi.encode(
             testProofInputs[0], 
             testProofInputs[1], 
@@ -273,7 +263,7 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         // formatBytes32String("bq-credential-restricted-test")
         uint256 externalNullifier = 0x62712d63726564656e7469616c2d726573747269637465642d74657374000000;
 
-        semaphoreVerifier.verifyProof(semaphoreProofInputs[0], semaphoreProofInputs[1], signal, externalNullifier, semaphoreProof, N_LEVELS);
+        _verifyCredentialOwnershipProof(requiredCredentialTestId, semaphoreProofInputs[0], semaphoreProofInputs[1], signal, externalNullifier, semaphoreProof);
         
         testGroups[requiredCredentialTestId].nullifierHashes[semaphoreProofInputs[1]] = true;
 
@@ -298,38 +288,27 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
             revert UserMustProveCredentialOwnership(requiredCredentialTestId);
         }
 
-        if (testGroups[requiredCredentialTestId].nullifierHashes[gradeClaimProofInputs[1]]) {
-            revert UsingSameNullifierTwice();
-        }
-
-        _verifyMerkleRootValidity(
-            requiredCredentialTestId, 
-            gradeClaimProofInputs[0], 
-            testGroups[requiredCredentialTestId].gradeTreeRoot
-        );
-
         uint256 signal = uint(keccak256(abi.encode(
             testProofInputs[0], 
             testProofInputs[1], 
             testProofInputs[2], 
             testProofInputs[3]
         )));
-        // _hash(formatBytes32String("bq-grade-restricted-test")) == _hash(0x62712d67726164652d726573747269637465642d746573740000000000000000)
-        uint256 externalNullifierHash = 360726937354500291699366262339606603465379696885406079715828419132989363476;
+        // formatBytes32String("bq-grade-restricted-test")
+        uint256 externalNullifier = 0x62712d67726164652d726573747269637465642d746573740000000000000000;
 
         // Grade threshold needs to be weighted by the number of questions
         uint256 nQuestions = tests[requiredCredentialTestId].nQuestions;
         uint256 weightedRequiredCredentialGradeThreshold = requiredCredentialGradeThreshold * nQuestions;
 
-        gradeClaimVerifier.verifyProof(
-            gradeClaimProof,
-            [
-                gradeClaimProofInputs[0],
-                gradeClaimProofInputs[1],
-                weightedRequiredCredentialGradeThreshold,
-                _hash(signal),
-                externalNullifierHash
-            ]
+        _verifyGradeClaimProof(
+            requiredCredentialTestId, 
+            gradeClaimProofInputs[0], 
+            gradeClaimProofInputs[1], 
+            weightedRequiredCredentialGradeThreshold, 
+            signal, 
+            externalNullifier, 
+            gradeClaimProof
         );
 
         testGroups[requiredCredentialTestId].nullifierHashes[gradeClaimProofInputs[1]] = true;
@@ -465,6 +444,85 @@ contract Credentials is ICredentials, ISemaphoreGroups, Context {
         testRatings[testId].nRatings++;
 
         emit NewRating(testId, tests[testId].admin, rating, comment);
+    }
+
+    /// @dev See {ICredentials-verifyCredentialOwnershipProof}
+    function verifyCredentialOwnershipProof(
+        uint256 testId,
+        uint256 merkleTreeRoot,
+        uint256 nullifierHash,
+        uint256 signal,
+        uint256 externalNullifier,
+        uint256[8] calldata proof
+    ) external view override {
+        _verifyCredentialOwnershipProof(testId, merkleTreeRoot, nullifierHash, signal, externalNullifier, proof);
+    }
+
+    /// @dev See {ICredentials-verifyGradeClaimProof}
+    function verifyGradeClaimProof(
+        uint256 testId,
+        uint256 gradeTreeRoot,
+        uint256 nullifierHash,
+        uint256 weightedGradeThreshold,
+        uint256 signal,
+        uint256 externalNullifier,
+        uint256[8] calldata proof
+    ) external view override {
+        _verifyGradeClaimProof(testId, gradeTreeRoot, nullifierHash, weightedGradeThreshold, signal, externalNullifier, proof);
+    }
+
+    /// @dev See {ICredentials-verifyCredentialOwnershipProof}
+    function _verifyCredentialOwnershipProof(
+        uint256 testId,
+        uint256 merkleTreeRoot,
+        uint256 nullifierHash,
+        uint256 signal,
+        uint256 externalNullifier,
+        uint256[8] calldata proof
+    ) internal view {
+        if (testGroups[testId].nullifierHashes[nullifierHash]) {
+            revert UsingSameNullifierTwice();
+        }
+
+        _verifyMerkleRootValidity(
+            testId, 
+            merkleTreeRoot, 
+            testGroups[testId].credentialsTreeRoot
+        );
+
+        semaphoreVerifier.verifyProof(merkleTreeRoot, nullifierHash, signal, externalNullifier, proof, N_LEVELS);
+    }
+
+    /// @dev See {ICredentials-verifyGradeClaimProof}
+    function _verifyGradeClaimProof(
+        uint256 testId,
+        uint256 gradeTreeRoot,
+        uint256 nullifierHash,
+        uint256 weightedGradeThreshold,
+        uint256 signal,
+        uint256 externalNullifier,
+        uint256[8] calldata proof
+    ) internal view {
+        if (testGroups[testId].nullifierHashes[nullifierHash]) {
+            revert UsingSameNullifierTwice();
+        }
+
+        _verifyMerkleRootValidity(
+            testId, 
+            gradeTreeRoot, 
+            testGroups[testId].gradeTreeRoot
+        );
+
+        gradeClaimVerifier.verifyProof(
+            proof, 
+            [
+                gradeTreeRoot,
+                nullifierHash,
+                weightedGradeThreshold,
+                _hash(signal),
+                _hash(externalNullifier)
+            ]
+        );
     }
 
     /// @dev Verifies that the given Merkle root for proof of inclusions is not expired.

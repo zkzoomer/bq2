@@ -27,7 +27,7 @@ interface IGradeClaimVerifier {
     ///     - nullifierHash
     ///     - weightedGradeThreshold
     ///     - signalHash
-    ///     - externalNullifier
+    ///     - externalNullifierHash
     /// @return true if the proof is valid, false otherwise
     function verifyProof(
         uint256[8] calldata proof,
