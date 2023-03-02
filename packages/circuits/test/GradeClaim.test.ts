@@ -72,7 +72,7 @@ describe("GradeClaim Circuit", () => {
 
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Not all inputs have been set. Only 23 out of 38");
+            }, "Not enough values for input signal gradeTreePathIndices");
 
             _inputs = {
                 ...inputs,
@@ -81,7 +81,7 @@ describe("GradeClaim Circuit", () => {
 
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Not all inputs have been set. Only 23 out of 38");
+            }, "Not enough values for input signal gradeTreeSiblings");
         })
     })
 
@@ -106,7 +106,7 @@ describe("GradeClaim Circuit", () => {
 
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Error: Assert Failed. Error in template GradeClaim");
+            }, "Error in template GradeClaim");
         })
 
         it("Generates a valid SNARK proof when the `grade` is equal to the `gradeThreshold`", async () => {

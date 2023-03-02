@@ -93,7 +93,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs1,
-            }, "Not all inputs have been set. Only 250 out of 265");
+            }, "Not enough values for input signal identityTreePathIndices");
             
 
             const _inputs2 = {
@@ -102,7 +102,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs2,
-            }, "Not all inputs have been set. Only 250 out of 265");
+            }, "Not enough values for input signal identityTreeSiblings");
         })
         
         it("Throws when using an `gradeTree` with the wrong height", async () => {
@@ -112,7 +112,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs1,
-            }, "Not all inputs have been set. Only 250 out of 265");
+            }, "Not enough values for input signal gradeTreePathIndices");
             
 
             const _inputs2 = {
@@ -121,7 +121,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs2,
-            }, "Not all inputs have been set. Only 250 out of 265");
+            }, "Not enough values for input signal gradeTreeSiblings");
         })
     })
 
@@ -133,7 +133,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Not all inputs have been set. Only 202 out of 265");
+            }, "Not enough values for input signal multipleChoiceAnswers");
         })
 
         it("Throws when using the wrong number of `openAnswers`", async () => {
@@ -143,7 +143,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Not all inputs have been set. Only 202 out of 265");
+            }, "Not enough values for input signal openAnswers");
         })
 
         it("Throws when using the wrong number of `openAnswersHashes`", async () => {
@@ -153,7 +153,7 @@ describe("Test Circuit", () => {
             }
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Not all inputs have been set. Only 202 out of 265");
+            }, "Not enough values for input signal openAnswersHashes");
         })
     })
 
@@ -218,7 +218,7 @@ describe("Test Circuit", () => {
 
             await circuitShouldFail(circuitTester, {
                 ..._inputs,
-            }, "Error: Assert Failed. Error in template VerifyMixedTest");
+            }, "Error in template VerifyMixedTest");
         })
 
         it("Does not throw when the `minimumGrade` is set to zero", async () => {

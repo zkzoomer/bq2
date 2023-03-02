@@ -6,7 +6,7 @@
 		"test": "mocha test/*"
 	},
 	"devDependencies": {
-		"circom_tester": "^0.0.14",
+		"circom_tester": "^0.0.19",
 		"circomlibjs": "^0.1.7"
 	}
 }
