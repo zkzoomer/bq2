@@ -20,4 +20,4 @@ Block Qualified allows you to design your own open education platform where user
 
 ### About the Code
 
-The base logic of the protocol is reflected in the [circuits](../packages/circuits/), which interact with the core [smart contracts](../packages/contracts/). A series of [JavaScript libraries](../packages/lib/) are also provided, enabling developers to easily generate and verify all the proofs that power Block Qualified.
+The base logic of the protocol is reflected in the [circuits](./technical-reference/circuits.md), which interact with the core [smart contracts](./technical-reference/contracts.md). A series of [JavaScript libraries](./guides/proofs/README.md) are also provided, enabling developers to easily generate and verify all the proofs that power Block Qualified.
