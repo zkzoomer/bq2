@@ -17,7 +17,6 @@ describe("GradeClaim Circuit", () => {
     
     let nQuestions = 10;
     let grade: number;
-    let weightedGrade: number;
     let gradeCommitment: bigint;
     let externalNullifier: number;
 
@@ -31,9 +30,8 @@ describe("GradeClaim Circuit", () => {
 
         identity = new Identity("deenz")
 
-        grade = 80
-        weightedGrade = grade * nQuestions
-        gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
+        grade = 80 * nQuestions
+        gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), grade])
         gradeGroup.addMember(gradeCommitment)
 
         externalNullifier = 350
@@ -47,8 +45,8 @@ describe("GradeClaim Circuit", () => {
             identityTrapdoor: identity.trapdoor,
             gradeTreePathIndices: gradeTreeProof.pathIndices,
             gradeTreeSiblings: gradeTreeProof.siblings,
-            weightedGrade,
-            weightedGradeThreshold: 50 * nQuestions,
+            grade,
+            gradeThreshold: 50 * nQuestions,
             signalHash: hash(signal),
             externalNullifier
         }
@@ -101,7 +99,7 @@ describe("GradeClaim Circuit", () => {
         it("Throws when the `grade` is less than the `gradeThreshold`", async () => {
             const _inputs = {
                 ...inputs,
-                weightedGradeThreshold: grade * nQuestions + 1
+                gradeThreshold: grade * nQuestions + 1
             }
 
             await circuitShouldFail(circuitTester, {
@@ -112,7 +110,7 @@ describe("GradeClaim Circuit", () => {
         it("Generates a valid SNARK proof when the `grade` is equal to the `gradeThreshold`", async () => {
             const _inputs = {
                 ...inputs,
-                weightedGradeThreshold: grade * nQuestions
+                gradeThreshold: grade
             }
 
             const equalGradeWitness = await circuitTester.calculateWitness(_inputs, true);
