@@ -1,4 +1,4 @@
-import { buildPoseidon, FullGradeCommitment, Poseidon, TEST_HEIGHT } from "@bq2/lib"
+import { buildPoseidon, FullGradeCommitment, Poseidon, BigNumberish } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import type { Identity } from "@semaphore-protocol/identity"
 
@@ -20,39 +20,39 @@ export async function getGradeCommitment(
 
     let identitySecret = poseidon([nullifier, trapdoor])
 
-    let gradeCommitmentValue: bigint;
+    let gradeCommitmentValue: BigNumberish;
     let gradeCommitmentIndex: number;
-    let weightedGrade: number;
     let grade: number;
 
-    // There are 2 ** (TEST_HEIGHT + 1) + 2 possible grades the user might have obtained, we simply have to iterate through these and find if the grade commitment is in the tree
-    var i = 0, n = 2 ** TEST_HEIGHT;
-    while (i <= n) {
-        grade = Math.floor((100 - multipleChoiceWeight) * i / nQuestions)
-        weightedGrade = grade * nQuestions
-        gradeCommitmentValue = poseidon([identitySecret, weightedGrade])
-        gradeCommitmentIndex = gradeGroup.indexOf(gradeCommitmentValue)
+    var i = 0;
+    while (i <= nQuestions) {
+        grade = Math.floor((100 - multipleChoiceWeight) * i / nQuestions) 
+        gradeCommitmentValue = poseidon([identitySecret, grade * nQuestions])
+        gradeCommitmentIndex = 
+            gradeGroup.indexOf(gradeCommitmentValue) === -1 ? 
+            gradeGroup.indexOf(gradeCommitmentValue.toString()) : 
+            gradeGroup.indexOf(gradeCommitmentValue)
         
         if (gradeCommitmentIndex !== -1) {
             return {
                 gradeCommitmentValue,
                 gradeCommitmentIndex,
-                weightedGrade,
-                grade
+                grade: grade * nQuestions
             }
         }
 
         grade += multipleChoiceWeight
-        weightedGrade = grade * nQuestions
-        gradeCommitmentValue = poseidon([identitySecret, weightedGrade])
-        gradeCommitmentIndex = gradeGroup.indexOf(gradeCommitmentValue)
+        gradeCommitmentValue = poseidon([identitySecret, grade * nQuestions])
+        gradeCommitmentIndex = 
+            gradeGroup.indexOf(gradeCommitmentValue) === -1 ?
+            gradeGroup.indexOf(gradeCommitmentValue.toString()) : 
+            gradeGroup.indexOf(gradeCommitmentValue)
 
         if (gradeCommitmentIndex !== -1) {
             return {
                 gradeCommitmentValue,
                 gradeCommitmentIndex,
-                weightedGrade,
-                grade
+                grade: grade * nQuestions
             }
         }
 

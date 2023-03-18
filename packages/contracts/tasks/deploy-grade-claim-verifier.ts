@@ -1,16 +1,32 @@
 import { task, types } from "hardhat/config"
 
 task("deploy:grade-claim-verifier", "Deploy the grade claim verifier contract")
+    .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .addOptionalParam<boolean>("logs", "Print the logs", true, types.boolean)
     .setAction(
         async (
             {
                 logs,
-                pairingLib: pairingLibAddress,
+                pairing: pairing,
             },
             { ethers }
         ): Promise<any> => {    
-            const GradeClaimVerifierFactory = await ethers.getContractFactory("GradeClaimVerifier")
+            if (!pairing) {
+                const PairingFactory = await ethers.getContractFactory("@semaphore-protocol/contracts/base/Pairing.sol:Pairing")
+                pairing = await PairingFactory.deploy()
+
+                await pairing.deployed()
+
+                if (logs) {
+                    console.info(`Pairing library has been deployed to: ${pairing.address}`)
+                }
+            }
+
+            const GradeClaimVerifierFactory = await ethers.getContractFactory("GradeClaimVerifier"/* , {
+                libraries: {
+                    Pairing: pairing.address
+                }
+            } */)
 
             const gradeClaimVerifier = await GradeClaimVerifierFactory.deploy()
 
@@ -22,7 +38,7 @@ task("deploy:grade-claim-verifier", "Deploy the grade claim verifier contract")
 
             return {
                 gradeClaimVerifier,
-                pairingLibAddress,
+                pairing,
             }
         }
     )

@@ -6,13 +6,14 @@ import "@nomiclabs/hardhat-etherscan"
 import "@typechain/hardhat"
 import { config as dotenvConfig } from "dotenv"
 import "hardhat-gas-reporter"
+import "hardhat-contract-sizer"
 import { HardhatUserConfig } from "hardhat/config"
 import { NetworksUserConfig } from "hardhat/types"
 import { resolve } from "path"
 import "solidity-coverage"
 import { config } from "./package.json"
 import "./tasks/accounts"
-import "./tasks/deploy-credentials"
+import "./tasks/deploy-credentials-registry"
 import "./tasks/deploy-grade-claim-verifier"
 import "./tasks/deploy-test-verifier"
 
@@ -43,7 +44,7 @@ function getNetworks(): NetworksUserConfig {
 const hardhatConfig: HardhatUserConfig = {
     solidity: config.solidity,
     paths: {
-        sources: config.paths.contracts,
+        sources: config.paths.sources,
         tests: config.paths.tests,
         cache: config.paths.cache,
         artifacts: config.paths.build.contracts
@@ -65,6 +66,12 @@ const hardhatConfig: HardhatUserConfig = {
     mocha: {
         timeout: 50000
     },
+    contractSizer: {
+        alphaSort: true,
+        disambiguatePaths: false,
+        runOnCompile: false,
+        strict: true,
+    }
 }
 
 export default hardhatConfig

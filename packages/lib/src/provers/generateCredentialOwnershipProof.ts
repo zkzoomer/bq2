@@ -1,4 +1,4 @@
-import { SnarkArtifacts, N_LEVELS } from "@bq2/lib"
+import { SnarkArtifacts, MAX_TREE_DEPTH } from "@bq2/lib"
 import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"
@@ -24,8 +24,8 @@ export default async function generateCredentialOwnershipProof(
 ): Promise<FullProof> {
     if (!snarkArtifacts) {
         snarkArtifacts = {
-            wasmFilePath: `https://www.trusted-setup-pse.org/semaphore/${N_LEVELS}/semaphore.wasm`,
-            zkeyFilePath: `https://www.trusted-setup-pse.org/semaphore/${N_LEVELS}/semaphore.zkey`
+            wasmFilePath: `https://www.trusted-setup-pse.org/semaphore/${MAX_TREE_DEPTH}/semaphore.wasm`,
+            zkeyFilePath: `https://www.trusted-setup-pse.org/semaphore/${MAX_TREE_DEPTH}/semaphore.zkey`
         }
     }
 

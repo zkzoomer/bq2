@@ -1,4 +1,4 @@
-import { N_LEVELS, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray, hash } from "@bq2/lib";
+import { MAX_TREE_DEPTH, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray, hash } from "@bq2/lib";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
@@ -19,8 +19,8 @@ describe("Test Circuit", () => {
     let multipleChoiceAnswers: number[];
     let openAnswers: BigInt[];
 
-    let gradeGroup = new Group(0, N_LEVELS);
-    let identityGroup = new Group(0, N_LEVELS);
+    let gradeGroup = new Group(0, MAX_TREE_DEPTH);
+    let identityGroup = new Group(0, MAX_TREE_DEPTH);
 
     let inputs: any;
 

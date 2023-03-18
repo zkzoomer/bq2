@@ -1,5 +1,4 @@
 import { FullGradeCommitment, GradeClaimFullProof, SnarkArtifacts, TestGradingVariables } from "@bq2/lib"
-import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
@@ -21,13 +20,12 @@ export default async function generateGradeClaimProof(
     identity: Identity,
     gradeGroupOrMerkleProof: Group | MerkleProof,
     gradeThreshold: number,
-    externalNullifier: BytesLike | Hexable | number | bigint | string,
-    signal: BytesLike | Hexable | number | bigint | string,
+    externalNullifier: number | bigint | string,
+    signal: number | bigint | string,
     gradeCommitmentOrTestGradingVariables: TestGradingVariables | FullGradeCommitment,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<GradeClaimFullProof> {
     let gradeMerkleProof: MerkleProof
-    let weightedGradeThreshold: number
     let gradeCommitment: FullGradeCommitment
 
     if (!snarkArtifacts) {
@@ -39,6 +37,7 @@ export default async function generateGradeClaimProof(
     }
 
     if ("depth" in gradeGroupOrMerkleProof) {
+        
         if ("nQuestions" in gradeCommitmentOrTestGradingVariables) {
             gradeCommitment = await getGradeCommitment(
                 identity,
@@ -46,22 +45,19 @@ export default async function generateGradeClaimProof(
                 gradeCommitmentOrTestGradingVariables.multipleChoiceWeight,
                 gradeCommitmentOrTestGradingVariables.nQuestions
             )
-
-            weightedGradeThreshold = gradeThreshold * gradeCommitmentOrTestGradingVariables.nQuestions
+            gradeThreshold *= gradeCommitmentOrTestGradingVariables.nQuestions
         } else {
             gradeCommitment = gradeCommitmentOrTestGradingVariables
-            weightedGradeThreshold = gradeThreshold * gradeCommitmentOrTestGradingVariables.weightedGrade / gradeCommitmentOrTestGradingVariables.grade
         }
 
         gradeMerkleProof = gradeGroupOrMerkleProof.generateMerkleProof(gradeCommitment.gradeCommitmentIndex)
     } else {
-        if (!("weightedGrade" in gradeCommitmentOrTestGradingVariables)) {
+        if (!("grade" in gradeCommitmentOrTestGradingVariables)) {
             throw new Error("Need to provide the FullGradeCommitment when providing a Merkle proof")
         }
 
         gradeCommitment = gradeCommitmentOrTestGradingVariables
         gradeMerkleProof = gradeGroupOrMerkleProof
-        weightedGradeThreshold = gradeThreshold * gradeCommitmentOrTestGradingVariables.weightedGrade / gradeCommitmentOrTestGradingVariables.grade
     }
 
     const { proof, publicSignals } = await groth16.fullProve(
@@ -70,8 +66,8 @@ export default async function generateGradeClaimProof(
             identityTrapdoor: identity.trapdoor,
             gradeTreePathIndices: gradeMerkleProof.pathIndices,
             gradeTreeSiblings: gradeMerkleProof.siblings,
-            weightedGrade: gradeCommitment.weightedGrade,
-            weightedGradeThreshold,
+            grade: gradeCommitment.grade,
+            gradeThreshold,
             signalHash: hash(signal),
             externalNullifier: hash(externalNullifier)
         },
@@ -82,10 +78,10 @@ export default async function generateGradeClaimProof(
     return {
         gradeTreeRoot: publicSignals[0],
         nullifierHash: publicSignals[1],
+        grade: gradeCommitment.grade,
         gradeThreshold,
-        weightedGradeThreshold: publicSignals[2],
-        signal: signal,
-        externalNullifier: externalNullifier,
+        signal,
+        externalNullifier,
         proof: packProof(proof)
     }
 }

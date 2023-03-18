@@ -1,4 +1,4 @@
-import { N_LEVELS, Poseidon, buildPoseidon, hash } from "@bq2/lib";
+import { MAX_TREE_DEPTH, Poseidon, buildPoseidon, hash } from "@bq2/lib";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
@@ -13,7 +13,7 @@ describe("GradeClaim Circuit", () => {
 
     let identity: Identity;
 
-    let gradeGroup = new Group(0, N_LEVELS);
+    let gradeGroup = new Group(0, MAX_TREE_DEPTH);
     
     let nQuestions = 10;
     let grade: number;

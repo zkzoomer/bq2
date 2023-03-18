@@ -1,4 +1,4 @@
-import { TestAnswers, TestFullProof, TestVariables, SnarkArtifacts, N_LEVELS } from "@bq2/lib"
+import { TestAnswers, TestFullProof, TestVariables, SnarkArtifacts, MAX_TREE_DEPTH } from "@bq2/lib"
 import { Group, Member } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
@@ -37,7 +37,7 @@ export default async function generateTestProof(
         if (testId === undefined) {
             throw new Error("The test ID was not provided")
         }
-        emptyLeaf = (new Group(testId, N_LEVELS)).root
+        emptyLeaf = (new Group(testId, MAX_TREE_DEPTH)).root
         identityMerkleProof = identityGroup
     }
 
@@ -49,7 +49,7 @@ export default async function generateTestProof(
         if (testId === undefined) {
             throw new Error("The test ID was not provided")
         }
-        emptyLeaf = (new Group(testId, N_LEVELS)).root
+        emptyLeaf = (new Group(testId, MAX_TREE_DEPTH)).root
         gradeMerkleProof = gradeGroup
     }
 
@@ -85,10 +85,10 @@ export default async function generateTestProof(
     )
 
     return {
-        identityCommitment: publicSignals[1],
-        newIdentityTreeRoot: publicSignals[3],
-        gradeCommitment: publicSignals[5],
-        newGradeTreeRoot: publicSignals[7],
+        identityCommitment: publicSignals[1].toString(),
+        newIdentityTreeRoot: publicSignals[3].toString(),
+        gradeCommitment: publicSignals[5].toString(),
+        newGradeTreeRoot: publicSignals[7].toString(),
         publicSignals,
         proof: packProof(proof)
     }

@@ -8,7 +8,7 @@ import {
     TestAnswers, 
     TestFullProof,
     TestVariables, 
-    N_LEVELS, 
+    MAX_TREE_DEPTH, 
     TEST_HEIGHT,
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group";
@@ -17,7 +17,7 @@ import { expect } from "chai";
 import { Signer, utils } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
-import { TestVerifier } from "../typechain-types"
+import { Pairing, TestVerifier } from "../typechain-types"
 
 describe("TestVerifier contract", () => {
     let poseidon: Poseidon; 
@@ -31,24 +31,27 @@ describe("TestVerifier contract", () => {
     let gradeGroup: Group;
 
     let testVerifierContract: TestVerifier;
+    let pairingContract: Pairing
+
     let signers: Signer[];
     let accounts: string[];
 
     let proof: TestFullProof;
 
     const snarkArtifacts = {
-        wasmFilePath: "../lib/snark-artifacts/test.wasm",
-        zkeyFilePath: "../lib/snark-artifacts/test.zkey"
+        wasmFilePath: "../snark-artifacts/test.wasm",
+        zkeyFilePath: "../snark-artifacts/test.zkey"
     }
 
     before(async () => {
         poseidon = await buildPoseidon();
 
-        const { testVerifier } = await run("deploy:test-verifier", {
+        const { testVerifier, pairing } = await run("deploy:test-verifier", {
             logs: false
         })
 
         testVerifierContract = testVerifier
+        pairingContract = pairing
 
         signers = await run("accounts", { logs: false })
         accounts = await Promise.all(signers.map((signer: Signer) => signer.getAddress()))
@@ -60,7 +63,7 @@ describe("TestVerifier contract", () => {
             poseidon([hash("feed")]), 
             poseidon([hash("seed")])
         ]
-        const openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([BigInt(utils.keccak256(utils.toUtf8Bytes("")))]) )
+        const openAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([hash("")]) )
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
         
         const multipleChoiceRoot = rootFromLeafArray(poseidon, Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1))
@@ -83,8 +86,8 @@ describe("TestVerifier contract", () => {
             openAnswersHashes
         }
 
-        identityGroup = new Group(0, N_LEVELS)
-        gradeGroup = new Group(0, N_LEVELS)
+        identityGroup = new Group(1, MAX_TREE_DEPTH)
+        gradeGroup = new Group(1, MAX_TREE_DEPTH)
     })
 
     it("Should be able to generate the proof using the prover package", async () => {
@@ -99,23 +102,23 @@ describe("TestVerifier contract", () => {
     })
 
     describe("verifyProof", () => {
-        it("Should return `true` when verifying a valid proof", async () => {
-            const isValid = await testVerifierContract.verifyProof(
+        it("Should clear when verifying a valid proof", async () => {
+            await testVerifierContract.verifyProof(
                 proof.proof,
                 proof.publicSignals
-            ) 
-            expect(isValid).to.be.equal(true)
+            )
         })
 
-        it("Should return `false` when verifying a valid proof that has a changed public input", async () => {
+        it("Should revert when verifying a valid proof that has a changed public input", async () => {
             const bogusSignals = [...proof.publicSignals]
             bogusSignals[0] = BigInt(350)  // bout tree fiddy
 
-            const notValid = await testVerifierContract.verifyProof(
-                proof.proof,
-                bogusSignals
-            ) 
-            expect(notValid).to.be.equal(false)
+            await expect(
+                testVerifierContract.verifyProof(proof.proof, bogusSignals)
+            ).to.be.revertedWithCustomError(
+                testVerifierContract,
+                "InvalidProof"
+            )
         })
     })
 })

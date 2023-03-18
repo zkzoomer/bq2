@@ -1,16 +1,32 @@
 import { task, types } from "hardhat/config"
 
 task("deploy:test-verifier", "Deploy the test verifier contract")
+    .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .addOptionalParam<boolean>("logs", "Print the logs", true, types.boolean)
     .setAction(
         async (
             {
                 logs,
-                pairingLib: pairingLibAddress,
+                pairingLib: pairingLib,
             },
             { ethers }
-        ): Promise<any> => {    
-            const TestVerifierFactory = await ethers.getContractFactory("TestVerifier")
+        ): Promise<any> => {
+            if (!pairingLib) {
+                const PairingLibFactory = await ethers.getContractFactory("PairingLib")
+                pairingLib = await PairingLibFactory.deploy()
+
+                await pairingLib.deployed()
+
+                if (logs) {
+                    console.info(`Pairing library has been deployed to: ${pairingLib.address}`)
+                }
+            }
+
+            const TestVerifierFactory = await ethers.getContractFactory("TestVerifier"/* , {
+                libraries: {
+                    PairingLib: pairingLib.address
+                }
+            } */)
 
             const testVerifier = await TestVerifierFactory.deploy()
 
@@ -22,7 +38,7 @@ task("deploy:test-verifier", "Deploy the test verifier contract")
 
             return {
                 testVerifier,
-                pairingLibAddress,
+                pairingLib,
             }
         }
     )

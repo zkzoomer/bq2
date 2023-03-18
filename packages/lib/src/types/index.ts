@@ -49,15 +49,14 @@ export type TestVariables = {
 export type FullGradeCommitment = {
     gradeCommitmentValue: BigNumberish
     gradeCommitmentIndex: number
-    weightedGrade: number
     grade: number
 }
 
 export type TestFullProof = {
-    identityCommitment: BigNumberish
-    newIdentityTreeRoot: BigNumberish
-    gradeCommitment: BigNumberish
-    newGradeTreeRoot: BigNumberish
+    identityCommitment: string
+    newIdentityTreeRoot: string
+    gradeCommitment: string
+    newGradeTreeRoot: string
     publicSignals: BigNumberish[]
     proof: Proof
 }
@@ -75,10 +74,10 @@ export type GradeRestrictedTestFullProof = {
 export type GradeClaimFullProof = {
     gradeTreeRoot: BigNumberish,
     nullifierHash: BigNumberish,
-    gradeThreshold: number,
-    weightedGradeThreshold: BigNumberish,
-    signal: BytesLike | Hexable | number | bigint | string,
-    externalNullifier: BytesLike | Hexable | number | bigint | string,
+    grade: number,
+    gradeThreshold: BigNumberish,
+    signal: BigNumberish,
+    externalNullifier: BigNumberish,
     proof: Proof
 }
 

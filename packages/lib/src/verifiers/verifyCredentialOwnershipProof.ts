@@ -1,4 +1,4 @@
-import { N_LEVELS } from "@bq2/lib"
+import { MAX_TREE_DEPTH } from "@bq2/lib"
 import { verifyProof, FullProof } from "@semaphore-protocol/proof"
 
 /**
@@ -9,5 +9,5 @@ import { verifyProof, FullProof } from "@semaphore-protocol/proof"
 export default async function verifyCredentialOwnershipProof(
     fullProof: FullProof
 ): Promise<boolean> {
-    return verifyProof(fullProof, N_LEVELS)
+    return verifyProof(fullProof, MAX_TREE_DEPTH)
 }

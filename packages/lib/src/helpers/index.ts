@@ -1,4 +1,5 @@
 export * from "./buildPoseidon"
+export * from "./encodeInputs"
 export * from "./generateOpenAnswers"
 export * from "./getGradeCommitment"
 export * from "./hash"

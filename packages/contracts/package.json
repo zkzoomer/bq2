@@ -27,6 +27,7 @@
         "download": "^8.0.0",
         "ethers": "^5.6.8",
         "hardhat": "^2.9.7",
+        "hardhat-contract-sizer": "^2.8.0",
         "hardhat-gas-reporter": "^1.0.8",
         "js-logger": "^1.6.1",
         "rimraf": "^3.0.2",
@@ -46,6 +47,7 @@
             "tests": "./test",
             "cache": "./cache",
             "snarkjs-templates": "./snarkjs-templates",
+            "sources": "./",
             "build": {
                 "contracts": "./build/contracts",
                 "typechain": "./build/typechain"
@@ -54,6 +56,6 @@
     },
     "dependencies": {
         "@openzeppelin/contracts": "4.7.3",
-        "@semaphore-protocol/contracts": "3.0.0"
+        "@semaphore-protocol/contracts": "3.2.1"
     }
 }

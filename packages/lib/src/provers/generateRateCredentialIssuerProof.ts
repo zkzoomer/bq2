@@ -1,4 +1,4 @@
-import { RateFullProof, SnarkArtifacts, MAX_COMMENT_LENGTH, N_LEVELS } from "@bq2/lib"
+import { RateFullProof, SnarkArtifacts, MAX_COMMENT_LENGTH, MAX_TREE_DEPTH } from "@bq2/lib"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
 import { generateProof } from "@semaphore-protocol/proof"
@@ -35,8 +35,8 @@ export default async function generateRateCredentialIssuerProof(
 
     if (!snarkArtifacts) {
         snarkArtifacts = {
-            wasmFilePath: `https://www.trusted-setup-pse.org/semaphore/${N_LEVELS}/semaphore.wasm`,
-            zkeyFilePath: `https://www.trusted-setup-pse.org/semaphore/${N_LEVELS}/semaphore.zkey`
+            wasmFilePath: `https://www.trusted-setup-pse.org/semaphore/${MAX_TREE_DEPTH}/semaphore.wasm`,
+            zkeyFilePath: `https://www.trusted-setup-pse.org/semaphore/${MAX_TREE_DEPTH}/semaphore.zkey`
         }
     }
 
