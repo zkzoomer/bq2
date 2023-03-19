@@ -7,16 +7,13 @@ import {
     generateCredentialRestrictedTestProof,
     generateGradeRestrictedTestProof,
     generateOpenAnswers, 
-    generateRateCredentialIssuerProof, 
     generateTestProof, 
     hash,
     rootFromLeafArray,  
     BigNumberish,
     CredentialRestrictedTestFullProof,
     GradeRestrictedTestFullProof,
-    Proof,   
     Poseidon, 
-    RateFullProof,
     TestAnswers, 
     TestFullProof,
     TestVariables, 
@@ -26,7 +23,6 @@ import {
     generateGradeClaimProof,
     MAX_GRADE
 } from "@bq2/lib"
-import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { generateProof, FullProof } from '@semaphore-protocol/proof';

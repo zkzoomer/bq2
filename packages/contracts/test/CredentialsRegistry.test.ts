@@ -44,9 +44,6 @@ describe("CredentialsRegistry contract", () => {
     let credentialURI = 'https://twitter.com/0xdeenz';
     
     let openAnswersHashes: BigNumberish[];
-    let testRoot: BigNumberish;
-    let testParameters: BigNumberish;
-    let nonPassingTestParameters: BigNumberish;
 
     let gradeGroup = new Group(1, TREE_DEPTH);
     let credentialsGroup = new Group(1, TREE_DEPTH);
