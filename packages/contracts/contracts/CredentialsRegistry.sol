@@ -9,8 +9,7 @@ import "./libs/Structs.sol";
 import { PoseidonT3 } from "./libs/Poseidon.sol";
 
 /// @title CredentialsRegistry
-/// @dev 
-// TODO: write description 
+/// @dev Manages credential creation and updating, defining credential managers to handle their behavior.
 contract CredentialsRegistry is ICredentialsRegistry {
     uint256 MAX_DEPTH = 16; 
 
@@ -154,7 +153,7 @@ contract CredentialsRegistry is ICredentialsRegistry {
             revert CredentialTypeAlreadyDefined();
         }
 
-        // type(ICredentialManager).interfaceId
+        // type(ICredentialManager).interfaceId = 0xf0f36c2a
         if (!ICredentialManager(credentialManager).supportsInterface(0xf0f36c2a)) {
             revert InvalidCredentialManagerAddress();
         }

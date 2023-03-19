@@ -107,14 +107,19 @@ interface ICredentialManager is ICredentialHandler, IERC165 {
         uint256 gradeTreeRoot
     );
 
-    // TODO
+    /// @dev Defines a new credential as per the credential manager specifications.
+    /// @param credentialId: Id of the credential.
+    /// @param credentialData: Data that defines the credential, as per the credential manager specifications.
     function createCredential(
         uint256 credentialId,
         bytes calldata credentialData
     ) external;
 
-    /// TODO
-    /// should only be callable by the CredentialRegistry
+    /// @dev Updates a credential as per the credential manager specifications.
+    /// @param credentialId: Id of the credential.
+    /// @param credentialState: Current state of the credential.
+    /// @param credentialUpdate: Data that defines the credential update, as per the credential manager specifications.
+    /// @return CredentialState, new state of the credential.
     function updateCredential(
         uint256 credentialId,
         CredentialState calldata credentialState,

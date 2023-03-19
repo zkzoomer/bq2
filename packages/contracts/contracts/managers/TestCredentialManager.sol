@@ -12,6 +12,9 @@ import {
     GradeRestrictedTestFullProof 
 } from "./libs/Structs.sol";
 
+/// @title TestCredentialManager
+/// @dev Defines the behavior of the Test credential, where users gain their credentials by providing proofs of knowledge
+/// of the solution to mixed tests (multiple choice + open answer components).
 contract TestCredentialManager is TestCredentialManagerBase {
     /// @dev Initializes the TestBase smart contract
     /// @param credentialsRegistryAddress: Contract address of the CredentialsRegistry smart contract that
@@ -265,7 +268,6 @@ contract TestCredentialManager is TestCredentialManagerBase {
         credentialState.gradeTreeIndex++;
         credentialState.gradeTreeRoot = testFullProof.newGradeTreeRoot;
         
-        // TODO: using here storage and no return statement?
         return credentialState;
     }
 
