@@ -21,6 +21,9 @@ node_modules/
 .env.production.local
 .env.local
 
+# sneed phrase
+.sneed
+
 # Production
 build
 
