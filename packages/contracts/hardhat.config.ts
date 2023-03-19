@@ -19,7 +19,46 @@ import "./tasks/deploy-grade-claim-verifier"
 import "./tasks/deploy-test-verifier"
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
-const mnemonic = readFileSync(".secret").toString().trim();
+const mnemonic = readFileSync("../../.sneed").toString().trim();
+
+function getNetworks(): NetworksUserConfig {
+    if (!process.env.INFURA_API_KEY || !process.env.BACKEND_PRIVATE_KEY) {
+        return {}
+    }
+
+    const infuraApiKey = process.env.INFURA_API_KEY
+
+    return {
+        goerli: {
+            url: `https://goerli.infura.io/v3/${infuraApiKey}`,
+            chainId: 5,
+            accounts: {
+                mnemonic
+            }
+        },
+        mumbai_testnet: {
+            url: 'https://rpc-mumbai.maticvigil.com',
+            chainId: 80001,
+            accounts: {
+                mnemonic
+            }
+        },
+        arbitrum: {
+            url: "https://arb1.arbitrum.io/rpc",
+            chainId: 42161,
+            accounts: {
+                mnemonic
+            }
+        },
+        optimism: {
+            url: 'https://mainnet.optimism.io',
+            chainId: 10,
+            accounts: {
+                mnemonic
+            }
+        },
+    }
+}
 
 const hardhatConfig: HardhatUserConfig = {
     solidity: config.solidity,
@@ -31,20 +70,10 @@ const hardhatConfig: HardhatUserConfig = {
     },
     networks: {
         hardhat: {
+            chainId: 1337,
             allowUnlimitedContractSize: true
         },
-        mumbai_testnet: {
-            url: 'https://rpc-mumbai.maticvigil.com',  // RPC used just for deploying
-            accounts: {
-                mnemonic
-            }
-        },
-        optimism: {
-            url: 'https://mainnet.optimism.io	',
-            accounts: {
-                mnemonic
-            }
-        },
+        ...getNetworks()
     },
     gasReporter: {
         currency: "USD",
