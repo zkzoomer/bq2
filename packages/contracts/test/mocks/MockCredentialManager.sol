@@ -5,11 +5,12 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 /// @title MockCredentialManager
 contract MockCredentialManager is IERC165 {
+    
     function createCredential(
-        uint256 credentialId,
-        bytes calldata credentialData
+        uint256 /* credentialId */,
+        bytes calldata /* credentialData */
     ) external pure {
-
+        
     }
 
     /// @dev See {IERC165-supportsInterface}.

@@ -699,7 +699,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a credential that does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        testCredentialManager.invalidateCredential(
+                        credentialsRegistry.invalidateCredential(
                             1,
                         )
                     ).to.be.revertedWithCustomError(
@@ -1125,7 +1125,7 @@ describe("TestCredentialManager contract", () => {
                     })
                 })
 
-                describe("verifyTestAnswers", () => {
+                describe("verifyTestCredentialAnswers", () => {
                     context("when trying to verify an already verified test credential", () => {
                         it("reverts", async () => {
                             await expect(
@@ -1180,7 +1180,7 @@ describe("TestCredentialManager contract", () => {
             context("when being called by someone that is not the credential admin", () => {
                 it("reverts", async () => {
                     await expect(
-                        testCredentialManager.connect(signers[1]).invalidateCredential(
+                        credentialsRegistry.connect(signers[1]).invalidateCredential(
                             1
                         )
                     ).to.be.revertedWithCustomError(
@@ -1192,7 +1192,7 @@ describe("TestCredentialManager contract", () => {
 
             context("when calling for a currently valid credential", () => {
                 it("invalidates them", async () => {
-                    await testCredentialManager.invalidateCredential(1)
+                    await credentialsRegistry.invalidateCredential(1)
 
                     expect(await testCredentialManager.credentialIsValid(1))
                         .to.be.equal(false)
@@ -1201,10 +1201,10 @@ describe("TestCredentialManager contract", () => {
 
             context("when calling for an invalidated credential", () => {
                 it("reverts", async () => {
-                    await testCredentialManager.invalidateCredential(1)
+                    await credentialsRegistry.invalidateCredential(1)
 
                     await expect(
-                        testCredentialManager.invalidateCredential(1)
+                        credentialsRegistry.invalidateCredential(1)
                     ).to.be.revertedWithCustomError(
                         testCredentialManager,
                         "TestCredentialWasInvalidated"

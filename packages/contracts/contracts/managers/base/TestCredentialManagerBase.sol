@@ -7,8 +7,6 @@ import "../interfaces/ITestVerifier.sol";
 import "../interfaces/ITestCredentialManager.sol";
 import { CredentialTest } from "../libs/Structs.sol";
 
-import "hardhat/console.sol";
-
 abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     uint256 constant MAX_QUESTIONS = 2 ** 6;
     uint256 constant MAX_GRADE = 100;
@@ -25,7 +23,7 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @dev TestVerifier smart contract
     ITestVerifier public testVerifier;
 
-    /// @dev Checks if the Credentials Registry is the transaction sender.
+    /// @dev Enforces that the Credentials Registry is the transaction sender.
     /// @param credentialId: Id of the credential.
     modifier onlyCredentialsRegistry(uint256 credentialId) {
         if (address(credentialsRegistry) != _msgSender()) {
@@ -37,13 +35,13 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @dev Checks if the credential admin is the transaction sender.
     /// @param credentialId: Id of the credential.
     modifier onlyCredentialAdmin(uint256 credentialId) {
-        if (credentialTests[credentialId].admin != _msgSender()) {
+        if (credentialTests[credentialId].admin != tx.origin) {
             revert CallerIsNotTheCredentialAdmin();
         }
         _;
     }
 
-    /// @dev Checks if this test credential exists, that is, if it is ma.
+    /// @dev Enforces that this test credential exists, that is, if it is managed by the test credential manager.
     /// @param credentialId: Id of the credential.
     modifier onlyExistingTestCredentials(uint256 credentialId) {
         if (credentialsRegistry.getCredentialManager(credentialId) != address(this)) {
@@ -53,9 +51,10 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
         _;
     }
 
-    /// @dev Checks if the test is valid.
+    /// @dev Enforces that the test credential was not invalidated.
+    /// Note that test credentials that are not defined yet are also not invalidated.
     /// @param credentialId: Id of the credential.
-    modifier onlyValidCredentials(uint256 credentialId) {
+    modifier onlyValidTestCredentials(uint256 credentialId) {
         if (credentialTests[credentialId].minimumGrade == 255) {
             revert TestCredentialWasInvalidated();
         }
@@ -65,7 +64,13 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @dev See {ICredentialHandler-invalidateCredential}
     function invalidateCredential(
         uint256 credentialId
-    ) external override onlyExistingTestCredentials(credentialId) onlyCredentialAdmin(credentialId) onlyValidCredentials(credentialId) {
+    ) 
+        external override 
+        onlyExistingTestCredentials(credentialId) 
+        onlyValidTestCredentials(credentialId) 
+        onlyCredentialsRegistry(credentialId) 
+        onlyCredentialAdmin(credentialId) 
+    {
         credentialTests[credentialId].minimumGrade = 255;
 
         emit CredentialInvalidated(credentialId);

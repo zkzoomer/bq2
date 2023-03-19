@@ -28,23 +28,6 @@ contract TestCredentialManager is TestCredentialManagerBase {
         testVerifier = ITestVerifier(testVerifierAddress);
     }
 
-    /// @dev See {ITestBase-verifyTestAnswers}
-    function verifyTestAnswers(
-        uint256 credentialId,
-        uint256[] memory answerHashes
-    ) external onlyExistingTestCredentials(credentialId) onlyCredentialAdmin(credentialId) {
-        if (credentialTests[credentialId].multipleChoiceWeight == 100 || credentialTestOpenAnswersHashes[credentialId].length != 0) {
-            // A multiple choice test already has their test answers "verified", as these do not exist
-            revert CredentialTestAnswersAlreadyVerified();
-        }
-
-        if (credentialTests[credentialId].nQuestions != answerHashes.length) {
-            revert InvalidCredentialTestAnswersLength();
-        }
-
-        credentialTestOpenAnswersHashes[credentialId] = answerHashes;
-    }
-
     /// @dev See {ICredentialHandler-createCredential}.
     function createCredential(
         uint256 credentialId,
@@ -92,7 +75,12 @@ contract TestCredentialManager is TestCredentialManagerBase {
         uint256 credentialId,
         CredentialState calldata credentialState,
         bytes calldata credentialUpdate
-    ) external virtual override onlyCredentialsRegistry(credentialId) returns (CredentialState memory newCredentialState) {
+    ) 
+        external virtual override 
+        onlyCredentialsRegistry(credentialId) 
+        onlyValidTestCredentials(credentialId) 
+        returns (CredentialState memory newCredentialState) 
+    {
         CredentialTest memory credentialTest = credentialTests[credentialId];
 
         if (credentialTest.requiredCredentialGradeThreshold > 0) {  // Grade restricted 
@@ -157,7 +145,7 @@ contract TestCredentialManager is TestCredentialManagerBase {
         }
     }
     
-    /// @dev See {ITestBase-verifyTestCredentialAnswers}.
+    /// @dev See {ITestCredentialManager-verifyTestCredentialAnswers}.
     function verifyTestCredentialAnswers(
         uint256 credentialId,
         uint256[] memory answerHashes
@@ -206,7 +194,7 @@ contract TestCredentialManager is TestCredentialManagerBase {
         uint256 credentialId,
         CredentialState memory credentialState,
         TestFullProof memory testFullProof
-    ) internal onlyValidCredentials(credentialId) returns (CredentialState memory) {
+    ) internal returns (CredentialState memory) {
         if (credentialTests[credentialId].timeLimit != 0 && block.timestamp > credentialTests[credentialId].timeLimit) {
             revert TimeLimitReached();
         }
