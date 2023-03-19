@@ -5,7 +5,7 @@ import {
     getGradeCommitment, 
     hash, 
     Poseidon, 
-    N_LEVELS, 
+    MAX_TREE_DEPTH, 
     TEST_HEIGHT 
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
@@ -25,8 +25,8 @@ describe("Helper functions", () => {
     const signal = "Hello world"
 
     const snarkArtifacts = {
-        wasmFilePath: './snark-artifacts/semaphore.wasm',
-        zkeyFilePath: `./snark-artifacts/semaphore.zkey`
+        wasmFilePath: '../snark-artifacts/semaphore.wasm',
+        zkeyFilePath: `../snark-artifacts/semaphore.zkey`
     }
 
     const identity = new Identity()
@@ -41,7 +41,7 @@ describe("Helper functions", () => {
 
         curve = await getCurveFromName("bn128")
 
-        const group = new Group(0, N_LEVELS)
+        const group = new Group(0, MAX_TREE_DEPTH)
         group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
         fullProof = await generateCredentialOwnershipProof(identity, group, externalNullifier, signal, snarkArtifacts) as FullProof
@@ -130,7 +130,7 @@ describe("Helper functions", () => {
         const nQuestions = 10;
         
         it("Throws when the user does not have a grade commitment", async () => {
-            const gradeGroup = new Group(0, N_LEVELS)
+            const gradeGroup = new Group(0, MAX_TREE_DEPTH)
 
             gradeGroup.addMembers([BigInt(1), BigInt(2)])
             
@@ -140,7 +140,7 @@ describe("Helper functions", () => {
         })
 
         it("Gets the correct grade commitment from a tree", async () => {
-            const gradeGroup = new Group(0, N_LEVELS)
+            const gradeGroup = new Group(0, MAX_TREE_DEPTH)
     
             const weightedGrade = multipleChoiceWeight * nQuestions + (100 - multipleChoiceWeight) * (nQuestions - 1)
             const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
@@ -152,8 +152,7 @@ describe("Helper functions", () => {
             expect(gradeCommitment).to.deep.equal({
                 gradeCommitmentValue: _gradeCommitment,
                 gradeCommitmentIndex: gradeGroup.indexOf(_gradeCommitment),
-                weightedGrade,
-                grade: Math.floor(weightedGrade / nQuestions)
+                grade: weightedGrade
             })
         })
     })

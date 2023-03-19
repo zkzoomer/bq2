@@ -12,7 +12,7 @@ import {
     TestAnswers, 
     TestGradingVariables,
     TestVariables,
-    N_LEVELS,
+    MAX_TREE_DEPTH,
     TEST_HEIGHT,
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
@@ -38,18 +38,18 @@ describe("Grade Restricted Test Proof", () => {
     const externalNullifier = "bq-grade-restricted-test"
 
     const testSnarkArtifacts = {
-        wasmFilePath: './snark-artifacts/test.wasm',
-        zkeyFilePath: `./snark-artifacts/test.zkey`
+        wasmFilePath: '../snark-artifacts/test.wasm',
+        zkeyFilePath: `../snark-artifacts/test.zkey`
     }
 
     const gradeClaimSnarkArtifacts = {
-        wasmFilePath: './snark-artifacts/gradeClaim.wasm',
-        zkeyFilePath: `./snark-artifacts/gradeClaim.zkey`
+        wasmFilePath: '../snark-artifacts/gradeClaim.wasm',
+        zkeyFilePath: `../snark-artifacts/gradeClaim.zkey`
     }
 
-    let testIdentityGroup = new Group(0, N_LEVELS);
-    let testGradeGroup = new Group(0, N_LEVELS);
-    let gradeClaimGroup = new Group(0, N_LEVELS);
+    let testIdentityGroup = new Group(0, MAX_TREE_DEPTH);
+    let testGradeGroup = new Group(0, MAX_TREE_DEPTH);
+    let gradeClaimGroup = new Group(0, MAX_TREE_DEPTH);
 
     const identity = new Identity("deenz")
 
@@ -106,7 +106,6 @@ describe("Grade Restricted Test Proof", () => {
         gradeClaimCommitment = {
             gradeCommitmentValue: gradeClaimCommitmentValue,
             gradeCommitmentIndex: 2,
-            weightedGrade,
             grade
         }
     })

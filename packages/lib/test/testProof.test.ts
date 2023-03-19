@@ -9,7 +9,7 @@ import {
     TestAnswers, 
     TestFullProof, 
     TestVariables, 
-    N_LEVELS, 
+    MAX_TREE_DEPTH, 
     TEST_HEIGHT, 
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
@@ -30,12 +30,12 @@ describe("Test Proof", () => {
     let testVariables: TestVariables;
 
     const snarkArtifacts = {
-        wasmFilePath: './snark-artifacts/test.wasm',
-        zkeyFilePath: `./snark-artifacts/test.zkey`
+        wasmFilePath: '../snark-artifacts/test.wasm',
+        zkeyFilePath: `../snark-artifacts/test.zkey`
     }
 
-    let group = new Group(0, N_LEVELS);
-    let gradeGroup = new Group(0, N_LEVELS);
+    let group = new Group(0, MAX_TREE_DEPTH);
+    let gradeGroup = new Group(0, MAX_TREE_DEPTH);
 
     const identity = new Identity("deenz")
 
@@ -82,16 +82,16 @@ describe("Test Proof", () => {
 
     describe("generateTestProof", () => {
         it("Should not generate the test proof when providing a merkle proof and not the testId", async () => {
-            let _group = new Group(0, N_LEVELS);
-            let _gradeGroup = new Group(0, N_LEVELS);
+            let _group = new Group(0, MAX_TREE_DEPTH);
+            let _gradeGroup = new Group(0, MAX_TREE_DEPTH);
             _group.addMember(_group.zeroValue)
             
             await expect(
                 generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, snarkArtifacts)
             ).to.be.rejectedWith("The test ID was not provided")
             
-            _group = new Group(0, N_LEVELS);
-            _gradeGroup = new Group(0, N_LEVELS);
+            _group = new Group(0, MAX_TREE_DEPTH);
+            _gradeGroup = new Group(0, MAX_TREE_DEPTH);
             _gradeGroup.addMember(_gradeGroup.zeroValue)
 
             await expect(
@@ -106,8 +106,8 @@ describe("Test Proof", () => {
         })
 
         it("Should generate a test proof passing groups as parameters", async () => {
-            const _group = new Group(0, N_LEVELS);
-            const _gradeGroup = new Group(0, N_LEVELS);
+            const _group = new Group(0, MAX_TREE_DEPTH);
+            const _gradeGroup = new Group(0, MAX_TREE_DEPTH);
             
             fullProof = await generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup, snarkArtifacts)
 
@@ -121,9 +121,9 @@ describe("Test Proof", () => {
         })
 
         it("Should generate a test proof passing merkle proofs as parameters", async () => {
-            const _group = new Group(0, N_LEVELS);
+            const _group = new Group(0, MAX_TREE_DEPTH);
             _group.addMember(_group.zeroValue)
-            const _gradeGroup = new Group(0, N_LEVELS);
+            const _gradeGroup = new Group(0, MAX_TREE_DEPTH);
             _gradeGroup.addMember(_gradeGroup.zeroValue)
             
             fullProof = await generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup.generateMerkleProof(0), snarkArtifacts, 0)
@@ -138,9 +138,9 @@ describe("Test Proof", () => {
         })
 
         it("Should generate a test proof passing a group and a merkle proof as parameters", async () => {
-            let _group = new Group(0, N_LEVELS);
+            let _group = new Group(0, MAX_TREE_DEPTH);
             _group.addMember(_group.zeroValue)
-            let _gradeGroup = new Group(0, N_LEVELS)
+            let _gradeGroup = new Group(0, MAX_TREE_DEPTH)
             
             fullProof = await generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, snarkArtifacts, 0)
 
@@ -152,8 +152,8 @@ describe("Test Proof", () => {
             expect(fullProof.gradeCommitment).to.be.equal(gradeCommitmentValue.toString())
             expect(fullProof.newGradeTreeRoot).to.be.equal(_gradeGroup.root.toString())
             
-            _group = new Group(0, N_LEVELS);
-            _gradeGroup = new Group(0, N_LEVELS)
+            _group = new Group(0, MAX_TREE_DEPTH);
+            _gradeGroup = new Group(0, MAX_TREE_DEPTH)
             _gradeGroup.addMember(_gradeGroup.zeroValue)
 
             fullProof = await generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup.generateMerkleProof(0), snarkArtifacts, 0)

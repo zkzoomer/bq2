@@ -1,4 +1,4 @@
-import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, N_LEVELS } from "@bq2/lib"
+import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, MAX_TREE_DEPTH } from "@bq2/lib"
 import { FullProof } from "@semaphore-protocol/proof"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
@@ -13,8 +13,8 @@ describe("Credential Ownership", () => {
     const signal = "Hello world"
 
     const snarkArtifacts = {
-        wasmFilePath: './snark-artifacts/semaphore.wasm',
-        zkeyFilePath: `./snark-artifacts/semaphore.zkey`
+        wasmFilePath: '../snark-artifacts/semaphore.wasm',
+        zkeyFilePath: `../snark-artifacts/semaphore.zkey`
     }
 
     const identity = new Identity()
@@ -34,7 +34,7 @@ describe("Credential Ownership", () => {
    
     describe("generateCredentialOwnershipProof", () => {
         it("Should not generate the Semaphore proof if the identity is not part of the group", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
 
             group.addMembers([BigInt(1), BigInt(2)])
             
@@ -44,7 +44,7 @@ describe("Credential Ownership", () => {
         })
 
         it("Should not generate a Semaphore proof with default snark artifacts with Node.js", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
 
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
@@ -54,7 +54,7 @@ describe("Credential Ownership", () => {
         })
 
         it("Should generate a Semaphore proof passing a group as parameter", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             fullProof = await generateCredentialOwnershipProof(identity, group, externalNullifier, signal, snarkArtifacts)
@@ -62,7 +62,7 @@ describe("Credential Ownership", () => {
         })
 
         it("Should generate a Semaphore proof passing a Merkle proof as parameter", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             fullProof = await generateCredentialOwnershipProof(identity, group.generateMerkleProof(2), externalNullifier, signal, snarkArtifacts)

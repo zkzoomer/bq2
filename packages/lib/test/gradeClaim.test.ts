@@ -6,7 +6,7 @@ import {
     GradeClaimFullProof,
     Poseidon, 
     TestGradingVariables, 
-    N_LEVELS
+    MAX_TREE_DEPTH
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
@@ -24,8 +24,8 @@ describe("Grade Claim", () => {
     const signal = "Hello world"
 
     const snarkArtifacts = {
-        wasmFilePath: './snark-artifacts/gradeClaim.wasm',
-        zkeyFilePath: `./snark-artifacts/gradeClaim.zkey`
+        wasmFilePath: '../snark-artifacts/gradeClaim.wasm',
+        zkeyFilePath: `../snark-artifacts/gradeClaim.zkey`
     }
 
     let gradeGroup: Group
@@ -50,7 +50,7 @@ describe("Grade Claim", () => {
     before(async () => {
         poseidon = await buildPoseidon();
 
-        gradeGroup = new Group(0, N_LEVELS)
+        gradeGroup = new Group(0, MAX_TREE_DEPTH)
 
         const gradeCommitmentValue = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
         gradeGroup.addMembers([BigInt(1), BigInt(2), gradeCommitmentValue])
@@ -58,8 +58,7 @@ describe("Grade Claim", () => {
         gradeCommitment = {
             gradeCommitmentValue,
             gradeCommitmentIndex: 2,
-            weightedGrade,
-            grade
+            grade: weightedGrade
         }
 
         curve = await getCurveFromName("bn128")
@@ -71,7 +70,7 @@ describe("Grade Claim", () => {
 
     describe("generateCredentialOwnershipProof", () => {
         it("Should not generate the grade claim proof if the grade commitment is not part of the group", async () => {
-            const gradeGroup = new Group(0, N_LEVELS)
+            const gradeGroup = new Group(0, MAX_TREE_DEPTH)
 
             await expect(
                 generateGradeClaimProof(identity, gradeGroup, gradeThreshold, externalNullifier, signal, gradeCommitment, snarkArtifacts)

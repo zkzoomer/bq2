@@ -4,7 +4,7 @@ import {
     hash, 
     Poseidon, 
     RateFullProof,
-    N_LEVELS, 
+    MAX_TREE_DEPTH, 
     MAX_COMMENT_LENGTH, 
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
@@ -25,8 +25,8 @@ describe("Rate Credential Issuer", () => {
     const externalNullifier = "bq-rate"
 
     const snarkArtifacts = {
-        wasmFilePath: './snark-artifacts/semaphore.wasm',
-        zkeyFilePath: `./snark-artifacts/semaphore.zkey`
+        wasmFilePath: '../snark-artifacts/semaphore.wasm',
+        zkeyFilePath: `../snark-artifacts/semaphore.zkey`
     }
 
     const identity = new Identity("deenz")
@@ -48,7 +48,7 @@ describe("Rate Credential Issuer", () => {
 
     describe("rateCredentialIssuer", () => {
         it("Should revert when giving it invalid rating values", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             await expect(
@@ -57,7 +57,7 @@ describe("Rate Credential Issuer", () => {
         })
 
         it("Should revert when giving it an invalid comment", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
             
             await expect(
@@ -67,7 +67,7 @@ describe("Rate Credential Issuer", () => {
         })
 
         it("Should generate the Semaphore proof with the correct nullifier hash and signal", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             const expectedNullifierHash = poseidon([hash(externalNullifier), identity.nullifier])
@@ -81,7 +81,7 @@ describe("Rate Credential Issuer", () => {
         })
 
         it("Should include in the full proof the original rate and comment", async () => {
-            const group = new Group(0, N_LEVELS)
+            const group = new Group(0, MAX_TREE_DEPTH)
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             rateFullProof = await generateRateCredentialIssuerProof(identity, group, rate, comment, snarkArtifacts)
@@ -93,7 +93,7 @@ describe("Rate Credential Issuer", () => {
 
     describe("Verifying a credential rating", () => {
         it("Should verify the Semaphore proof", async () => {
-            const response = await verifyProof(rateFullProof.semaphoreFullProof, N_LEVELS)
+            const response = await verifyProof(rateFullProof.semaphoreFullProof, MAX_TREE_DEPTH)
 
             expect(response).to.be.true
         })

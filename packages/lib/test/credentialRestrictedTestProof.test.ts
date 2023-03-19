@@ -9,7 +9,7 @@ import {
     Poseidon,   
     TestAnswers, 
     TestVariables,
-    N_LEVELS,
+    MAX_TREE_DEPTH,
     TEST_HEIGHT, 
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
@@ -34,18 +34,18 @@ describe("Credential Restricted Test Proof", () => {
     const externalNullifier = "bq-credential-restricted-test"
 
     const testSnarkArtifacts = {
-        wasmFilePath: './snark-artifacts/test.wasm',
-        zkeyFilePath: `./snark-artifacts/test.zkey`
+        wasmFilePath: '../snark-artifacts/test.wasm',
+        zkeyFilePath: `../snark-artifacts/test.zkey`
     }
 
     const semaphoreSnarkArtifacts = {
-        wasmFilePath: './snark-artifacts/semaphore.wasm',
-        zkeyFilePath: `./snark-artifacts/semaphore.zkey`
+        wasmFilePath: '../snark-artifacts/semaphore.wasm',
+        zkeyFilePath: `../snark-artifacts/semaphore.zkey`
     }
 
-    let testIdentityGroup = new Group(0, N_LEVELS);
-    let gradeGroup = new Group(0, N_LEVELS);
-    let requiredCredentialsGroup = new Group(0, N_LEVELS);
+    let testIdentityGroup = new Group(0, MAX_TREE_DEPTH);
+    let gradeGroup = new Group(0, MAX_TREE_DEPTH);
+    let requiredCredentialsGroup = new Group(0, MAX_TREE_DEPTH);
 
     const identity = new Identity("deenz")
 
@@ -123,7 +123,7 @@ describe("Credential Restricted Test Proof", () => {
 
     describe("Verifying a restricted test proof", () => {
         it("Should verify the Semaphore proof", async () => {
-            const response = await verifyProof(credentialRestrictedTestFullProof.semaphoreFullProof, N_LEVELS)
+            const response = await verifyProof(credentialRestrictedTestFullProof.semaphoreFullProof, MAX_TREE_DEPTH)
             expect(response).to.be.true
         })
 
