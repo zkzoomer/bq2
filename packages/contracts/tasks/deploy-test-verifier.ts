@@ -1,8 +1,8 @@
 import { task, types } from "hardhat/config"
 
 task("deploy:test-verifier", "Deploy the test verifier contract")
-    .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .addOptionalParam<boolean>("logs", "Print the logs", true, types.boolean)
+    .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .setAction(
         async (
             {

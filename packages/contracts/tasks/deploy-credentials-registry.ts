@@ -2,11 +2,16 @@ import { poseidon_gencontract as poseidonContract } from "circomlibjs"
 import { task, types } from "hardhat/config"
 
 task("deploy:credentials-registry", "Deploy the credentials contract")
+    .addOptionalParam<boolean>("logs", "Print logs", false, types.boolean)
+    .addOptionalParam<boolean>("connectTestManager", "Connect the TestCredentialManager by defining a new credential type", false, types.boolean)
     .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .addOptionalParam<boolean>("semaphoreVerifier", "SemaphoreVerifier contract address", undefined, types.string)
     .addOptionalParam<boolean>("gradeClaimVerifier", "GradeClaimVerifier contract address", undefined, types.string)
     .addOptionalParam<boolean>("testVerifier", "TestVerifier contract address", undefined, types.string)
-    .addOptionalParam<boolean>("poseidon", "Poseidon library address", undefined, types.string)
+    .addOptionalParam<boolean>("poseidonT3", "PoseidonT3 library address", undefined, types.string)
+    .addOptionalParam<boolean>("poseidonT4", "PoseidonT3 library address", undefined, types.string)
+    .addOptionalParam<boolean>("credentialsRegistry", "CredentialsRegistry contract address", undefined, types.string)
+    .addOptionalParam<boolean>("testCredentialManager", "TestCredentialManager contract address", undefined, types.string)
     .setAction(
         async (
             {
@@ -23,20 +28,20 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
             },
             { ethers }
         ): Promise<any> => {
-            if (!pairingAddress) {
-                const PairingFactory = await ethers.getContractFactory("@semaphore-protocol/contracts/base/Pairing.sol:Pairing")
-                const pairing = await PairingFactory.deploy()
-
-                await pairing.deployed()
-
-                pairingAddress = pairing.address
-
-                if (logs) {
-                    console.info(`Pairing library has been deployed to: ${pairingAddress}`)
-                }
-            }
-
             if (!semaphoreVerifierAddress) {
+                if (!pairingAddress) {
+                    const PairingFactory = await ethers.getContractFactory("@semaphore-protocol/contracts/base/Pairing.sol:Pairing")
+                    const pairing = await PairingFactory.deploy()
+    
+                    await pairing.deployed()
+    
+                    pairingAddress = pairing.address
+    
+                    if (logs) {
+                        console.info(`Pairing library has been deployed to: ${pairingAddress}`)
+                    }
+                }
+
                 const SemaphoreVerifierFactory = await ethers.getContractFactory("SemaphoreVerifier", {
                     libraries: {
                         Pairing: pairingAddress
