@@ -5,6 +5,7 @@ import "@nomiclabs/hardhat-ethers"
 import "@nomiclabs/hardhat-etherscan"
 import "@typechain/hardhat"
 import { config as dotenvConfig } from "dotenv"
+import { readFileSync } from "fs"
 import "hardhat-gas-reporter"
 import "hardhat-contract-sizer"
 import { HardhatUserConfig } from "hardhat/config"
@@ -18,28 +19,7 @@ import "./tasks/deploy-grade-claim-verifier"
 import "./tasks/deploy-test-verifier"
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
-
-function getNetworks(): NetworksUserConfig {
-    if (!process.env.INFURA_API_KEY || !process.env.BACKEND_PRIVATE_KEY) {
-        return {}
-    }
-
-    const infuraApiKey = process.env.INFURA_API_KEY
-    const accounts = [`0x${process.env.BACKEND_PRIVATE_KEY}`]
-
-    return {
-        goerli: {
-            url: `https://goerli.infura.io/v3/${infuraApiKey}`,
-            chainId: 5,
-            accounts
-        },
-        arbitrum: {
-            url: "https://arb1.arbitrum.io/rpc",
-            chainId: 42161,
-            accounts
-        }
-    }
-}
+const mnemonic = readFileSync(".secret").toString().trim();
 
 const hardhatConfig: HardhatUserConfig = {
     solidity: config.solidity,
@@ -51,10 +31,20 @@ const hardhatConfig: HardhatUserConfig = {
     },
     networks: {
         hardhat: {
-            chainId: 1337,
             allowUnlimitedContractSize: true
         },
-        ...getNetworks()
+        mumbai_testnet: {
+            url: 'https://rpc-mumbai.maticvigil.com',  // RPC used just for deploying
+            accounts: {
+                mnemonic
+            }
+        },
+        optimism: {
+            url: 'https://mainnet.optimism.io	',
+            accounts: {
+                mnemonic
+            }
+        },
     },
     gasReporter: {
         currency: "USD",
