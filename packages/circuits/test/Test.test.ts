@@ -82,6 +82,8 @@ describe("Test Circuit", () => {
             await circuitTester.checkConstraints(witness);
 
             circuitOutputs = witness.slice(1, 11);
+
+            console.log(circuitOutputs)
         })
     })
 
@@ -173,7 +175,7 @@ describe("Test Circuit", () => {
         })
 
         it("Outputs the correct `gradeCommitment`, computing the correct grade in the process", async () => {
-            gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), 100 * inputs.nQuestions])
+            gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), 100])
             expect(circuitOutputs[5].toString()).to.equal(gradeCommitment.toString())
         })
     })
@@ -242,9 +244,8 @@ describe("Test Circuit", () => {
             const witness = await circuitTester.calculateWitness(_inputs, true);
             await circuitTester.checkConstraints(witness);
 
-            const expectedGrade = Math.floor(
-                _inputs.multipleChoiceWeight * _inputs.nQuestions + 
-                (100 - _inputs.multipleChoiceWeight) * (_inputs.nQuestions - 2)
+            const expectedGrade = _inputs.multipleChoiceWeight +  Math.floor(
+                (100 - _inputs.multipleChoiceWeight) * (_inputs.nQuestions - 2) / _inputs.nQuestions
             )
 
             const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), expectedGrade])
@@ -264,9 +265,7 @@ describe("Test Circuit", () => {
             const witness = await circuitTester.calculateWitness(_inputs, true);
             await circuitTester.checkConstraints(witness);
 
-            const expectedGrade = Math.floor(
-                (100 - _inputs.multipleChoiceWeight) * _inputs.nQuestions
-            )
+            const expectedGrade = 100 - _inputs.multipleChoiceWeight
 
             const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), expectedGrade])
             expect(witness[6].toString()).to.equal(_gradeCommitment.toString())

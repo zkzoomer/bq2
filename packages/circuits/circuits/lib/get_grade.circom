@@ -15,12 +15,14 @@ template GetGrade(maxQuestions) {
     openAnswerComponentPassed.in[0] <== nCorrectOpenAnswers + nQuestions;
     openAnswerComponentPassed.in[1] <== maxQuestions;
 
-    signal multipleChoiceGrade <== multipleChoiceResult * multipleChoiceWeight;
-    signal multipleChoiceContribution <== multipleChoiceGrade * nQuestions;
+    signal multipleChoiceContribution <== multipleChoiceResult * multipleChoiceWeight;
 
     signal openAnswerWeight <== 100 - multipleChoiceWeight;
     signal openAnswerGrade <== nCorrectOpenAnswers + nQuestions - maxQuestions;
-    signal openAnswerContribution <== openAnswerGrade * openAnswerWeight;
+    signal weightedOpenAnswerContribution <== openAnswerGrade * openAnswerWeight;
+    signal openAnswerContribution <-- weightedOpenAnswerContribution \ nQuestions;
+    signal openAnswerContributionRemainder <-- weightedOpenAnswerContribution % nQuestions;
+    openAnswerContribution * nQuestions + openAnswerContributionRemainder === weightedOpenAnswerContribution;
 
     out <== multipleChoiceContribution + openAnswerComponentPassed.out * openAnswerContribution;
 }
