@@ -58,7 +58,7 @@ describe("GradeClaimVerifier contract", () => {
 
         identity = new Identity("deenz")    
 
-        gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), grade * nQuestions])
+        gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), grade])
         gradeGroup.addMember(gradeCommitment)
     })
 

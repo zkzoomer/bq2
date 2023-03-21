@@ -984,7 +984,7 @@ describe("TestCredentialManager contract", () => {
                         0,
                         accounts[0],
                         1,
-                        gradeThreshold * nQuestions,
+                        gradeThreshold,
                         multipleChoiceRoot,
                         openAnswersHashesRoot
                     )
