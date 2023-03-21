@@ -39,7 +39,6 @@ describe("Grade Claim", () => {
     const grade = testGradingVariables.multipleChoiceWeight + 
         Math.floor((100 - testGradingVariables.multipleChoiceWeight) * 
         (testGradingVariables.nQuestions - 1) / testGradingVariables.nQuestions)
-    const weightedGrade = grade * testGradingVariables.nQuestions
     let gradeCommitment: FullGradeCommitment
 
     let fullProof: GradeClaimFullProof
@@ -52,13 +51,13 @@ describe("Grade Claim", () => {
 
         gradeGroup = new Group(0, MAX_TREE_DEPTH)
 
-        const gradeCommitmentValue = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
+        const gradeCommitmentValue = poseidon([poseidon([identity.nullifier, identity.trapdoor]), grade])
         gradeGroup.addMembers([BigInt(1), BigInt(2), gradeCommitmentValue])
 
         gradeCommitment = {
             gradeCommitmentValue,
             gradeCommitmentIndex: 2,
-            grade: weightedGrade
+            grade
         }
 
         curve = await getCurveFromName("bn128")

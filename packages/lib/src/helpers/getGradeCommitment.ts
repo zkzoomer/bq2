@@ -27,7 +27,7 @@ export async function getGradeCommitment(
     var i = 0;
     while (i <= nQuestions) {
         grade = Math.floor((100 - multipleChoiceWeight) * i / nQuestions) 
-        gradeCommitmentValue = poseidon([identitySecret, grade * nQuestions])
+        gradeCommitmentValue = poseidon([identitySecret, grade])
         gradeCommitmentIndex = 
             gradeGroup.indexOf(gradeCommitmentValue) === -1 ? 
             gradeGroup.indexOf(gradeCommitmentValue.toString()) : 
@@ -42,7 +42,7 @@ export async function getGradeCommitment(
         }
 
         grade += multipleChoiceWeight
-        gradeCommitmentValue = poseidon([identitySecret, grade * nQuestions])
+        gradeCommitmentValue = poseidon([identitySecret, grade])
         gradeCommitmentIndex = 
             gradeGroup.indexOf(gradeCommitmentValue) === -1 ?
             gradeGroup.indexOf(gradeCommitmentValue.toString()) : 
@@ -52,7 +52,7 @@ export async function getGradeCommitment(
             return {
                 gradeCommitmentValue,
                 gradeCommitmentIndex,
-                grade: grade * nQuestions
+                grade
             }
         }
 

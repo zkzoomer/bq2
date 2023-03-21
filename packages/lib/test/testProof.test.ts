@@ -68,9 +68,8 @@ describe("Test Proof", () => {
             openAnswersHashes
         }
 
-        const expectedGrade = Math.floor(
-            testVariables.multipleChoiceWeight * testVariables.nQuestions + 
-            (100 - testVariables.multipleChoiceWeight) * (testVariables.nQuestions - 1)
+        const expectedGrade = testVariables.multipleChoiceWeight + Math.floor(
+            (100 - testVariables.multipleChoiceWeight) * (testVariables.nQuestions - 1) / testVariables.nQuestions
         )
 
         gradeCommitmentValue = poseidon([poseidon([identity.nullifier, identity.trapdoor]), expectedGrade])

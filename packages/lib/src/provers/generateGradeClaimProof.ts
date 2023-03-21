@@ -45,7 +45,6 @@ export default async function generateGradeClaimProof(
                 gradeCommitmentOrTestGradingVariables.multipleChoiceWeight,
                 gradeCommitmentOrTestGradingVariables.nQuestions
             )
-            gradeThreshold *= gradeCommitmentOrTestGradingVariables.nQuestions
         } else {
             gradeCommitment = gradeCommitmentOrTestGradingVariables
         }

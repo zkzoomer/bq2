@@ -142,8 +142,8 @@ describe("Helper functions", () => {
         it("Gets the correct grade commitment from a tree", async () => {
             const gradeGroup = new Group(0, MAX_TREE_DEPTH)
     
-            const weightedGrade = multipleChoiceWeight * nQuestions + (100 - multipleChoiceWeight) * (nQuestions - 1)
-            const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), weightedGrade])
+            const grade = multipleChoiceWeight + Math.floor((100 - multipleChoiceWeight) * (nQuestions - 1) / nQuestions)
+            const _gradeCommitment = poseidon([poseidon([identity.nullifier, identity.trapdoor]), grade])
     
             gradeGroup.addMembers([BigInt(1), BigInt(2), _gradeCommitment])
     
@@ -152,7 +152,7 @@ describe("Helper functions", () => {
             expect(gradeCommitment).to.deep.equal({
                 gradeCommitmentValue: _gradeCommitment,
                 gradeCommitmentIndex: gradeGroup.indexOf(_gradeCommitment),
-                grade: weightedGrade
+                grade
             })
         })
     })
