@@ -68,6 +68,7 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
     /// @param nullifierHash: Nullifier hash
     /// @param proof: Semaphore zero-knowledge proof
     /// @param rating: Rating given to the credential issuer for this test, 0-100
+    /// @param comment: A comment given to the credential issuer.
     function rateCredential(
         uint256 credentialId,
         uint256 credentialsTreeRoot,
