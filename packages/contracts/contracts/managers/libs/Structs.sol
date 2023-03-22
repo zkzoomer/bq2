@@ -10,7 +10,7 @@ struct CredentialTest {
     uint8 multipleChoiceWeight;
     /// Number of open answer questions the test has -- must be set to 1 for pure multiple choice tests.
     uint8 nQuestions;
-    /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited
+    /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited.
     uint32 timeLimit;
     /// Address that controls this credential.
     address admin;
@@ -92,17 +92,17 @@ struct GradeClaimFullProof {
 /// Defines the parameters that make up a solution proof to a credential test, plus an inclusion proof
 /// inside the required credential group.
 struct CredentialRestrictedTestFullProof {
-    /// The corresponding Semaphore full proof
+    /// The corresponding Semaphore full proof.
     CredentialClaimFullProof credentialClaimFullProof;
-    /// The corresponding test full proof
+    /// The corresponding test full proof.
     TestFullProof testFullProof;
 }
 
 /// Defines the parameters that make up a solution proof to a credential test, plus a grade claim proof
-/// inside the corresponding grade group
+/// inside the corresponding grade group.
 struct GradeRestrictedTestFullProof {
-    /// The corresponding grade claim proof
+    /// The corresponding grade claim proof.
     GradeClaimFullProof gradeClaimFullProof;
-    /// The corresponding test full proof
+    /// The corresponding test full proof.
     TestFullProof testFullProof;
 }

@@ -63,11 +63,11 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
     ) external;
 
     /// @dev Proves ownership of a credential and gives a rating to a credential and its issuer
-    /// @param credentialId: Id of the test for which the rating is being done
-    /// @param credentialsTreeRoot: Root of the credentials Merkle tree
-    /// @param nullifierHash: Nullifier hash
-    /// @param proof: Semaphore zero-knowledge proof
-    /// @param rating: Rating given to the credential issuer for this test, 0-100
+    /// @param credentialId: Id of the test for which the rating is being done.
+    /// @param credentialsTreeRoot: Root of the credentials Merkle tree.
+    /// @param nullifierHash: Nullifier hash.
+    /// @param proof: Semaphore zero-knowledge proof.
+    /// @param rating: Rating given to the credential issuer for this test, 0-100.
     /// @param comment: A comment given to the credential issuer.
     function rateCredential(
         uint256 credentialId,
@@ -80,12 +80,12 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
 
     /// @dev Verifies whether a Semaphore credential ownership/non-ownership proof is valid, and voids
     /// the nullifierHash in the process. This way, the same proof will not be valid twice.
-    /// @param credentialId: Id of the credential for which the ownership proof is being done
-    /// @param merkleTreeRoot: Root of the credentials/no-credentials Merkle tree
-    /// @param nullifierHash: Nullifier hash
-    /// @param signal: Semaphore signal
-    /// @param externalNullifier: External nullifier
-    /// @param proof: Zero-knowledge proof
+    /// @param credentialId: Id of the credential for which the ownership proof is being done.
+    /// @param merkleTreeRoot: Root of the credentials Merkle tree.
+    /// @param nullifierHash: Nullifier hash.
+    /// @param signal: Semaphore signal.
+    /// @param externalNullifier: External nullifier.
+    /// @param proof: Zero-knowledge proof.
     function verifyCredentialOwnershipProof(
         uint256 credentialId,
         uint256 merkleTreeRoot,
@@ -97,13 +97,13 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
 
     /// @dev Verifies whether a grade claim proof is valid, and voids the nullifierHash in the process.
     /// This way, the same proof will not be valid twice.
-    /// @param credentialId: Id of the credential for which the ownership proof is being done
-    /// @param gradeTreeRoot: Root of the grade Merkle tree
-    /// @param nullifierHash: Nullifier hash
-    /// @param gradeThreshold: Grade threshold the user claims to have obtained
-    /// @param signal: Hashed Semaphore signal
-    /// @param externalNullifier: Hashed external nullifier
-    /// @param proof: Zero-knowledge proof
+    /// @param credentialId: Id of the credential for which the ownership proof is being done.
+    /// @param gradeTreeRoot: Root of the grade Merkle tree.
+    /// @param nullifierHash: Nullifier hash.
+    /// @param gradeThreshold: Grade threshold the user claims to have obtained.
+    /// @param signal: Semaphore signal.
+    /// @param externalNullifier: external nullifier.
+    /// @param proof: Zero-knowledge proof.
     function verifyGradeClaimProof(
         uint256 credentialId,
         uint256 gradeTreeRoot,
@@ -135,7 +135,7 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
         uint256 credentialId
     ) external view returns (string memory);
 
-    /// @dev Returns the average rating that a credential has obtained
+    /// @dev Returns the average rating that a credential has obtained.
     /// @param credentialId: Id of the credential.
     /// @return uint256, average rating the test received.
     function getCredentialAverageRating(

@@ -22,7 +22,7 @@ interface ITestCredentialManager is ICredentialManager {
     /// @dev Stores the open answer hashes on-chain, "verifying" the corresponding credential test.
     /// A check can be made to see if these correspond to the openAnswerHashesRoot, or assume it's in
     /// the credential issuer's best interest to provide the valid open answer hashes.
-    /// @param credentialId: Id of the credential
+    /// @param credentialId: Id of the credential.
     /// @param answerHashes: Array containing the hashes of each of the answers of the test.
     function verifyTestCredentialAnswers(
         uint256 credentialId,
