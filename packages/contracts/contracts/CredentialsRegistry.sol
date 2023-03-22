@@ -106,7 +106,7 @@ contract CredentialsRegistry is ICredentialsRegistry {
             credentialData
         );
 
-        emit CredentialCreated(nCredentials, credentialType);
+        emit CredentialCreated(nCredentials, credentialType, treeDepth, zeroValue);
     }
 
     /// @dev See {ICredentialHandler-updateCredential}

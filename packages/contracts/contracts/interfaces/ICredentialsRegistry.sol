@@ -23,7 +23,9 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
     /// @dev Emitted when a credential is created.
     /// @param credentialId: Id of the credential.
     /// @param credentialType: Unique identifier that links to the credential manager that will define its behavior.
-    event CredentialCreated(uint256 indexed credentialId, uint256 indexed credentialType);
+    /// @param merkleTreeDepth: Depth of the tree.
+    /// @param zeroValue: Zero value of the tree.
+    event CredentialCreated(uint256 indexed credentialId, uint256 indexed credentialType, uint256 merkleTreeDepth, uint256 zeroValue);
 
     /// @dev Emitted when a rating is given to a credential and its issuer
     /// @param credentialId: Id of the credential

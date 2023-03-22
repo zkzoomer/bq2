@@ -286,9 +286,15 @@ describe("CredentialsRegistry contract", () => {
                 })
 
                 it("emits a `CredentialCreated` event", async () => {
+                    let zeroValue = hash(1);
+
+                    for (var i = 0; i < TREE_DEPTH; i++) {
+                        zeroValue = poseidon([zeroValue, zeroValue]);
+                    }
+
                     await expect(tx)
                         .to.emit(credentialsRegistry, "CredentialCreated")
-                        .withArgs('1', '1')
+                        .withArgs('1', '1', TREE_DEPTH, zeroValue.toString())
                 })
 
                 it("increases the `nCredentials` variable", async () => {
