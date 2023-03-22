@@ -216,14 +216,15 @@ contract TestCredentialManager is TestCredentialManagerBase {
 
             testVerifier.verifyProof(testFullProof.testProof, proofInput);
 
-            emit CredentialsGained(
-                credentialId,
-                testFullProof.identityCommitment,
-                testFullProof.gradeCommitment
-            );
-
             credentialState.credentialsTreeIndex++;
             credentialState.credentialsTreeRoot = testFullProof.newIdentityTreeRoot;
+
+            emit CredentialsMemberAdded(
+                credentialId,
+                credentialState.credentialsTreeIndex,
+                testFullProof.identityCommitment,
+                testFullProof.newIdentityTreeRoot
+            );
        
         } else {
 
@@ -242,19 +243,27 @@ contract TestCredentialManager is TestCredentialManagerBase {
 
             testVerifier.verifyProof(testFullProof.testProof, proofInput);
 
-            emit CredentialsNotGained(
-                credentialId,
-                testFullProof.identityCommitment,
-                testFullProof.gradeCommitment
-            );
-
             credentialState.noCredentialsTreeIndex++;
             credentialState.noCredentialsTreeRoot = testFullProof.newIdentityTreeRoot;
+
+            emit NoCredentialsMemberAdded(
+                credentialId,
+                credentialState.noCredentialsTreeIndex,
+                testFullProof.identityCommitment,
+                testFullProof.newIdentityTreeRoot
+            );
         }
 
         // User is always added to the grade tree
         credentialState.gradeTreeIndex++;
         credentialState.gradeTreeRoot = testFullProof.newGradeTreeRoot;
+
+        emit GradeMemberAdded(
+            credentialId,
+            credentialState.gradeTreeIndex,
+            testFullProof.gradeCommitment,
+            testFullProof.newGradeTreeRoot
+        );
         
         return credentialState;
     }

@@ -822,10 +822,16 @@ describe("TestCredentialManager contract", () => {
                                 .to.be.equal((new Group(1, TREE_DEPTH)).root)
                         })
 
-                        it("emits a `CredentialsGained` event", async () => {
+                        it("emits a `CredentialsMemberAdded` event", async () => {
                             await expect(tx)
-                                .to.emit(testCredentialManager, "CredentialsGained")
-                                .withArgs(1, testProof.identityCommitment, testProof.gradeCommitment)
+                                .to.emit(testCredentialManager, "CredentialsMemberAdded")
+                                .withArgs(1, 1, testProof.identityCommitment, testProof.newIdentityTreeRoot)
+                        })
+
+                        it("emits a `GradeMemberAdded` event", async () => {
+                            await expect(tx)
+                                .to.emit(testCredentialManager, "GradeMemberAdded")
+                                .withArgs(1, 1, testProof.gradeCommitment, testProof.newGradeTreeRoot)
                         })
                     })
                 })
@@ -864,10 +870,16 @@ describe("TestCredentialManager contract", () => {
                                 .to.be.equal(credentialsGroup.root)
                         })
 
-                        it("emits a `CredentialsNotGained` event", async () => {
+                        it("emits a `NoCredentialsMemberAdded` event", async () => {
                             await expect(tx)
-                                .to.emit(testCredentialManager, "CredentialsNotGained")
-                                .withArgs(1, nonPassingProof.identityCommitment, nonPassingProof.gradeCommitment)
+                                .to.emit(testCredentialManager, "NoCredentialsMemberAdded")
+                                .withArgs(1, 1, nonPassingProof.identityCommitment, nonPassingProof.newIdentityTreeRoot)
+                        })
+
+                        it("emits a `GradeMemberAdded` event", async () => {
+                            await expect(tx)
+                                .to.emit(testCredentialManager, "GradeMemberAdded")
+                                .withArgs(1, 1, nonPassingProof.gradeCommitment, nonPassingProof.newGradeTreeRoot)
                         })
                     })
                 })
