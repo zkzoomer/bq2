@@ -1,6 +1,6 @@
 # Block Qualified Test Proof
 
-In order to obtain a credential, the user must first provide a proof that shows they have necessary knowledge to obtain it. 
+In order to obtain a test credential, the user must first provide a proof that shows they have necessary knowledge to obtain it. 
 
 ## Generating a Proof
 

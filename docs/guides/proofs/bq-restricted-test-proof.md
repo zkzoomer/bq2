@@ -1,6 +1,6 @@
 # Block Qualified Restricted Test Proof
 
-Besides the necessary proof of knowledge, some credentials require users first prove they meet certain requirements. These requirements can be:
+Besides the necessary proof of knowledge, some test credentials require users first prove they meet certain requirements. These requirements can be:
 - [**Credential restricted tests**](#credential-restricted-tests): the user must prove they have a different credential.
 - [**Grade Restricted tests**](#grade-restricted-tests): the user must prove they obtained a grade over a threshold for a different credential.
 
@@ -71,7 +71,7 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
 - `gradeClaimThreshold`: the value the user claims to have a higher grade than.
 - `gradeClaimCommitmentOrTestGradingVariables`: this variable can either be:
     - The `TestGradingVariables`, composed of the `multipleChoiceWeight` and the `nQuestions`. If this value is provided, the grade the user obtained is brute forced from their identity and grade group by testing all the possible grades they could have obtained.
-    - The `FullGradeCommitment`, composed of the value of the grade commitment (`gradeCommitmentValue`) as specified for the [grade claim circuit](../../technical-reference/circuits.md#the-grade-claim-circuit), its index within the grade tree (`gradeCommitmentIndex`), as well as the `grade` and `weightedGrade` (its weighed value by `nQuestions`).
+    - The `FullGradeCommitment`, composed of the value of the grade commitment (`gradeCommitmentValue`) as specified for the [grade claim circuit](../../technical-reference/circuits.md#the-grade-claim-circuit), its index within the grade tree (`gradeCommitmentIndex`), and the `grade` obtained.
 - `requiredCredentialsGroup`: the Semaphore group corresponding to the require credential, where the user was already added.
 - `testSnarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/test.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/test.wasm) trusted setup files for the test circuit.
 - `gradeClaimSnarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/gradeClaim.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/gradeClaim.wasm) trusted setup files for the grade claim circuit.

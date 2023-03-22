@@ -20,3 +20,6 @@
 * [Block Qualified Tests](./technical-reference/block-qualified-tests.md)
 * [Circuits](./technical-reference/circuits.md)
 * [Contracts](./technical-reference/contracts.md)
+    * [The Credential Registry](./technical-reference/credential-registry.md)
+    * [Credential Managers](./technical-reference/credential-managers.md)
+    * [The Test Credential Manager](./technical-reference/test-credential-manager.md)

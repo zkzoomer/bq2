@@ -14,7 +14,7 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
 - `signal`: the signal the user wants to send anonymously.
 - `gradeCommitmentOrTestGradingVariables`: this variable can either be:
     - The `TestGradingVariables`, composed of the `multipleChoiceWeight` and the `nQuestions`. If this value is provided, the grade the user obtained is brute forced from their identity and grade group by testing all the possible grades they could have obtained.
-    - The `FullGradeCommitment`, composed of the value of the grade commitment (`gradeCommitmentValue`) as specified for the [grade claim circuit](../../technical-reference/circuits.md#the-grade-claim-circuit), its index within the grade tree (`gradeCommitmentIndex`), as well as the `grade` and `weightedGrade` (its weighed value by `nQuestions`).
+    - The `FullGradeCommitment`, composed of the value of the grade commitment (`gradeCommitmentValue`) as specified for the [grade claim circuit](../../technical-reference/circuits.md#the-grade-claim-circuit), its index within the grade tree (`gradeCommitmentIndex`), and the `grade` obtained.
 - `snarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/gradeClaim.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/gradeClaim.wasm) trusted setup files.
 
 ## Verifying a Proof Off-Chain

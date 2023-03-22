@@ -1,8 +1,8 @@
 # Block Qualified Tests
 
-The `Test` object is at the core of the protocol: it defines the credential and what is needed to obtain it.
+The `Test` object is at the core of the natively supported [Test Credential](../technical-reference/the-test-credential-manager.md): it defines the test credential and what is needed to obtain it.
 
-Each test contains two distinct components, each forming a Merkle tree formed with the SNARK-friendly [Poseidon](https://www.poseidon-hash.info/) hash function:
+Each credential test contains two distinct components, each forming a Merkle tree formed with the SNARK-friendly [Poseidon](https://www.poseidon-hash.info/) hash function:
 
 <p align="center">
   <img src="./test-diagram.png" width=70% />
@@ -11,9 +11,11 @@ Each test contains two distinct components, each forming a Merkle tree formed wi
 - A **multiple choice** component, where the answer to each question is part of a given finite set. The resulting Merkle root is named `multipleChoiceRoot`. The grade for this component is only awarded if the user gets all the answers right: if they know a tree with `multipleChoiceRoot` at its root.
 - An **open answer** component, where the answer to each question can be any value. The leaves of the tree are the [keccak256](../../packages/lib/src/helpers/hash.ts) hashes of the answers, made compatible with the SNARK scalar modulus. The resulting Merkle root of the correct answers tree is named `openAnswersHashesRoot`. The grade for this component is awarded incrementally per answer that the user gets right: every matched hash with the correct `openAnswerHashes`, with the preimage being the user's answer.
 
+<!-- // TODO: change when TEST_HEIGHT is made dynamic -->
+
 The `TEST_HEIGHT` constant sets the maximum number of questions possible for each component. This value is set to 6, giving us a maximum of 64 questions per component. The value of the `testRoot`, which is the result of hashing together the `multipleChoiceRoot` and the `openAnswersHashesRoot` is used to define and identify the test.
 
-If the credential issuer does not define all of the questions for a component, the tree will have to be padded to 64 values. It is recommended that this is done with the default values: `0` for multiple choice questions, and `keccak256("")` for open answer questions. 
+If the credential issuer does not define all of the questions for a component, the tree will have to be padded to 64 values. In the bq library, this is done by assigning the default values `0` for multiple choice questions, and `keccak256("")` for open answer questions. 
 
 The final grade of a test is calculated as the weighted sum of these two components, using the following formula:
 
@@ -35,11 +37,7 @@ Because of the formula above, `nQuestions` must always be greater than one.
 For tests that only contain a multiple choice component, `multipleChoiceWeight` must be set to 100, while `nQuestions` must therefore be set to 1; for tests that only contain an open answer component, `multipleChoiceWeight` must be set to 0.
 {% endhint %}
 
-{% hint style="info" %}
-Inside of the circuit, we compute the value for [`grade ⋅ nQuestions`](../../packages/circuits/circuits/lib/get_grade.circom) instead of `grade`. This value is later committed to the grade group, alongside the user's identity secret. This is done to avoid non-quadratic constraints.
-{% endhint %}
-
-When the user's grade is over a defined `minimumGrade`, they have gained the credentials, and their identity commitment gets added to the credentials group. Otherwise, their identity commitment gets added to the no-credentials group. These parameters that define the criteria to pass a test get encoded into the variable `testParameters`:
+When the user's grade is over the defined `minimumGrade`, they have gained the test credential, and their identity commitment gets added to the credentials group. Otherwise, their identity commitment gets added to the no-credentials group. These parameters that define the criteria to pass a test get encoded into the variable `testParameters`:
 
 $$
   \texttt{testParameters} = \textrm{Poseidon}(\texttt{minimumGrade}, \texttt{multipleChoiceWeight}, \texttt{nQuestions})
