@@ -511,44 +511,6 @@ describe("TestCredentialManager contract", () => {
             })
         })  
 
-        describe("verifyTestCredentialAnswers", () => {
-            context("when calling for a credential that does not exist", () => {
-                it("reverts", async () => {
-                    await expect(
-                        testCredentialManager.verifyTestCredentialAnswers(
-                            1,
-                            []
-                        )
-                    ).to.be.revertedWithCustomError(
-                        credentialsRegistry,
-                        "CredentialDoesNotExist"
-                    )
-                })
-            })
-
-            context("when calling for a test credential that does not exist", () => {
-                it("reverts", async () => {
-                    await credentialsRegistry.createCredential(
-                        MAX_TREE_DEPTH,
-                        2,
-                        0,
-                        encodedTestCredentialData,
-                        credentialURI
-                    )
-
-                    await expect(
-                        testCredentialManager.verifyTestCredentialAnswers(
-                            1,
-                            []
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "TestCredentialDoesNotExist"
-                    )
-                })
-            })
-        })
-
         describe("getCredentialData", () => {
             context("when calling for a credential that does not exist", () => {
                 it("reverts", async () => {
@@ -721,42 +683,6 @@ describe("TestCredentialManager contract", () => {
                     
                     await expect(
                         testCredentialManager.invalidateCredential(
-                            1,
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "TestCredentialDoesNotExist"
-                    )
-                })
-            })
-        })
-
-        describe("getOpenAnswersHashes", () => {
-            context("when calling for a credential that does not exist", () => {
-                it("reverts", async () => {
-                    await expect(
-                        testCredentialManager.getOpenAnswersHashes(
-                            1,
-                        )
-                    ).to.be.revertedWithCustomError(
-                        credentialsRegistry,
-                        "CredentialDoesNotExist"
-                    )
-                })
-            })
-
-            context("when calling for a test credential that does not exist", () => {
-                it("reverts", async () => {
-                    await credentialsRegistry.createCredential(
-                        MAX_TREE_DEPTH,
-                        2,
-                        0,
-                        encodedTestCredentialData,
-                        credentialURI
-                    )
-                    
-                    await expect(
-                        testCredentialManager.getOpenAnswersHashes(
                             1,
                         )
                     ).to.be.revertedWithCustomError(
@@ -1094,67 +1020,6 @@ describe("TestCredentialManager contract", () => {
             })
         })
 
-        describe("verifyTestCredentialAnswers", () => {
-            context("when being called by someone that is not the credential admin", () => {
-                it("reverts", async () => {
-                    await expect(
-                        testCredentialManager.connect(signers[1]).verifyTestCredentialAnswers(
-                            1,
-                            []
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "CallerIsNotTheCredentialAdmin"
-                    )
-                })
-            })
-
-            context("when providing an invalid number of answer hashes", () => {
-                it("reverts", async () => {
-                    await expect(
-                        testCredentialManager.verifyTestCredentialAnswers(
-                            1,
-                            [1]
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "InvalidCredentialTestAnswersLength"
-                    )
-                })
-            })
-
-            context("after verifying the answers for a given test", () => {
-                beforeEach(async () => {
-                    await testCredentialManager.verifyTestCredentialAnswers(1, openAnswersHashes.slice(0,3))
-                })
-
-                describe("getOpenAnswersHashes", () => {
-                    context("when calling for a verified test credential", () => {
-                        it("returns the corresponding list of open answer hashes", async () => {
-                            expect(await testCredentialManager.getOpenAnswersHashes(1))
-                                .to.deep.equal(openAnswersHashes.slice(0,3))
-                        })
-                    })
-                })
-
-                describe("verifyTestCredentialAnswers", () => {
-                    context("when trying to verify an already verified test credential", () => {
-                        it("reverts", async () => {
-                            await expect(
-                                testCredentialManager.verifyTestCredentialAnswers(
-                                    1,
-                                    openAnswersHashes.slice(0,3)
-                                )
-                            ).to.be.revertedWithCustomError(
-                                testCredentialManager,
-                                "CredentialTestAnswersAlreadyVerified"
-                            )
-                        })
-                    })
-                })
-            })
-        })
-
         describe("getCredentialData", () => {
             it("returns the correct credential data", async () => {
                 const credentialData = abi.encode(
@@ -1221,15 +1086,6 @@ describe("TestCredentialManager contract", () => {
                         testCredentialManager,
                         "TestCredentialWasInvalidated"
                     )
-                })
-            })
-        })
-
-        describe("getOpenAnswersHashes", () => {
-            context("when calling for a non verified credential", () => {
-                it("returns an empty string", async () => {
-                    expect(await testCredentialManager.getOpenAnswersHashes(1))
-                        .to.deep.equal([])
                 })
             })
         })

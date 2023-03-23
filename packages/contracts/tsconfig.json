@@ -5,6 +5,6 @@
         "module": "CommonJS",
         "outDir": "dist"
     },
-    "include": ["scripts/**/*", "tasks/**/*", "test/**/*", "build/typechain/**/*", "types/**/*", "_Credentials.test.ts"],
+    "include": ["scripts/**/*", "tasks/**/*", "test/**/*", "build/**/*", "typechain-types/**/*"],
     "files": ["hardhat.config.ts"]
 }

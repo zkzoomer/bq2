@@ -144,23 +144,6 @@ contract TestCredentialManager is TestCredentialManagerBase {
             );
         }
     }
-    
-    /// @dev See {ITestCredentialManager-verifyTestCredentialAnswers}.
-    function verifyTestCredentialAnswers(
-        uint256 credentialId,
-        uint256[] memory answerHashes
-    ) external override onlyExistingTestCredentials(credentialId) onlyCredentialAdmin(credentialId) {
-        if (credentialTests[credentialId].multipleChoiceWeight == 100 || credentialTestOpenAnswersHashes[credentialId].length != 0) {
-            // A multiple choice test already has their test answers "verified", as these do not exist
-            revert CredentialTestAnswersAlreadyVerified();
-        }
-
-        if (credentialTests[credentialId].nQuestions != answerHashes.length) {
-            revert InvalidCredentialTestAnswersLength();
-        }
-
-        credentialTestOpenAnswersHashes[credentialId] = answerHashes;
-    }
 
     /// @dev See {ICredentialHandler-getCredentialData}.
     function getCredentialData(

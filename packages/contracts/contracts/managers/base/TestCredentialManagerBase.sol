@@ -14,9 +14,6 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @dev Gets a credential id and returns the credential test parameters
     mapping(uint256 => CredentialTest) public credentialTests;
 
-    /// @dev Gets a credential id and returns the list of open answer hashes for the credential test
-    mapping(uint256 => uint256[]) public credentialTestOpenAnswersHashes;
-
     /// @dev CredentialsRegistry smart contract
     ICredentialsRegistry public credentialsRegistry;
     
@@ -79,13 +76,6 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @dev See {IERC165-supportsInterface}.
     function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
         return interfaceId == type(ICredentialManager).interfaceId;
-    }
-
-    /// @dev See {ITestCredentialManager-getOpenAnswersHashes}
-    function getOpenAnswersHashes(
-        uint256 credentialId
-    ) external view override onlyExistingTestCredentials(credentialId) returns (uint256[] memory) {
-        return credentialTestOpenAnswersHashes[credentialId];
     }
 
     /// @dev Validates the TestInitializingParameters struct
