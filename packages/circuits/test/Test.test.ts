@@ -82,8 +82,6 @@ describe("Test Circuit", () => {
             await circuitTester.checkConstraints(witness);
 
             circuitOutputs = witness.slice(1, 11);
-
-            console.log(circuitOutputs)
         })
     })
 
