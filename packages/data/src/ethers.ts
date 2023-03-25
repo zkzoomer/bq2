@@ -42,10 +42,10 @@ export default class TestCredentialGroupsEthers {
 
         switch (networkOrEthereumURL) {
             case "maticmum":
-                options.credentialsRegistryAddress = ""
-                options.credentialsRegistryStartBlock = 0
-                options.testCredentialManagerAddress = ""
-                options.testCredentialManagerStartBlock = 0
+                options.credentialsRegistryAddress = "0x835a8EEF0fCeC907F1aA9aCe4B527ecFA4475c0C"
+                options.credentialsRegistryStartBlock = 33562350
+                options.testCredentialManagerAddress = "0xAE4f50B84e9600C0d038CE046225B9767857d68B"
+                options.testCredentialManagerStartBlock = 33562353
                 options.testCredentialType = 0
                 break
             default:
