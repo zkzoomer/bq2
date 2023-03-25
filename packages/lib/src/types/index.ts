@@ -1,4 +1,3 @@
-import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { FullProof } from "@semaphore-protocol/proof"
 
 export type BigNumberish = string | bigint | number
@@ -28,8 +27,8 @@ export type Proof = [
 ]
 
 export type TestAnswers = {
-    multipleChoiceAnswers: number[],
-    openAnswers: BigNumberish[]
+    multipleChoiceAnswers: string[] | string[][] | number[] | number[][],
+    openAnswers: string[]
 }
 
 export type TestGradingVariables = {
@@ -57,6 +56,7 @@ export type TestFullProof = {
     newIdentityTreeRoot: string
     gradeCommitment: string
     newGradeTreeRoot: string
+    testPassed: boolean
     publicSignals: BigNumberish[]
     proof: Proof
 }
@@ -85,4 +85,54 @@ export type RateFullProof = {
     rating: number,
     comment: string,
     semaphoreFullProof: FullProof
+}
+
+export type TestCredentialData = {
+    minimumGrade: number,
+    multipleChoiceWeight: number,
+    nQuestions: number,
+    timeLimit: number,
+    admin: string,
+    requiredCredential: number,
+    requiredCredentialGradeThreshold: number,
+    multipleChoiceRoot: string,
+    openAnswersHashesRoot: string,
+    testRoot: string,
+    testParameters: string,
+    nonPassingTestParameters: string
+}
+
+export type OpenAnswersResults = {
+    nCorrect: number,
+    resultsArray: boolean[],
+    openAnswersResult: number 
+}
+
+export type TestResults = {
+    grade: number,
+    minimumGrade: number,
+    pass: boolean,
+    nQuestions: number,
+    multipleChoiceGrade: number,
+    openAnswerGrade: number,
+    multipleChoiceWeight: number,
+    openAnswerResults: boolean[],
+}
+
+export type SolutionSnarkArtifacts = {
+    testSnarkArtifacts: SnarkArtifacts,
+    semaphoreSnarkArtifacts: SnarkArtifacts,
+    gradeClaimSnarkArtifacts: SnarkArtifacts
+}
+
+export type Network =
+    | "maticmum"
+
+export type Options = {
+    credentialsRegistryAddress?: string
+    testCredentialManagerAddress?: string
+    testCredentialType?: string
+    openAnswersHashes?: string[]
+    provider?: "etherscan" | "infura" | "alchemy" | "cloudflare" | "pocket" | "ankr"
+    apiKey?: string
 }
