@@ -21,45 +21,6 @@ import "./tasks/deploy-test-verifier"
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
 const mnemonic = readFileSync("../../.sneed").toString().trim();
 
-function getNetworks(): NetworksUserConfig {
-    if (!process.env.INFURA_API_KEY || !process.env.BACKEND_PRIVATE_KEY) {
-        return {}
-    }
-
-    const infuraApiKey = process.env.INFURA_API_KEY
-
-    return {
-        goerli: {
-            url: `https://goerli.infura.io/v3/${infuraApiKey}`,
-            chainId: 5,
-            accounts: {
-                mnemonic
-            }
-        },
-        mumbai_testnet: {
-            url: 'https://rpc-mumbai.maticvigil.com',
-            chainId: 80001,
-            accounts: {
-                mnemonic
-            }
-        },
-        arbitrum: {
-            url: "https://arb1.arbitrum.io/rpc",
-            chainId: 42161,
-            accounts: {
-                mnemonic
-            }
-        },
-        optimism: {
-            url: 'https://mainnet.optimism.io',
-            chainId: 10,
-            accounts: {
-                mnemonic
-            }
-        },
-    }
-}
-
 const hardhatConfig: HardhatUserConfig = {
     solidity: config.solidity,
     paths: {
@@ -73,7 +34,13 @@ const hardhatConfig: HardhatUserConfig = {
             chainId: 1337,
             allowUnlimitedContractSize: true
         },
-        ...getNetworks()
+        mumbai: {
+            url: 'https://rpc-mumbai.maticvigil.com',
+            chainId: 80001,
+            accounts: {
+                mnemonic
+            }
+        }
     },
     gasReporter: {
         currency: "USD",
