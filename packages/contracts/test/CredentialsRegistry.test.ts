@@ -198,7 +198,7 @@ describe("CredentialsRegistry contract", () => {
             it("reverts", async () => {
                 await expect(
                     credentialsRegistry.defineCredentialType(
-                        2,
+                        1,
                         invalidCredentialManagerAddress
                     )
                 ).to.be.revertedWithCustomError(
@@ -213,7 +213,7 @@ describe("CredentialsRegistry contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsRegistry.defineCredentialType(
-                            1,
+                            0,
                             testCredentialManager.address
                         )
                     ).to.be.revertedWithCustomError(
@@ -232,7 +232,7 @@ describe("CredentialsRegistry contract", () => {
                     await expect(
                         credentialsRegistry.createCredential(
                             15,
-                            1,
+                            0,
                             0,
                             encodedTestCredentialData,
                             credentialURI
@@ -245,7 +245,7 @@ describe("CredentialsRegistry contract", () => {
                     await expect(
                         credentialsRegistry.createCredential(
                             MAX_TREE_DEPTH + 1,
-                            1,
+                            0,
                             0,
                             encodedTestCredentialData,
                             credentialURI
@@ -262,7 +262,7 @@ describe("CredentialsRegistry contract", () => {
                     await expect(
                         credentialsRegistry.createCredential(
                             TREE_DEPTH,
-                            2,
+                            1,
                             0,
                             encodedTestCredentialData,
                             credentialURI
@@ -280,7 +280,7 @@ describe("CredentialsRegistry contract", () => {
                 beforeEach(async () => {
                     tx = await credentialsRegistry.createCredential(
                         TREE_DEPTH,
-                        1,
+                        0,
                         0,
                         encodedTestCredentialData,
                         credentialURI
@@ -296,7 +296,7 @@ describe("CredentialsRegistry contract", () => {
 
                     await expect(tx)
                         .to.emit(credentialsRegistry, "CredentialCreated")
-                        .withArgs('1', '1', TREE_DEPTH, zeroValue.toString())
+                        .withArgs('1', '0', TREE_DEPTH, zeroValue.toString())
                 })
 
                 it("increases the `nCredentials` variable", async () => {
@@ -600,7 +600,7 @@ describe("CredentialsRegistry contract", () => {
 
     context("with created credentials", () => {
         beforeEach(async () => {
-            await credentialsRegistry.createCredential(TREE_DEPTH, 1, 15 * 60, encodedTestCredentialData, credentialURI)
+            await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
             await credentialsRegistry.updateCredential(1, encodedTestFullProof)
         })
 
@@ -992,7 +992,7 @@ describe("CredentialsRegistry contract", () => {
             it("returns the credential type", async () => {
                 expect(
                     await credentialsRegistry.getCredentialType(1)
-                ).to.be.equal('1')
+                ).to.be.equal('0')
             })
         })
 
@@ -1079,7 +1079,7 @@ describe("CredentialsRegistry contract", () => {
 
         describe("getMerkleTreeRoot", () => {
             it("returns the empty root for the different groups that make up a new credential", async () => {
-                await credentialsRegistry.createCredential(TREE_DEPTH, 1, 15 * 60, encodedTestCredentialData, credentialURI)
+                await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
                 const expectedRoot = (new Group(2, MAX_TREE_DEPTH)).root
                 
                 expect(await credentialsRegistry.getMerkleTreeRoot(4))
@@ -1113,7 +1113,7 @@ describe("CredentialsRegistry contract", () => {
 
         describe("getNumberOfMerkleTreeLeaves", () => {
             it("returns `0` for the different groups that make up a new credential", async () => {
-                await credentialsRegistry.createCredential(TREE_DEPTH, 1, 15 * 60, encodedTestCredentialData, credentialURI)
+                await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
                 
                 expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(4))
                     .to.be.equal(0)   
