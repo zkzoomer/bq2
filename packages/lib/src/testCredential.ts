@@ -44,12 +44,7 @@ import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { verifyProof } from "@semaphore-protocol/proof"
 import CredentialRegistryABI from "./abi/CredentialsRegistryABI.json"
-import { Transaction } from "@ethersproject/transactions"
-import { DefenderRelaySigner, DefenderRelayProvider } from "defender-relay-client/lib/ethers";
-import { ApiRelayerParams } from "defender-relay-client"
 
-// TODO: this thing should be the holy grail - sending requests to relayer, getting data from the subgraph
-// super easy to integrate into your app -- BRAINLET PROOF
 export default class TestCredential {
     #poseidon: Poseidon
 
