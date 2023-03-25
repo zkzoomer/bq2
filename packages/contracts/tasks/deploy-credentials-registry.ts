@@ -168,7 +168,7 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
 
             /// CONNECTING THE CREDENTIAL MANAGER TO THE CREDENTIAL 
             if (connectTestManager) {
-                await registry.defineCredentialType(1, testCredentialManagerAddress)
+                await registry.defineCredentialType(0, testCredentialManagerAddress)
     
                 if (logs) {
                     console.info(`TestCredentialManager succesfully set as credential type #1 for the credentials registry`)
