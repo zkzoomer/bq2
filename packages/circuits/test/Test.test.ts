@@ -17,7 +17,7 @@ describe("Test Circuit", () => {
     let openAnswersHashes: bigint[];
     let openAnswersHashesRoot: bigint;
     let multipleChoiceAnswers: number[];
-    let openAnswers: BigInt[];
+    let openAnswers: string[];
 
     let gradeGroup = new Group(0, MAX_TREE_DEPTH);
     let identityGroup = new Group(0, MAX_TREE_DEPTH);
