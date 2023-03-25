@@ -116,7 +116,7 @@ describe("Grade Restricted Test Proof", () => {
     describe("generateRestrictedTestProof", () => {
         before(async () => {
             gradeRestrictedTestFullProof = await generateGradeRestrictedTestProof(
-                identity, testAnswers, testVariables, testIdentityGroup, testGradeGroup, gradeClaimGroup, gradeClaimThreshold, gradeClaimCommitment, testSnarkArtifacts, gradeClaimSnarkArtifacts
+                identity, testAnswers, testVariables, testIdentityGroup, testGradeGroup, gradeClaimGroup, gradeClaimThreshold, gradeClaimCommitment, true, testSnarkArtifacts, gradeClaimSnarkArtifacts
             )
 
             testIdentityGroup.updateMember(0, identity.commitment)

@@ -44,8 +44,7 @@ export function encodeTestInitializingParameters(
 }
 
 export function encodeTestFullProof(
-    testFullProof: TestFullProof,
-    testPassed: boolean
+    testFullProof: TestFullProof
 ): string {
     return abi.encode(
         [
@@ -62,18 +61,14 @@ export function encodeTestFullProof(
             testFullProof.gradeCommitment,
             testFullProof.newGradeTreeRoot,
             testFullProof.proof,
-            testPassed
+            testFullProof.testPassed
         ]
     )
 }
 
 export function encodeCredentialRestrictedTestFullProof(
-    credentialRestrictedTestFullProof: CredentialRestrictedTestFullProof,
-    testPassed: boolean
+    { testFullProof, semaphoreFullProof }: CredentialRestrictedTestFullProof
 ): string {
-    const testFullProof = credentialRestrictedTestFullProof.testFullProof
-    const semaphoreFullProof = credentialRestrictedTestFullProof.semaphoreFullProof
-
     return abi.encode(
         [
             "uint256", 
@@ -95,18 +90,14 @@ export function encodeCredentialRestrictedTestFullProof(
             testFullProof.gradeCommitment,
             testFullProof.newGradeTreeRoot,
             testFullProof.proof,
-            testPassed
+            testFullProof.testPassed
         ]
     )
 }
 
 export function encodeGradeRestrictedTestFullProof(
-    gradeRestrictedTestFullProof: GradeRestrictedTestFullProof,
-    testPassed: boolean
+    { testFullProof, gradeClaimFullProof }: GradeRestrictedTestFullProof
 ): string {
-    const testFullProof = gradeRestrictedTestFullProof.testFullProof
-    const gradeClaimFullProof = gradeRestrictedTestFullProof.gradeClaimFullProof
-
     return abi.encode(
         [
             "uint256",
@@ -128,7 +119,7 @@ export function encodeGradeRestrictedTestFullProof(
             testFullProof.gradeCommitment,
             testFullProof.newGradeTreeRoot,
             testFullProof.proof,
-            testPassed
+            testFullProof.testPassed
         ]
     )
 }

@@ -55,7 +55,7 @@ describe("Helper functions", () => {
         it("Should hash the signal value correctly", async () => {
             const signalHash = hash(signal)
 
-            expect(signalHash.toString()).to.be.equal(
+            expect(signalHash).to.be.equal(
                 "8665846418922331996225934941481656421248110469944536651334918563951783029"
             )
         })
@@ -63,37 +63,37 @@ describe("Helper functions", () => {
         it("Should hash the external nullifier value correctly", async () => {
             const externalNullifierHash = hash(externalNullifier)
 
-            expect(externalNullifierHash.toString()).to.be.equal(
+            expect(externalNullifierHash).to.be.equal(
                 "244178201824278269437519042830883072613014992408751798420801126401127326826"
             )
         })
 
         it("Should hash a number", async () => {
-            expect(hash(2).toString()).to.be.equal(
+            expect(hash(2)).to.be.equal(
                 "113682330006535319932160121224458771213356533826860247409332700812532759386"
             )
         })
 
         it("Should hash a big number", async () => {
-            expect(hash(BigInt(2)).toString()).to.be.equal(
+            expect(hash(BigInt(2))).to.be.equal(
                 "113682330006535319932160121224458771213356533826860247409332700812532759386"
             )
         })
 
         it("Should hash an hex number", async () => {
-            expect(hash("0x2").toString()).to.be.equal(
+            expect(hash("0x2")).to.be.equal(
                 "113682330006535319932160121224458771213356533826860247409332700812532759386"
             )
         })
 
         it("Should hash an string number", async () => {
-            expect(hash("2").toString()).to.be.equal(
+            expect(hash("2")).to.be.equal(
                 "113682330006535319932160121224458771213356533826860247409332700812532759386"
             )
         })
 
         it("Should hash an array", async () => {
-            expect(hash([2]).toString()).to.be.equal(
+            expect(hash([2])).to.be.equal(
                 "113682330006535319932160121224458771213356533826860247409332700812532759386"
             )
         })

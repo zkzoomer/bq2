@@ -86,7 +86,7 @@ describe("Test Proof", () => {
             _group.addMember(_group.zeroValue)
             
             await expect(
-                generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, snarkArtifacts)
+                generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, true, snarkArtifacts)
             ).to.be.rejectedWith("The test ID was not provided")
             
             _group = new Group(0, MAX_TREE_DEPTH);
@@ -94,13 +94,13 @@ describe("Test Proof", () => {
             _gradeGroup.addMember(_gradeGroup.zeroValue)
 
             await expect(
-                generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup.generateMerkleProof(0), snarkArtifacts)
+                generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup.generateMerkleProof(0), true, snarkArtifacts)
             ).to.be.rejectedWith("The test ID was not provided")
         })
 
         it("Should not generate a test proof with default snark artifacts with Node.js", async () => {
             await expect(
-                generateTestProof(identity, testAnswers, testVariables, group, gradeGroup)
+                generateTestProof(identity, testAnswers, testVariables, group, gradeGroup, true)
             ).to.be.rejectedWith("SNARK artifacts need to be provided")
         })
 
@@ -108,7 +108,7 @@ describe("Test Proof", () => {
             const _group = new Group(0, MAX_TREE_DEPTH);
             const _gradeGroup = new Group(0, MAX_TREE_DEPTH);
             
-            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup, snarkArtifacts)
+            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup, true, snarkArtifacts)
 
             _group.updateMember(0, identity.commitment)
             _gradeGroup.updateMember(0, gradeCommitmentValue)
@@ -125,7 +125,7 @@ describe("Test Proof", () => {
             const _gradeGroup = new Group(0, MAX_TREE_DEPTH);
             _gradeGroup.addMember(_gradeGroup.zeroValue)
             
-            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup.generateMerkleProof(0), snarkArtifacts, 0)
+            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup.generateMerkleProof(0), true, snarkArtifacts, 0)
 
             _group.updateMember(0, identity.commitment)
             _gradeGroup.updateMember(0, gradeCommitmentValue)
@@ -141,7 +141,7 @@ describe("Test Proof", () => {
             _group.addMember(_group.zeroValue)
             let _gradeGroup = new Group(0, MAX_TREE_DEPTH)
             
-            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, snarkArtifacts, 0)
+            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group.generateMerkleProof(0), _gradeGroup, true, snarkArtifacts, 0)
 
             _group.updateMember(0, identity.commitment)
             _gradeGroup.updateMember(0, gradeCommitmentValue)
@@ -155,7 +155,7 @@ describe("Test Proof", () => {
             _gradeGroup = new Group(0, MAX_TREE_DEPTH)
             _gradeGroup.addMember(_gradeGroup.zeroValue)
 
-            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup.generateMerkleProof(0), snarkArtifacts, 0)
+            fullProof = await generateTestProof(identity, testAnswers, testVariables, _group, _gradeGroup.generateMerkleProof(0), true, snarkArtifacts, 0)
 
             _group.updateMember(0, identity.commitment)
             _gradeGroup.updateMember(0, gradeCommitmentValue)

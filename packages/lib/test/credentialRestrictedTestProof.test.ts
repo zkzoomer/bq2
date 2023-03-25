@@ -94,7 +94,7 @@ describe("Credential Restricted Test Proof", () => {
     describe("generateRestrictedTestProof", () => {
         before(async () => {
             credentialRestrictedTestFullProof = await generateCredentialRestrictedTestProof(
-                identity, testAnswers, testVariables, testIdentityGroup, gradeGroup, requiredCredentialsGroup, testSnarkArtifacts, semaphoreSnarkArtifacts
+                identity, testAnswers, testVariables, testIdentityGroup, gradeGroup, requiredCredentialsGroup, true, testSnarkArtifacts, semaphoreSnarkArtifacts
             )
 
             testIdentityGroup.updateMember(0, identity.commitment)

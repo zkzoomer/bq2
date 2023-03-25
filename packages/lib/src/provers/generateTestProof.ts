@@ -22,6 +22,7 @@ export default async function generateTestProof(
     { minimumGrade, multipleChoiceWeight, nQuestions, multipleChoiceRoot, openAnswersHashesRoot, openAnswersHashes }: TestVariables,
     identityGroup: Group | MerkleProof,
     gradeGroup: Group | MerkleProof,
+    testPassed: boolean,
     snarkArtifacts?: SnarkArtifacts,
     testId?: number
 ): Promise<TestFullProof> {
@@ -89,6 +90,7 @@ export default async function generateTestProof(
         newIdentityTreeRoot: publicSignals[3].toString(),
         gradeCommitment: publicSignals[5].toString(),
         newGradeTreeRoot: publicSignals[7].toString(),
+        testPassed,
         publicSignals,
         proof: packProof(proof)
     }

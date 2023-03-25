@@ -25,11 +25,12 @@ export default async function generateCredentialRestrictedTestProof(
     testIdentityGroup: Group | MerkleProof,
     gradeGroup: Group | MerkleProof,
     requiredCredentialsGroup: Group | MerkleProof,
+    testPassed: boolean,
     testSnarkArtifacts?: SnarkArtifacts,
     semaphoreSnarkArtifacts?: SnarkArtifacts,
     testId?: number
 ): Promise<CredentialRestrictedTestFullProof> {
-    const testFullProof = await generateTestProof(identity, testAnswers, testVariables, testIdentityGroup, gradeGroup, testSnarkArtifacts, testId)
+    const testFullProof = await generateTestProof(identity, testAnswers, testVariables, testIdentityGroup, gradeGroup, testPassed, testSnarkArtifacts, testId)
 
     const externalNullifier = utils.formatBytes32String("bq-credential-restricted-test")  // 0x62712d63726564656e7469616c2d726573747269637465642d74657374000000
 

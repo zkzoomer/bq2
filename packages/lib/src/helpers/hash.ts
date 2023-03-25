@@ -10,9 +10,9 @@ import { formatBytes32String } from "@ethersproject/strings"
  * @param message The message to be hashed.
  * @returns The message digest.
  */
-export function hash(message: BytesLike | Hexable | number | bigint | string): bigint {
+export function hash(message: BytesLike | Hexable | number | bigint | string): string {
     if (message === "") {
-        return BigInt(utils.keccak256(formatBytes32String(message))) >> BigInt(8)
+        return (BigInt(utils.keccak256(formatBytes32String(message))) >> BigInt(8)).toString()
     }
 
     if (typeof message === 'string' && isNaN(message as any)) {
@@ -22,5 +22,5 @@ export function hash(message: BytesLike | Hexable | number | bigint | string): b
     message = BigNumber.from(message).toTwos(256).toHexString()
     message = zeroPad(message, 32)
 
-    return BigInt(keccak256(message)) >> BigInt(8)
+    return (BigInt(keccak256(message)) >> BigInt(8)).toString()
 }

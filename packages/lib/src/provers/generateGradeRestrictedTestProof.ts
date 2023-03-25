@@ -36,11 +36,12 @@ export default async function generateGradeRestrictedTestProof(
     gradeClaimGroupOrMerkleProof: Group | MerkleProof,
     gradeClaimThreshold: number,
     gradeClaimCommitmentOrTestGradingVariables: TestGradingVariables | FullGradeCommitment,
+    testPassed: boolean,
     testSnarkArtifacts?: SnarkArtifacts,
     gradeClaimSnarkArtifacts?: SnarkArtifacts,
     testId?: number
 ): Promise<GradeRestrictedTestFullProof> {
-    const testFullProof = await generateTestProof(identity, testAnswers, testVariables, testIdentityGroup, testGradeGroup, testSnarkArtifacts, testId)
+    const testFullProof = await generateTestProof(identity, testAnswers, testVariables, testIdentityGroup, testGradeGroup, testPassed, testSnarkArtifacts, testId)
 
     const externalNullifier = utils.formatBytes32String("bq-grade-restricted-test")  // 0x62712d67726164652d726573747269637465642d746573740000000000000000
 
