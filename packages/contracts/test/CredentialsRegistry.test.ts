@@ -132,6 +132,7 @@ describe("CredentialsRegistry contract", () => {
             testVariables,
             credentialsGroup,
             gradeGroup,
+            true,
             testSnarkArtifacts
         )
 
@@ -144,6 +145,7 @@ describe("CredentialsRegistry contract", () => {
             testVariables,
             credentialsGroup,
             gradeGroup,
+            true,
             testSnarkArtifacts
         )
 
@@ -159,8 +161,8 @@ describe("CredentialsRegistry contract", () => {
             openAnswersHashesRoot
         )
 
-        encodedTestFullProof = encodeTestFullProof(testProof, true)
-        encodedAltTestFullProof = encodeTestFullProof(altTestProof, true)
+        encodedTestFullProof = encodeTestFullProof(testProof)
+        encodedAltTestFullProof = encodeTestFullProof(altTestProof)
 
         const ratingGroup = new Group(1, MAX_TREE_DEPTH)
         ratingGroup.addMember(identity.commitment)
@@ -289,7 +291,7 @@ describe("CredentialsRegistry contract", () => {
                     let zeroValue = hash(1);
 
                     for (var i = 0; i < TREE_DEPTH; i++) {
-                        zeroValue = poseidon([zeroValue, zeroValue]);
+                        zeroValue = poseidon([zeroValue, zeroValue]).toString();
                     }
 
                     await expect(tx)

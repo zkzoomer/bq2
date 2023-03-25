@@ -97,6 +97,7 @@ describe("TestVerifier contract", () => {
             testVariables,
             identityGroup,
             gradeGroup,
+            true,
             snarkArtifacts
         )
     })

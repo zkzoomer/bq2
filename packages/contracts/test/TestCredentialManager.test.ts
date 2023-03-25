@@ -160,6 +160,7 @@ describe("TestCredentialManager contract", () => {
             testVariables,
             credentialsGroup,
             gradeGroup,
+            true,
             testSnarkArtifacts
         )
 
@@ -172,6 +173,7 @@ describe("TestCredentialManager contract", () => {
             testVariables,
             credentialsGroup,
             gradeGroup,
+            true,
             testSnarkArtifacts
         )
 
@@ -184,6 +186,7 @@ describe("TestCredentialManager contract", () => {
             { ...testVariables, minimumGrade: 0 },
             new Group(1, TREE_DEPTH),
             new Group(1, TREE_DEPTH),
+            false,
             testSnarkArtifacts
         )
 
@@ -199,8 +202,8 @@ describe("TestCredentialManager contract", () => {
             openAnswersHashesRoot
         )
 
-        encodedTestFullProof = encodeTestFullProof(testProof, true)
-        encodedAltTestFullProof = encodeTestFullProof(altTestProof, true)
+        encodedTestFullProof = encodeTestFullProof(testProof)
+        encodedAltTestFullProof = encodeTestFullProof(altTestProof)
 
         credentialOwnershipProof = await generateProof(identity, credentialsGroup, externalNullifier, signal, semaphoreSnarkArtifacts)
         gradeClaimProof = await generateGradeClaimProof(identity, gradeGroup, gradeThreshold, externalNullifier, signal, testVariables, gradeClaimSnarkArtifacts)
@@ -708,7 +711,7 @@ describe("TestCredentialManager contract", () => {
                             gradeCommitment: 350
                         } as any
 
-                        const encodedBogusProof = encodeTestFullProof(bogusProof, true)
+                        const encodedBogusProof = encodeTestFullProof(bogusProof)
                         
                         await expect(
                             credentialsRegistry.updateCredential(
@@ -766,7 +769,7 @@ describe("TestCredentialManager contract", () => {
                     let tx;
 
                     beforeEach(async () => {
-                        const encodedNonPassingProof = encodeTestFullProof(nonPassingProof, false)
+                        const encodedNonPassingProof = encodeTestFullProof(nonPassingProof)
 
                         tx = await credentialsRegistry.updateCredential(
                             1, 
@@ -861,8 +864,7 @@ describe("TestCredentialManager contract", () => {
                             {
                                 testFullProof: testProof,
                                 semaphoreFullProof: bogusFullProof
-                            },
-                            true
+                            }
                         )
 
                         await expect(
@@ -894,6 +896,7 @@ describe("TestCredentialManager contract", () => {
                             restrictedCredentialsGroup,
                             restrictedGradeGroup,
                             requiredCredentialsGroup,
+                            true,
                             testSnarkArtifacts,
                             semaphoreSnarkArtifacts
                         )
@@ -901,8 +904,7 @@ describe("TestCredentialManager contract", () => {
 
                     it("clears", async () => {
                         const encodedCredentialRestrictedProof = encodeCredentialRestrictedTestFullProof(
-                            credentialRestrictedTestProof,
-                            true
+                            credentialRestrictedTestProof
                         )
 
                         await credentialsRegistry.updateCredential(
@@ -963,8 +965,7 @@ describe("TestCredentialManager contract", () => {
                             {
                                 testFullProof: testProof,
                                 gradeClaimFullProof: fullBogusProof
-                            },
-                            true
+                            }
                         )
 
                         await expect(
@@ -1000,6 +1001,7 @@ describe("TestCredentialManager contract", () => {
                             gradeGroup,
                             gradeThreshold,
                             { multipleChoiceWeight, nQuestions },
+                            true,
                             testSnarkArtifacts,
                             gradeClaimSnarkArtifacts
                         )
@@ -1007,8 +1009,7 @@ describe("TestCredentialManager contract", () => {
 
                     it("clears", async () => {
                         const encodedGradeRestrictedProof = encodeGradeRestrictedTestFullProof(
-                            gradeRestrictedTestProof,
-                            true
+                            gradeRestrictedTestProof
                         )
 
                         await credentialsRegistry.updateCredential(
