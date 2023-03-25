@@ -15,7 +15,7 @@ import CredentialsRegistryABI from "./abi/CredentialsRegistryABI.json"
 import TestCredentialManagerABI from "./abi/TestCredentialManagerABI.json"
 import { EthersOptions, GroupResponse, Network } from "./types"
 
-export default class TestCredentialEthers {
+export default class TestCredentialGroupsEthers {
     private _network: Network | string
     private _options: EthersOptions
     private _credentialsRegistryContract: Contract

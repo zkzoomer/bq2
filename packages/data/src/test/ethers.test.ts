@@ -1,4 +1,4 @@
-import TestCredentialEthers from "../ethers"
+import TestCredentialGroupsEthers from "../ethers"
 import getEvents from "../getEvents"
 
 jest.mock("../getEvents", () => ({
@@ -21,13 +21,13 @@ jest.mock("@ethersproject/contracts", () => ({
 
 const getEventsMocked = getEvents as jest.MockedFunction<typeof getEvents>
 
-describe("TestCredentialEthers", () => {
-    let testCredential: TestCredentialEthers
+describe("TestCredentialGroupsEthers", () => {
+    let testCredential: TestCredentialGroupsEthers
 
     describe("# SemaphoreEthers", () => {
         it("Should instantiate a SemaphoreEthers object with different networks", () => {
-            testCredential = new TestCredentialEthers()
-            const testCredential1 = new TestCredentialEthers("homestead", {
+            testCredential = new TestCredentialGroupsEthers()
+            const testCredential1 = new TestCredentialGroupsEthers("homestead", {
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 credentialsRegistryStartBlock: 0,
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
@@ -45,34 +45,34 @@ describe("TestCredentialEthers", () => {
             expect(testCredential1.options.testCredentialManagerAddress).toContain("0x000000")
         })
 
-        it("Should instantiate a TestCredentialEthers object with different providers", () => {
-            const testCredential1 = new TestCredentialEthers("homestead", {
+        it("Should instantiate a TestCredentialGroupsEthers object with different providers", () => {
+            const testCredential1 = new TestCredentialGroupsEthers("homestead", {
                 provider: "infura",
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
                 apiKey: "1234567890"
             })
-            const testCredential2 = new TestCredentialEthers("homestead", {
+            const testCredential2 = new TestCredentialGroupsEthers("homestead", {
                 provider: "etherscan",
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
             })
-            const testCredential3 = new TestCredentialEthers("homestead", {
+            const testCredential3 = new TestCredentialGroupsEthers("homestead", {
                 provider: "alchemy",
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
             })
-            const testCredential4 = new TestCredentialEthers("homestead", {
+            const testCredential4 = new TestCredentialGroupsEthers("homestead", {
                 provider: "cloudflare",
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
             })
-            const testCredential5 = new TestCredentialEthers("homestead", {
+            const testCredential5 = new TestCredentialGroupsEthers("homestead", {
                 provider: "pocket",
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
             })
-            const testCredential6 = new TestCredentialEthers("homestead", {
+            const testCredential6 = new TestCredentialGroupsEthers("homestead", {
                 provider: "ankr",
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
@@ -87,8 +87,8 @@ describe("TestCredentialEthers", () => {
             expect(testCredential6.options.provider).toBe("ankr")
         })
 
-        it("Should instantiate a TestCredentialEthers object with a custom URL", () => {
-            const testCredential = new TestCredentialEthers("http://localhost:8545", {
+        it("Should instantiate a TestCredentialGroupsEthers object with a custom URL", () => {
+            const testCredential = new TestCredentialGroupsEthers("http://localhost:8545", {
                 credentialsRegistryAddress: "0x0000000000000000000000000000000000000000",
                 testCredentialManagerAddress: "0x0000000000000000000000000000000000000000",
             })
@@ -96,15 +96,15 @@ describe("TestCredentialEthers", () => {
             expect(testCredential.network).toBe("http://localhost:8545")
         })
 
-        it("Should throw an error if the network is not supported by TestCredentialEthers yet and there's no address", () => {
-            const fun = () => new TestCredentialEthers("homestead")
+        it("Should throw an error if the network is not supported by TestCredentialGroupsEthers yet and there's no address", () => {
+            const fun = () => new TestCredentialGroupsEthers("homestead")
 
             expect(fun).toThrow("You should provide contract addresses for this network")
         })
 
         it("Should throw an error if the provider is not supported", () => {
             const fun = () =>
-                new TestCredentialEthers("maticmum", {
+                new TestCredentialGroupsEthers("maticmum", {
                     provider: "sneed" as any
                 })
 
