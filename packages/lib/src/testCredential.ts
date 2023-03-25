@@ -293,7 +293,7 @@ export default class TestCredential {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                network: this.#network,
+                abi: CredentialRegistryABI,
                 functionName: "updateCredential",
                 functionParameters: [this.#credentialId, credentialUpdate]
             })
@@ -331,7 +331,7 @@ export default class TestCredential {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                network: this.#network,
+                abi: CredentialRegistryABI,
                 functionName: "updateCredential",
                 functionParameters: [
                     this.#credentialId,
