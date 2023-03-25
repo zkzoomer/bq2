@@ -150,20 +150,20 @@ export default class TestCredentialGroupsEthers {
      * @param subgroup Group being fetched.
      * @returns Specific group.
      */
-    async getGroup(credentialId: string, subgroup: "grade" | "credentials" | "no-credentials"): Promise<GroupResponse> {
-        checkParameter(credentialId, "credentialId", "string")
+    async getGroup(credentialId: number, subgroup: "grade" | "credentials" | "no-credentials"): Promise<GroupResponse> {
+        checkParameter(credentialId, "credentialId", "number")
 
         let groupId: string
 
         switch (subgroup) {
             case "grade":
-                groupId = (3 * (parseInt(credentialId) - 1) + 1).toString()
+                groupId = (3 * (credentialId - 1) + 1).toString()
                 break
             case "credentials":
-                groupId = (3 * (parseInt(credentialId) - 1) + 2).toString()
+                groupId = (3 * (credentialId - 1) + 2).toString()
                 break
             case "no-credentials":
-                groupId = (3 * (parseInt(credentialId) - 1) + 3).toString()
+                groupId = (3 * (credentialId - 1) + 3).toString()
                 break
             default:
                 throw new TypeError(`Parameter '${subgroup}' is not either 'grade', 'credentials', or 'no-credentials'`)
@@ -202,8 +202,8 @@ export default class TestCredentialGroupsEthers {
      * @param subgroup Group being fetched.
      * @returns Group members.
      */
-    async getGroupMembers(credentialId: string, subgroup: "grade" | "credentials" | "no-credentials"): Promise<string[]> {
-        checkParameter(credentialId, "groupId", "string")
+    async getGroupMembers(credentialId: number, subgroup: "grade" | "credentials" | "no-credentials"): Promise<string[]> {
+        checkParameter(credentialId, "credentialId", "number")
 
         console.log(this._options.credentialsRegistryStartBlock)
 
@@ -213,8 +213,6 @@ export default class TestCredentialGroupsEthers {
             [credentialId], 
             this._options.credentialsRegistryStartBlock
         )
-
-        console.log(groupCreatedEvent)
 
         if (!groupCreatedEvent) {
             throw new Error(`Credential '${credentialId}' not found`)
@@ -226,7 +224,7 @@ export default class TestCredentialGroupsEthers {
 
         switch (subgroup) {
             case "grade":
-                groupId = (3 * (parseInt(credentialId) - 1) + 1).toString()
+                groupId = (3 * (credentialId - 1) + 1).toString()
 
                 memberAddedEvents = await getEvents(
                     this._testCredentialManagerContract,
@@ -241,7 +239,7 @@ export default class TestCredentialGroupsEthers {
 
                 break
             case "credentials":
-                groupId = (3 * (parseInt(credentialId) - 1) + 2).toString()
+                groupId = (3 * (credentialId - 1) + 2).toString()
 
                 memberAddedEvents = await getEvents(
                     this._testCredentialManagerContract,
@@ -258,7 +256,7 @@ export default class TestCredentialGroupsEthers {
 
                 break
             case "no-credentials":
-                groupId = (3 * (parseInt(credentialId) - 1) + 3).toString()
+                groupId = (3 * (credentialId - 1) + 3).toString()
 
                 memberAddedEvents = await getEvents(
                     this._testCredentialManagerContract,

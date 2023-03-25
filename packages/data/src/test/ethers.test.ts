@@ -133,7 +133,7 @@ describe("TestCredentialGroupsEthers", () => {
                 ])
             )
 
-            const group = await testCredential.getGroup("42", "grade")
+            const group = await testCredential.getGroup(42, "grade")
 
             expect(group.merkleTree.depth).toBe("20")
             expect(group.merkleTree.root).toBe("222")
@@ -143,11 +143,11 @@ describe("TestCredentialGroupsEthers", () => {
         it("Should throw an error if the group does not exist", async () => {
             getEventsMocked.mockReturnValueOnce(Promise.resolve([]))
 
-            const fun1 = () => testCredential.getGroup("420", "grade")
+            const fun1 = () => testCredential.getGroup(420, "grade")
 
             await expect(fun1).rejects.toThrow("Credential '420' not found")
 
-            const fun2 = () => testCredential.getGroup("420", "sneed" as any) 
+            const fun2 = () => testCredential.getGroup(420, "sneed" as any) 
 
             await expect(fun2).rejects.toThrow("Parameter 'sneed' is not either 'grade', 'credentials', or 'no-credentials'")
         })
@@ -186,7 +186,7 @@ describe("TestCredentialGroupsEthers", () => {
                 ])
             )
 
-            const members = await testCredential.getGroupMembers("42", "grade")
+            const members = await testCredential.getGroupMembers(42, "grade")
 
             expect(members[0]).toBe("110")
             expect(members[1]).toBe("111")
@@ -225,7 +225,7 @@ describe("TestCredentialGroupsEthers", () => {
                 ])
             )
 
-            const members = await testCredential.getGroupMembers("42", "credentials")
+            const members = await testCredential.getGroupMembers(42, "credentials")
 
             expect(members[0]).toBe("110")
             expect(members[1]).toBe("111")
@@ -264,7 +264,7 @@ describe("TestCredentialGroupsEthers", () => {
                 ])
             )
 
-            const members = await testCredential.getGroupMembers("42", "no-credentials")
+            const members = await testCredential.getGroupMembers(42, "no-credentials")
 
             expect(members[0]).toBe("110")
             expect(members[1]).toBe("111")
@@ -274,7 +274,7 @@ describe("TestCredentialGroupsEthers", () => {
         it("Should throw an error if the credential does not exist", async () => {
             getEventsMocked.mockReturnValueOnce(Promise.resolve([]))
 
-            const fun1 = () => testCredential.getGroupMembers("420", "grade")
+            const fun1 = () => testCredential.getGroupMembers(420, "grade")
 
             await expect(fun1).rejects.toThrow("Credential '420' not found")
         })
@@ -289,7 +289,7 @@ describe("TestCredentialGroupsEthers", () => {
                 ])
             )
 
-            const fun2 = () => testCredential.getGroupMembers("420", "sneed" as any) 
+            const fun2 = () => testCredential.getGroupMembers(420, "sneed" as any) 
 
             await expect(fun2).rejects.toThrow("Parameter 'sneed' is not either 'grade', 'credentials', or 'no-credentials'")
         })
