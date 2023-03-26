@@ -126,7 +126,7 @@ export type SolutionSnarkArtifacts = {
 }
 
 export type Network =
-    | "maticmum"
+    | "mumbai"
 
 export type Options = {
     credentialsRegistryAddress?: string

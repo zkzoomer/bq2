@@ -84,7 +84,7 @@ export default class TestCredential {
 
     static async fetchData(
         credentialId: number,
-        networkOrEthereumURL: Network = "maticmum", 
+        networkOrEthereumURL: Network = "mumbai", 
         options: EthersOptions = {},
         openAnswersHashes?: string[] 
     ) {
@@ -93,9 +93,9 @@ export default class TestCredential {
         let testCredentialGroups = new TestCredentialGroupsEthers(networkOrEthereumURL, options)
 
         switch (networkOrEthereumURL) {
-            case "maticmum":
-                options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.maticmum.credentialsRegistryAddress
-                options.testCredentialType = DEPLOYED_CONTRACTS.maticmum.testCredentialType
+            case "mumbai":
+                options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.mumbai.credentialsRegistryAddress
+                options.testCredentialType = DEPLOYED_CONTRACTS.mumbai.testCredentialType
                 break
             default:
                 if (options.credentialsRegistryAddress === undefined) {

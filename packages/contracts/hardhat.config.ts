@@ -14,6 +14,7 @@ import { resolve } from "path"
 import "solidity-coverage"
 import { config } from "./package.json"
 import "./tasks/accounts"
+import "./tasks/create-test"
 import "./tasks/deploy-credentials-registry"
 import "./tasks/deploy-grade-claim-verifier"
 import "./tasks/deploy-test-verifier"
@@ -35,7 +36,7 @@ const hardhatConfig: HardhatUserConfig = {
             allowUnlimitedContractSize: true
         },
         mumbai: {
-            url: 'https://rpc-mumbai.maticvigil.com',
+            url: 'https://matic.getblock.io/ec6b266a-4d70-450f-a8e5-c21190710931/testnet/',
             chainId: 80001,
             accounts: {
                 mnemonic
