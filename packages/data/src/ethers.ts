@@ -43,9 +43,9 @@ export default class TestCredentialGroupsEthers {
         switch (networkOrEthereumURL) {
             case "maticmum":
                 options.credentialsRegistryAddress = "0x835a8EEF0fCeC907F1aA9aCe4B527ecFA4475c0C"
-                options.credentialsRegistryStartBlock = 33562350
+                options.credentialsRegistryStartBlock = 33597464
                 options.testCredentialManagerAddress = "0xAE4f50B84e9600C0d038CE046225B9767857d68B"
-                options.testCredentialManagerStartBlock = 33562353
+                options.testCredentialManagerStartBlock = 33597464 
                 options.testCredentialType = 0
                 break
             default:
@@ -205,14 +205,14 @@ export default class TestCredentialGroupsEthers {
     async getGroupMembers(credentialId: number, subgroup: "grade" | "credentials" | "no-credentials"): Promise<string[]> {
         checkParameter(credentialId, "credentialId", "number")
 
-        console.log(this._options.credentialsRegistryStartBlock)
-
         const [groupCreatedEvent] = await getEvents(
             this._credentialsRegistryContract, 
             "CredentialCreated", 
             [credentialId], 
             this._options.credentialsRegistryStartBlock
         )
+
+        console.log(credentialId)
 
         if (!groupCreatedEvent) {
             throw new Error(`Credential '${credentialId}' not found`)
@@ -247,8 +247,6 @@ export default class TestCredentialGroupsEthers {
                     [credentialId],
                     this._options.testCredentialManagerStartBlock
                 )
-
-                console.log(memberAddedEvents)
 
                 for (const { identityCommitment } of memberAddedEvents) {
                     members.push(identityCommitment.toString())
