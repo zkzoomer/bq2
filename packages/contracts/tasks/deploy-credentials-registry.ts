@@ -145,8 +145,6 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
             if (logs) {
                 console.info(`CredentialsRegistry contract has been deployed to: ${credentialsRegistryAddress}`)
             }
-
-            const test = await ethers.getContractFactory("InvalidCredentialManager")
             
             /// CREDENTIAL MANAGER EXAMPLE: TEST CREDENTIAL
             const TestCredentialManagerFactory = await ethers.getContractFactory("TestCredentialManager", {
