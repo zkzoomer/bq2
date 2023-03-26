@@ -3,7 +3,7 @@ import { task, types } from "hardhat/config"
 
 task("deploy:credentials-registry", "Deploy the credentials contract")
     .addOptionalParam<boolean>("logs", "Print logs", false, types.boolean)
-    .addOptionalParam<boolean>("connectTestManager", "Connect the TestCredentialManager by defining a new credential type", false, types.boolean)
+    .addOptionalParam<boolean>("connectTestManager", "Connect the TestCredentialManager by defining a new credential type", true, types.boolean)
     .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .addOptionalParam<boolean>("semaphoreVerifier", "SemaphoreVerifier contract address", undefined, types.string)
     .addOptionalParam<boolean>("gradeClaimVerifier", "GradeClaimVerifier contract address", undefined, types.string)
@@ -169,7 +169,7 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
                 await registry.defineCredentialType(0, testCredentialManagerAddress)
     
                 if (logs) {
-                    console.info(`TestCredentialManager succesfully set as credential type #1 for the credentials registry`)
+                    console.info(`TestCredentialManager succesfully set as credential type #0 for the credentials registry`)
                 }
             }
 
