@@ -27,19 +27,19 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
     /// @param zeroValue: Zero value of the tree.
     event CredentialCreated(uint256 indexed credentialId, uint256 indexed credentialType, uint256 merkleTreeDepth, uint256 zeroValue);
 
-    /// @dev Emitted when a rating is given to a credential and its issuer
-    /// @param credentialId: Id of the credential
-    /// @param admin: Address that controls the credential
-    /// @param rating: Rating given to the credential issuer for this test
-    /// @param comment: Comment given to the credential issuer for this test
+    /// @dev Emitted when a rating is given to a credential and its issuer.
+    /// @param credentialId: Id of the credential.
+    /// @param admin: Address that controls the credential.
+    /// @param rating: Rating given to the credential issuer for this test.
+    /// @param comment: Comment given to the credential issuer for this test.
     event NewCredentialRating(uint256 indexed credentialId, address indexed admin, uint256 rating, string comment);
 
     /// @dev Creates a new credential, defining the starting credential state, and calls the relevant credential manager define it.
-    /// @param treeDepth: Depth of the trees that define the credential state
+    /// @param treeDepth: Depth of the trees that define the credential state.
     /// @param credentialType: Unique identifier that links to the credential manager that will define its behavior.
     /// @param merkleTreeDuration: maximum time that an expired Merkle root can still be used to generate proofs of membership for this credential.
     /// @param credentialData: Data that defines the credential, as per the credential manager specifications.
-    /// @param credentialURI: External resource containing more information about the credential
+    /// @param credentialURI: External resource containing more information about the credential.
     function createCredential(
         uint256 treeDepth,
         uint256 credentialType,
@@ -64,7 +64,7 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
         address credentialManager
     ) external;
 
-    /// @dev Proves ownership of a credential and gives a rating to a credential and its issuer
+    /// @dev Proves ownership of a credential and gives a rating to a credential and its issuer.
     /// @param credentialId: Id of the test for which the rating is being done.
     /// @param credentialsTreeRoot: Root of the credentials Merkle tree.
     /// @param nullifierHash: Nullifier hash.
@@ -80,7 +80,7 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
         string calldata comment
     ) external;
 
-    /// @dev Verifies whether a Semaphore credential ownership/non-ownership proof is valid, and voids
+    /// @dev Verifies whether a Semaphore credential ownership/non-ownership proof is valid, and voids.
     /// the nullifierHash in the process. This way, the same proof will not be valid twice.
     /// @param credentialId: Id of the credential for which the ownership proof is being done.
     /// @param merkleTreeRoot: Root of the credentials Merkle tree.
