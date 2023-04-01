@@ -36,12 +36,12 @@ const hardhatConfig: HardhatUserConfig = {
             allowUnlimitedContractSize: true
         },
         maticmum: {
-            url: 'https://rpc-mumbai.maticvigil.com	',
+            url: 'https://polygon-mumbai.blockpi.network/v1/rpc/public',
             chainId: 80001,
             accounts: {
                 mnemonic
             }
-        }
+        },
     },
     gasReporter: {
         currency: "USD",
