@@ -35,7 +35,7 @@ const hardhatConfig: HardhatUserConfig = {
             chainId: 1337,
             allowUnlimitedContractSize: true
         },
-        mumbai: {
+        maticmum: {
             url: 'https://matic.getblock.io/ec6b266a-4d70-450f-a8e5-c21190710931/testnet/',
             chainId: 80001,
             accounts: {
