@@ -19,6 +19,7 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
     - Otherwise, `minimumGrade` must be set to `0` so that the proof does not revert, and this will be the no-credentials group.
 - `gradeGroup`: the Semaphore-like group containing the [grade commitments](../../technical-reference/circuits.md#grade-tree-inclusion) of all users that attempted to obtain the credential.
 - `requiredCredentialsGroup`: the Semaphore group corresponding to the require credential, where the user was already added.
+- `testPassed`: boolean value indicating whether the test was passed or not, which is later verified at the smart contract level.
 - `testSnarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/test.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/test.wasm) trusted setup files for the test circuit.
 - `semaphoreSnarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/semaphore.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/semaphore.wasm) trusted setup files for the Semaphore circuit, taken from [PSE SNARK artifacts](https://www.trusted-setup-pse.org/).
 - `testId`: the ID for this test, used to compute the value for the empty leaf when Merkle proofs are provided instead of groups.
@@ -73,6 +74,7 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
     - The `TestGradingVariables`, composed of the `multipleChoiceWeight` and the `nQuestions`. If this value is provided, the grade the user obtained is brute forced from their identity and grade group by testing all the possible grades they could have obtained.
     - The `FullGradeCommitment`, composed of the value of the grade commitment (`gradeCommitmentValue`) as specified for the [grade claim circuit](../../technical-reference/circuits.md#the-grade-claim-circuit), its index within the grade tree (`gradeCommitmentIndex`), and the `grade` obtained.
 - `requiredCredentialsGroup`: the Semaphore group corresponding to the require credential, where the user was already added.
+- `testPassed`: boolean value indicating whether the test was passed or not, which is later verified at the smart contract level.
 - `testSnarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/test.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/test.wasm) trusted setup files for the test circuit.
 - `gradeClaimSnarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/gradeClaim.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/gradeClaim.wasm) trusted setup files for the grade claim circuit.
 - `testId`: the ID for this test, used to compute the value for the empty leaf when Merkle proofs are provided instead of groups.

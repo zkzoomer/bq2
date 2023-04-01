@@ -15,6 +15,7 @@ You can use the `@bq-core/lib` library to generate such proofs, passing the foll
     - If the grade obtained is above the specified `minimumGrade` for this test, this will be the credentials group.
     - Otherwise, `minimumGrade` must be set to `0` so that the proof does not revert, and this will be the no-credentials group.
 - `gradeGroup`: the Semaphore-like group containing the [grade commitments](../../technical-reference/circuits.md#grade-tree-inclusion) of all users that attempted to obtain the credential.
+- `testPassed`: boolean value indicating whether the test was passed or not, which is later verified at the smart contract level.
 - `snarkArtifacts`: the [`zkey`](../../../packages/lib/snark-artifacts/test.zkey) and [`wasm`](../../../packages/lib/snark-artifacts/test.wasm) trusted setup files.
 - `testId`: the ID for this test, used to compute the value for the empty leaf when Merkle proofs are provided instead of groups.
 

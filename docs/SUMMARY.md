@@ -7,6 +7,7 @@
 
 ## Guides
 
+* [TestCredential](./guides/README.md)
 * [Proofs](./guides/proofs/README.md)
     * [Block Qualified Test Proof](./guides/proofs/bq-test-proof.md)
     * [Block Qualified Restricted Test Proof](./guides/proofs/bq-restricted-test-proof.md)
