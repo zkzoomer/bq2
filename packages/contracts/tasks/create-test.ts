@@ -1,43 +1,65 @@
-import { encodeTestInitializingParameters } from "@bq2/lib"
+import { buildPoseidon, encodeTestCredential, hash, rootFromLeafArray } from "@bq2/lib"
 import { task, types } from "hardhat/config"
 import CredentialRegistryABI from "../../lib/src/abi/CredentialsRegistryABI.json"
+import { readFileSync } from 'fs';
 
 task("create-test", "Deploy the credentials contract")
     .addOptionalParam<boolean>("logs", "Print logs", false, types.boolean)
     .addPositionalParam("credentialsRegistryAddress")
-    .addPositionalParam("treeDepth")
-    .addPositionalParam("testCredentialManagerType")
     .addPositionalParam("merkleTreeDuration")
+    .addPositionalParam("testHeight")
     .addPositionalParam("minimumGrade")
     .addPositionalParam("multipleChoiceWeight")
-    .addPositionalParam("nQuestions")
     .addPositionalParam("timeLimit")
     .addPositionalParam("admin")
     .addPositionalParam("requiredCredential")
     .addPositionalParam("requiredCredentialGradeThreshold")
-    .addPositionalParam("multipleChoiceRoot")
-    .addPositionalParam("openAnswersHashesRoot")
+    .addPositionalParam("correctAnswersFile")
     .addPositionalParam("credentialURI")
     .setAction( async( taskArgs, { ethers } ): Promise<any> => {
+        let poseidon = await buildPoseidon();
+
         const [signer] = await ethers.getSigners()
 
         const credentialsRegistry = new ethers.Contract(taskArgs.credentialsRegistryAddress, CredentialRegistryABI, signer)
 
-        const credentialData = encodeTestInitializingParameters(
+        let correctAnswers: { multipleChoiceAnswers: number[] | number[][], openAnswers: string[] }
+        correctAnswers = require(taskArgs.correctAnswersFile) 
+
+        const fullMultipleChoiceAnswers = new Array(2 ** taskArgs.testHeight).fill('0')
+        fullMultipleChoiceAnswers.forEach( (_, i) => {
+            if ( i < correctAnswers.multipleChoiceAnswers.length ) { 
+                if (Array.isArray(correctAnswers.multipleChoiceAnswers[i])) {
+                    fullMultipleChoiceAnswers[i] = (correctAnswers.multipleChoiceAnswers[i] as any).sort().join('')
+                } else {
+                    fullMultipleChoiceAnswers[i] = correctAnswers.multipleChoiceAnswers[i].toString()
+                }
+            }
+        })
+        const multipleChoiceRoot = rootFromLeafArray(poseidon, fullMultipleChoiceAnswers).toString()
+
+        const openAnswersHashes = Array(2 ** taskArgs.testHeight).fill( poseidon([hash("")]) )
+        openAnswersHashes.forEach( (_, i) => { if (i < correctAnswers.openAnswers.length) { 
+            openAnswersHashes[i] = poseidon([hash(correctAnswers.openAnswers[i])])
+        }})
+        const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes).toString()
+
+        const credentialData = encodeTestCredential(
+            taskArgs.testHeight,
             taskArgs.minimumGrade,
             taskArgs.multipleChoiceWeight,
-            taskArgs.nQuestions,
+            correctAnswers.openAnswers.length || 1,  // pure multiple choice tests are defined as having one question
             taskArgs.timeLimit,
             taskArgs.admin,
             taskArgs.requiredCredential,
             taskArgs.requiredCredentialGradeThreshold,
-            taskArgs.multipleChoiceRoot,
-            taskArgs.openAnswersHashesRoot
+            multipleChoiceRoot,
+            openAnswersHashesRoot
         )
 
         const tx = await credentialsRegistry.createCredential(
-            taskArgs.treeDepth,
-            taskArgs.testCredentialManagerType,
+            16,
+            0,
             taskArgs.merkleTreeDuration,
             credentialData,
             taskArgs.credentialURI
@@ -54,4 +76,4 @@ task("create-test", "Deploy the credentials contract")
         }
     })
 
-// npx hardhat create-test --network mumbai 0x835a8EEF0fCeC907F1aA9aCe4B527ecFA4475c0C 16 0 0 50 50 3 0 0x408D82BB122F6cfAC6fDB60380eD2DA96dc4c5ED 0 0 1048354070873957666044035611222378271268050769497104695048579734664513 156633770684961726928153301439159592003253281283828622825126460245699167 "https://twitter.com/0xdeenz" --logs true
+// npx hardhat create-test --network maticmum 0xF12B8dAeDe57273C40b8dcD75Fa1796C21Aa2C44 0 4 50 50 0 0x408D82BB122F6cfAC6fDB60380eD2DA96dc4c5ED 0 0 "../test/answers-files/testAnswers.json" "https://twitter.com/0xdeenz" --logs true
