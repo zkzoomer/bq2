@@ -1,4 +1,4 @@
-import { MAX_TREE_DEPTH, TEST_HEIGHT, Poseidon, buildPoseidon, generateOpenAnswers, rootFromLeafArray, hash } from "@bq2/lib";
+import { buildPoseidon, generateOpenAnswers, hash, rootFromLeafArray, Poseidon, MAX_TREE_DEPTH } from "@bq2/lib";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";
@@ -6,6 +6,8 @@ import { wasm, WasmTester } from "circom_tester";
 import { describe } from "mocha";
 import path from "path";
 import { circuitShouldFail } from "./utils/circuitShouldFail";
+
+const TEST_HEIGHT = 6;
 
 describe("Test Circuit", () => {
     let circuitTester: WasmTester;
@@ -41,14 +43,14 @@ describe("Test Circuit", () => {
             poseidon([hash("feed")]), 
             poseidon([hash("seed")])
         ]
-        openAnswersHashes = Array(2**TEST_HEIGHT).fill(poseidon([hash("")]))
+        openAnswersHashes = Array(2 ** TEST_HEIGHT).fill(poseidon([hash("")]))
         openAnswersHashes.forEach( (_, i) => { if (i < _openAnswersHashes.length) { openAnswersHashes[i] = _openAnswersHashes[i] }})
 
         openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
 
         multipleChoiceAnswers = Array.from({length: 2**TEST_HEIGHT}, (_, i) => 1)
 
-        openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
+        openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"], TEST_HEIGHT)
 
         gradeGroup.addMember(gradeGroup.zeroValue)
         identityGroup.addMember(identityGroup.zeroValue)
@@ -213,7 +215,7 @@ describe("Test Circuit", () => {
             const _inputs = {
                 ...inputs,
                 multipleChoiceAnswers: Array.from({length: 2**TEST_HEIGHT}, (_, i) => 2),
-                openAnswers: generateOpenAnswers([]),
+                openAnswers: generateOpenAnswers([], TEST_HEIGHT),
             }
 
             await circuitShouldFail(circuitTester, {
@@ -226,7 +228,7 @@ describe("Test Circuit", () => {
                 ...inputs,
                 minimumGrade: 0,
                 multipleChoiceAnswers: Array.from({length: 2**TEST_HEIGHT}, (_, i) => 2),
-                openAnswers: generateOpenAnswers([]),
+                openAnswers: generateOpenAnswers([], TEST_HEIGHT),
             }
 
             const witness = await circuitTester.calculateWitness(_inputs, true);
@@ -236,7 +238,7 @@ describe("Test Circuit", () => {
         it("Counts the appropriate number of open answers that are right", async () => {
             const _inputs = {
                 ...inputs,
-                openAnswers: generateOpenAnswers(["sneed's"])
+                openAnswers: generateOpenAnswers(["sneed's"], TEST_HEIGHT)
             }
 
             const witness = await circuitTester.calculateWitness(_inputs, true);
@@ -257,7 +259,7 @@ describe("Test Circuit", () => {
             const _inputs = {
                 ...inputs,
                 multipleChoiceAnswers: Array.from({length: 2**TEST_HEIGHT}, (_, i) => 2),
-                openAnswers: generateOpenAnswers(["sneed's", "feed", "seed"])
+                openAnswers: generateOpenAnswers(["sneed's", "feed", "seed"], TEST_HEIGHT)
             }
 
             const witness = await circuitTester.calculateWitness(_inputs, true);
