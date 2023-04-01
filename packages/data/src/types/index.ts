@@ -40,4 +40,5 @@ export type EthersOptions = {
     testCredentialType?: number
     provider?: "etherscan" | "infura" | "alchemy" | "cloudflare" | "pocket" | "ankr"
     apiKey?: string
+    autotaskWebhook?: string
 }
