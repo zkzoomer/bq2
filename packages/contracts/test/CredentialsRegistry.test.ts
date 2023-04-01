@@ -1,6 +1,6 @@
 import { 
     buildPoseidon,
-    encodeTestInitializingParameters,
+    encodeTestCredential,
     encodeTestFullProof,
     generateOpenAnswers, 
     generateRateCredentialIssuerProof, 
@@ -11,10 +11,9 @@ import {
     Poseidon, 
     RateFullProof,
     TestFullProof,
-    MAX_TREE_DEPTH, 
-    TEST_HEIGHT,
     GradeClaimFullProof,
-    generateGradeClaimProof
+    generateGradeClaimProof,
+    MAX_TREE_DEPTH
 } from "@bq2/lib"
 import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
@@ -33,7 +32,7 @@ import {
     Pairing__factory
 } from "../typechain-types"
 
-const TREE_DEPTH = 16
+const TEST_HEIGHT = 4;
 
 describe("CredentialsRegistry contract", () => {
     let poseidon: Poseidon; 
@@ -45,8 +44,8 @@ describe("CredentialsRegistry contract", () => {
     
     let openAnswersHashes: BigNumberish[];
 
-    let gradeGroup = new Group(1, TREE_DEPTH);
-    let credentialsGroup = new Group(1, TREE_DEPTH);
+    let gradeGroup = new Group(1, MAX_TREE_DEPTH);
+    let credentialsGroup = new Group(1, MAX_TREE_DEPTH);
 
     let externalNullifier = 350;
     let signal = ethers.utils.formatBytes32String("I need bout tree fiddy");
@@ -83,8 +82,8 @@ describe("CredentialsRegistry contract", () => {
     };
 
     const testSnarkArtifacts = {
-        wasmFilePath: "../snark-artifacts/test.wasm",
-        zkeyFilePath: "../snark-artifacts/test.zkey"
+        wasmFilePath: `../snark-artifacts/test${TEST_HEIGHT}.wasm`,
+        zkeyFilePath: `../snark-artifacts/test${TEST_HEIGHT}.zkey`
     };
 
     const abi = ethers.utils.defaultAbiCoder
@@ -115,7 +114,7 @@ describe("CredentialsRegistry contract", () => {
         const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes).toString()
 
         const multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
-        const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
+        const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"], TEST_HEIGHT)
 
         const testVariables = {
             minimumGrade,
@@ -149,7 +148,8 @@ describe("CredentialsRegistry contract", () => {
             testSnarkArtifacts
         )
 
-        encodedTestCredentialData = encodeTestInitializingParameters(
+        encodedTestCredentialData = encodeTestCredential(
+            TEST_HEIGHT,
             minimumGrade,
             multipleChoiceWeight,
             nQuestions,
@@ -244,7 +244,7 @@ describe("CredentialsRegistry contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
-                            MAX_TREE_DEPTH + 1,
+                            33,
                             0,
                             0,
                             encodedTestCredentialData,
@@ -261,7 +261,7 @@ describe("CredentialsRegistry contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsRegistry.createCredential(
-                            TREE_DEPTH,
+                            MAX_TREE_DEPTH,
                             1,
                             0,
                             encodedTestCredentialData,
@@ -279,7 +279,7 @@ describe("CredentialsRegistry contract", () => {
 
                 beforeEach(async () => {
                     tx = await credentialsRegistry.createCredential(
-                        TREE_DEPTH,
+                        MAX_TREE_DEPTH,
                         0,
                         0,
                         encodedTestCredentialData,
@@ -290,13 +290,13 @@ describe("CredentialsRegistry contract", () => {
                 it("emits a `CredentialCreated` event", async () => {
                     let zeroValue = hash(1);
 
-                    for (var i = 0; i < TREE_DEPTH; i++) {
+                    for (var i = 0; i < MAX_TREE_DEPTH; i++) {
                         zeroValue = poseidon([zeroValue, zeroValue]).toString();
                     }
 
                     await expect(tx)
                         .to.emit(credentialsRegistry, "CredentialCreated")
-                        .withArgs('1', '0', TREE_DEPTH, zeroValue.toString())
+                        .withArgs('1', '0', MAX_TREE_DEPTH, zeroValue.toString())
                 })
 
                 it("increases the `nCredentials` variable", async () => {
@@ -600,7 +600,7 @@ describe("CredentialsRegistry contract", () => {
 
     context("with created credentials", () => {
         beforeEach(async () => {
-            await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+            await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
             await credentialsRegistry.updateCredential(1, encodedTestFullProof)
         })
 
@@ -1079,7 +1079,7 @@ describe("CredentialsRegistry contract", () => {
 
         describe("getMerkleTreeRoot", () => {
             it("returns the empty root for the different groups that make up a new credential", async () => {
-                await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+                await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
                 const expectedRoot = (new Group(2, MAX_TREE_DEPTH)).root
                 
                 expect(await credentialsRegistry.getMerkleTreeRoot(4))
@@ -1101,19 +1101,19 @@ describe("CredentialsRegistry contract", () => {
         })
 
         describe("getMerkleTreeDepth", () => {
-            it(`returns ${TREE_DEPTH} for the different groups that make up the credential`, async () => {
+            it(`returns ${MAX_TREE_DEPTH} for the different groups that make up the credential`, async () => {
                 expect(await credentialsRegistry.getMerkleTreeDepth(1))
-                    .to.be.equal(TREE_DEPTH)   
+                    .to.be.equal(MAX_TREE_DEPTH)   
                 expect(await credentialsRegistry.getMerkleTreeDepth(2))
-                    .to.be.equal(TREE_DEPTH)   
+                    .to.be.equal(MAX_TREE_DEPTH)   
                 expect(await credentialsRegistry.getMerkleTreeDepth(3))
-                    .to.be.equal(TREE_DEPTH)     
+                    .to.be.equal(MAX_TREE_DEPTH)     
             })
         })
 
         describe("getNumberOfMerkleTreeLeaves", () => {
             it("returns `0` for the different groups that make up a new credential", async () => {
-                await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+                await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
                 
                 expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(4))
                     .to.be.equal(0)   

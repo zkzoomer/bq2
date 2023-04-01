@@ -8,16 +8,17 @@ import {
     TestAnswers, 
     TestFullProof,
     TestVariables, 
-    MAX_TREE_DEPTH, 
-    TEST_HEIGHT,
+    MAX_TREE_DEPTH
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
-import { Signer, utils } from "ethers"
+import { Signer } from "ethers"
 import { run } from "hardhat";
 import { describe } from "mocha";
 import { Pairing, TestVerifier } from "../typechain-types"
+
+const TEST_HEIGHT = 4;
 
 describe("TestVerifier contract", () => {
     let poseidon: Poseidon; 
@@ -39,9 +40,9 @@ describe("TestVerifier contract", () => {
     let proof: TestFullProof;
 
     const snarkArtifacts = {
-        wasmFilePath: "../snark-artifacts/test.wasm",
-        zkeyFilePath: "../snark-artifacts/test.zkey"
-    }
+        wasmFilePath: `../snark-artifacts/test${TEST_HEIGHT}.wasm`,
+        zkeyFilePath: `../snark-artifacts/test${TEST_HEIGHT}.zkey`
+    };
 
     before(async () => {
         poseidon = await buildPoseidon();
@@ -70,7 +71,7 @@ describe("TestVerifier contract", () => {
         const openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes)
 
         const multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
-        const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
+        const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"], TEST_HEIGHT)
 
         testAnswers = {
             multipleChoiceAnswers,
@@ -106,7 +107,8 @@ describe("TestVerifier contract", () => {
         it("Should clear when verifying a valid proof", async () => {
             await testVerifierContract.verifyProof(
                 proof.proof,
-                proof.publicSignals
+                proof.publicSignals,
+                TEST_HEIGHT
             )
         })
 
@@ -115,7 +117,7 @@ describe("TestVerifier contract", () => {
             bogusSignals[0] = BigInt(350)  // bout tree fiddy
 
             await expect(
-                testVerifierContract.verifyProof(proof.proof, bogusSignals)
+                testVerifierContract.verifyProof(proof.proof, bogusSignals, TEST_HEIGHT)
             ).to.be.revertedWithCustomError(
                 testVerifierContract,
                 "InvalidProof"

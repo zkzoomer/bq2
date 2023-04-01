@@ -10,6 +10,7 @@ import { CredentialState } from "../libs/Structs.sol";
 interface ICredentialManager is ICredentialHandler, IERC165 {
     error CallerIsNotTheCredentialsRegistry();
     error CallerIsNotTheCredentialAdmin();
+    error MerkleTreeDepthIsNotSupported();
 
     /// @dev Emitted when a credential is invalidated by its admin.
     /// @param credentialId: Id of the credential.
@@ -116,9 +117,11 @@ interface ICredentialManager is ICredentialHandler, IERC165 {
 
     /// @dev Defines a new credential as per the credential manager specifications.
     /// @param credentialId: Id of the credential.
+    /// @param treeDepth: Depth of the trees that define the credential state.
     /// @param credentialData: Data that defines the credential, as per the credential manager specifications.
     function createCredential(
         uint256 credentialId,
+        uint256 treeDepth,
         bytes calldata credentialData
     ) external;
 

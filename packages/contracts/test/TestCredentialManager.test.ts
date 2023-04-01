@@ -1,6 +1,6 @@
 import { 
     buildPoseidon,
-    encodeTestInitializingParameters,
+    encodeTestCredential,
     encodeTestFullProof,
     encodeCredentialRestrictedTestFullProof,
     encodeGradeRestrictedTestFullProof,
@@ -18,10 +18,10 @@ import {
     TestFullProof,
     TestVariables, 
     MAX_TREE_DEPTH, 
-    TEST_HEIGHT,
     GradeClaimFullProof,
     generateGradeClaimProof,
-    MAX_GRADE
+    MAX_GRADE,
+    SUPPORTED_TEST_HEIGHTS
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
@@ -41,7 +41,7 @@ import {
     Pairing__factory
 } from "../typechain-types"
 
-const TREE_DEPTH = 16
+const TEST_HEIGHT = 4;
 
 describe("TestCredentialManager contract", () => {
     let poseidon: Poseidon; 
@@ -56,8 +56,8 @@ describe("TestCredentialManager contract", () => {
     let testParameters: BigNumberish;
     let nonPassingTestParameters: BigNumberish;
 
-    let gradeGroup = new Group(1, TREE_DEPTH);
-    let credentialsGroup = new Group(1, TREE_DEPTH);
+    let gradeGroup = new Group(1, MAX_TREE_DEPTH);
+    let credentialsGroup = new Group(1, MAX_TREE_DEPTH);
 
     let minimumGrade = 50;
     let multipleChoiceWeight = 50;
@@ -106,8 +106,8 @@ describe("TestCredentialManager contract", () => {
     };
 
     const testSnarkArtifacts = {
-        wasmFilePath: "../snark-artifacts/test.wasm",
-        zkeyFilePath: "../snark-artifacts/test.zkey"
+        wasmFilePath: `../snark-artifacts/test${TEST_HEIGHT}.wasm`,
+        zkeyFilePath: `../snark-artifacts/test${TEST_HEIGHT}.zkey`
     };
 
     const abi = ethers.utils.defaultAbiCoder
@@ -133,7 +133,7 @@ describe("TestCredentialManager contract", () => {
         openAnswersHashesRoot = rootFromLeafArray(poseidon, openAnswersHashes).toString()
 
         const multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
-        const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"])
+        const openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"], TEST_HEIGHT)
 
         testAnswers = { multipleChoiceAnswers, openAnswers }
 
@@ -181,16 +181,17 @@ describe("TestCredentialManager contract", () => {
             identity,
             { 
                 multipleChoiceAnswers: Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 2), 
-                openAnswers: generateOpenAnswers([])
+                openAnswers: generateOpenAnswers([], TEST_HEIGHT)
             },
             { ...testVariables, minimumGrade: 0 },
-            new Group(1, TREE_DEPTH),
-            new Group(1, TREE_DEPTH),
+            new Group(1, MAX_TREE_DEPTH),
+            new Group(1, MAX_TREE_DEPTH),
             false,
             testSnarkArtifacts
         )
 
-        encodedTestCredentialData = encodeTestInitializingParameters(
+        encodedTestCredentialData = encodeTestCredential(
+            TEST_HEIGHT,
             minimumGrade,
             multipleChoiceWeight,
             nQuestions,
@@ -240,7 +241,7 @@ describe("TestCredentialManager contract", () => {
         context("when specified a non supported interface", () => {
             it("returns false", async () => {
                 expect(await testCredentialManager.supportsInterface(
-                    "0xabababab"
+                    "0xfeed5eed"
                 )).to.be.equal(false)
             })
         })
@@ -248,7 +249,7 @@ describe("TestCredentialManager contract", () => {
         context("when specified a supported interface", () => {
             it("returns true", async () => {
                 expect(await testCredentialManager.supportsInterface(
-                    "0xf0f36c2a"
+                    "0x41be9068"
                 )).to.be.equal(true)
             })
         })
@@ -261,6 +262,7 @@ describe("TestCredentialManager contract", () => {
                     await expect(
                         testCredentialManager.createCredential(
                             1,
+                            MAX_TREE_DEPTH,
                             encodedTestCredentialData
                         )
                     ).to.be.revertedWithCustomError(
@@ -270,9 +272,229 @@ describe("TestCredentialManager contract", () => {
                 })
             })
 
+            context("when the tree depth specified is not supported", () => {
+                it("reverts", async () => {
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH + 1,
+                            0,
+                            0,
+                            encodedTestCredentialData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "MerkleTreeDepthIsNotSupported"
+                    )
+                })
+            })
+
+            context("when the test height specified is not supported", () => {
+                it("reverts when giving a height below the lower bound", async () => {
+                    const testData = encodeTestCredential(
+                        Math.min(...SUPPORTED_TEST_HEIGHTS) - 1,
+                        minimumGrade,
+                        multipleChoiceWeight,
+                        nQuestions,
+                        0,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )   
+
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH,
+                            0,
+                            0,
+                            testData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "TestDepthIsNotSupported"
+                    )
+                })
+
+                it("reverts when giving a height above the upper bound", async () => {
+                    const testData = encodeTestCredential(
+                        Math.max(...SUPPORTED_TEST_HEIGHTS) + 1,
+                        minimumGrade,
+                        multipleChoiceWeight,
+                        nQuestions,
+                        0,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )   
+
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH,
+                            0,
+                            0,
+                            testData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "TestDepthIsNotSupported"
+                    )
+                })
+            })
+
+            context("when the minimum grade specified is over the maximum", () => {
+                it("reverts", async () => {
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
+                        MAX_GRADE + 1,
+                        multipleChoiceWeight,
+                        nQuestions,
+                        0,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )
+
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH,
+                            0,
+                            0,
+                            testData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "InvalidMinimumGrade"
+                    )
+                })
+            })
+            
+            context("when the multiple choice weight specified is invalid", () => {
+                it("reverts", async () => {
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
+                        minimumGrade,
+                        101,
+                        nQuestions,
+                        0,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )
+
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH,
+                            0,
+                            0,
+                            testData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "InvalidMultipleChoiceWeight"
+                    )
+                })
+            })
+            
+            context("when the number of questions specified is invalid", () => {
+                it("reverts", async () => {
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
+                        minimumGrade,
+                        multipleChoiceWeight,
+                        2 ** TEST_HEIGHT + 1,
+                        0,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )
+
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH,
+                            0,
+                            0,
+                            testData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "InvalidNumberOfQuestions"
+                    )
+                })
+            })
+            
+            context("when the time limit specified is in the past", () => {
+                it("reverts for `timeLimit` > 0", async () => {
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
+                        minimumGrade,
+                        multipleChoiceWeight,
+                        nQuestions,
+                        1,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )
+
+                    await expect(
+                        credentialsRegistry.createCredential(
+                            MAX_TREE_DEPTH,
+                            0,
+                            0,
+                            testData,
+                            credentialURI
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "TimeLimitIsInThePast"
+                    )
+                })
+
+                it("creates a new credential for `timeLimit` = 0", async () => {
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
+                        minimumGrade,
+                        multipleChoiceWeight,
+                        nQuestions,
+                        0,
+                        accounts[0],
+                        0,
+                        0,
+                        multipleChoiceRoot,
+                        openAnswersHashesRoot
+                    )   
+
+                    // tx clears
+                    await credentialsRegistry.createCredential(
+                        MAX_TREE_DEPTH,
+                        0,
+                        0,
+                        testData,
+                        credentialURI
+                    )
+                })
+            })
+
             context("when the required credential specified is the new credential", () => {
                 it("reverts", async () => {
-                    const testData = encodeTestInitializingParameters(
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
                         minimumGrade,
                         multipleChoiceWeight,
                         nQuestions,
@@ -301,7 +523,8 @@ describe("TestCredentialManager contract", () => {
 
             context("when the required credential specified does not exist", () => {
                 it("reverts", async () => {
-                    const testData = encodeTestInitializingParameters(
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
                         minimumGrade,
                         multipleChoiceWeight,
                         nQuestions,
@@ -330,7 +553,8 @@ describe("TestCredentialManager contract", () => {
 
             context("when the grade threshold is specified but not the required credential", () => {
                 it("reverts", async () => {
-                    const testData = encodeTestInitializingParameters(
+                    const testData = encodeTestCredential(
+                        TEST_HEIGHT,
                         minimumGrade,
                         multipleChoiceWeight,
                         nQuestions,
@@ -353,145 +577,6 @@ describe("TestCredentialManager contract", () => {
                     ).to.be.revertedWithCustomError(
                         testCredentialManager,
                         "GradeRestrictedTestsMustSpecifyRequiredCredential"
-                    )
-                })
-            })
-
-            context("when the time limit specified is in the past", () => {
-                it("reverts for `timeLimit` > 0", async () => {
-                    const testData = encodeTestInitializingParameters(
-                        minimumGrade,
-                        multipleChoiceWeight,
-                        nQuestions,
-                        1,
-                        accounts[0],
-                        0,
-                        0,
-                        multipleChoiceRoot,
-                        openAnswersHashesRoot
-                    )
-
-                    await expect(
-                        credentialsRegistry.createCredential(
-                            MAX_TREE_DEPTH,
-                            0,
-                            0,
-                            testData,
-                            credentialURI
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "TimeLimitIsInThePast"
-                    )
-                })
-
-                it("creates a new credential for `timeLimit` = 0", async () => {
-                    const testData = encodeTestInitializingParameters(
-                        minimumGrade,
-                        multipleChoiceWeight,
-                        nQuestions,
-                        0,
-                        accounts[0],
-                        0,
-                        0,
-                        multipleChoiceRoot,
-                        openAnswersHashesRoot
-                    )   
-
-                    // tx clears
-                    await credentialsRegistry.createCredential(
-                        MAX_TREE_DEPTH,
-                        0,
-                        0,
-                        testData,
-                        credentialURI
-                    )
-                })
-            })
-
-            context("when the number of questions specified is invalid", () => {
-                it("reverts", async () => {
-                    const testData = encodeTestInitializingParameters(
-                        minimumGrade,
-                        multipleChoiceWeight,
-                        2 ** TEST_HEIGHT + 1,
-                        0,
-                        accounts[0],
-                        0,
-                        0,
-                        multipleChoiceRoot,
-                        openAnswersHashesRoot
-                    )
-
-                    await expect(
-                        credentialsRegistry.createCredential(
-                            MAX_TREE_DEPTH,
-                            0,
-                            0,
-                            testData,
-                            credentialURI
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "InvalidNumberOfQuestions"
-                    )
-                })
-            })
-
-            context("when the minimum grade specified is over the maximum", () => {
-                it("reverts", async () => {
-                    const testData = encodeTestInitializingParameters(
-                        MAX_GRADE + 1,
-                        multipleChoiceWeight,
-                        nQuestions,
-                        0,
-                        accounts[0],
-                        0,
-                        0,
-                        multipleChoiceRoot,
-                        openAnswersHashesRoot
-                    )
-
-                    await expect(
-                        credentialsRegistry.createCredential(
-                            MAX_TREE_DEPTH,
-                            0,
-                            0,
-                            testData,
-                            credentialURI
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "InvalidMinimumGrade"
-                    )
-                })
-            })
-
-            context("when the multiple choice weight specified is invalid", () => {
-                it("reverts", async () => {
-                    const testData = encodeTestInitializingParameters(
-                        minimumGrade,
-                        101,
-                        nQuestions,
-                        0,
-                        accounts[0],
-                        0,
-                        0,
-                        multipleChoiceRoot,
-                        openAnswersHashesRoot
-                    )
-
-                    await expect(
-                        credentialsRegistry.createCredential(
-                            MAX_TREE_DEPTH,
-                            0,
-                            0,
-                            testData,
-                            credentialURI
-                        )
-                    ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "InvalidMultipleChoiceWeight"
                     )
                 })
             })
@@ -699,7 +784,7 @@ describe("TestCredentialManager contract", () => {
 
     context("with created test credentials", () => {
         beforeEach(async () => {
-            await credentialsRegistry.createCredential(TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+            await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
         })
 
         describe("updateCredential", () => {
@@ -748,7 +833,7 @@ describe("TestCredentialManager contract", () => {
                             expect(await credentialsRegistry.getMerkleTreeRoot(2))
                                 .to.be.equal(credentialsGroup.root)
                             expect(await credentialsRegistry.getMerkleTreeRoot(3))
-                                .to.be.equal((new Group(1, TREE_DEPTH)).root)
+                                .to.be.equal((new Group(1, MAX_TREE_DEPTH)).root)
                         })
 
                         it("emits a `CredentialsMemberAdded` event", async () => {
@@ -788,13 +873,13 @@ describe("TestCredentialManager contract", () => {
                         })
 
                         it("updates the credentials registry `noCredentialsTreeRoot`", async () => {
-                            const altGradeGroup = new Group(1, TREE_DEPTH)
+                            const altGradeGroup = new Group(1, MAX_TREE_DEPTH)
                             altGradeGroup.addMember(nonPassingProof.gradeCommitment)
 
                             expect(await credentialsRegistry.getMerkleTreeRoot(1))
                                 .to.be.equal(altGradeGroup.root)
                             expect(await credentialsRegistry.getMerkleTreeRoot(2))
-                                .to.be.equal((new Group(1, TREE_DEPTH)).root)
+                                .to.be.equal((new Group(1, MAX_TREE_DEPTH)).root)
                             expect(await credentialsRegistry.getMerkleTreeRoot(3))
                                 .to.be.equal(credentialsGroup.root)
                         })
@@ -816,7 +901,8 @@ describe("TestCredentialManager contract", () => {
 
             describe("credential restricted tests", () => {
                 beforeEach(async () => {
-                    const encodedCredentialRestrictedTestData = encodeTestInitializingParameters(
+                    const encodedCredentialRestrictedTestData = encodeTestCredential(
+                        TEST_HEIGHT,
                         minimumGrade,
                         multipleChoiceWeight,
                         nQuestions,
@@ -882,9 +968,9 @@ describe("TestCredentialManager contract", () => {
                 context("when providing a valid proof", () => {
                     let credentialRestrictedTestProof: CredentialRestrictedTestFullProof;
 
-                    let restrictedCredentialsGroup = new Group(2, TREE_DEPTH);
-                    let restrictedGradeGroup = new Group(2, TREE_DEPTH);
-                    let requiredCredentialsGroup = new Group(1, TREE_DEPTH);
+                    let restrictedCredentialsGroup = new Group(2, MAX_TREE_DEPTH);
+                    let restrictedGradeGroup = new Group(2, MAX_TREE_DEPTH);
+                    let requiredCredentialsGroup = new Group(1, MAX_TREE_DEPTH);
 
                     before(async () => {
                         requiredCredentialsGroup.addMember(identity.commitment)
@@ -917,7 +1003,8 @@ describe("TestCredentialManager contract", () => {
 
             describe("grade restricted tests", () => {
                 beforeEach(async () => {
-                    const encodedGradeRestrictedTestData = encodeTestInitializingParameters(
+                    const encodedGradeRestrictedTestData = encodeTestCredential(
+                        TEST_HEIGHT,
                         minimumGrade,
                         multipleChoiceWeight,
                         nQuestions,
@@ -985,9 +1072,9 @@ describe("TestCredentialManager contract", () => {
                 context("when providing a valid proof", () => {
                     let gradeRestrictedTestProof: GradeRestrictedTestFullProof;
 
-                    let restrictedCredentialsGroup = new Group(2, TREE_DEPTH);
-                    let restrictedGradeGroup = new Group(2, TREE_DEPTH);
-                    let gradeClaimGroup = new Group(1, TREE_DEPTH)
+                    let restrictedCredentialsGroup = new Group(2, MAX_TREE_DEPTH);
+                    let restrictedGradeGroup = new Group(2, MAX_TREE_DEPTH);
+                    let gradeClaimGroup = new Group(1, MAX_TREE_DEPTH)
 
                     before(async () => {
                         gradeClaimGroup.addMember(testProof.gradeCommitment)
@@ -1024,8 +1111,8 @@ describe("TestCredentialManager contract", () => {
         describe("getCredentialData", () => {
             it("returns the correct credential data", async () => {
                 const credentialData = abi.encode(
-                    ["uint8", "uint8", "uint8", "uint32", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
-                    [minimumGrade, multipleChoiceWeight, nQuestions, 0, accounts[0], 0, 0, multipleChoiceRoot, openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters]
+                    ["uint8", "uint8", "uint8", "uint8", "uint32", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
+                    [TEST_HEIGHT, minimumGrade, multipleChoiceWeight, nQuestions, 0, accounts[0], 0, 0, multipleChoiceRoot, openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters]
                 )
 
                 expect(await testCredentialManager.getCredentialData(1))

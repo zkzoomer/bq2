@@ -1,8 +1,45 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+/// Defines the test parameters that are necessary to initialize a new credential test.
+struct TestCredential {
+    /// Height of the trees that define the test.
+    uint8 testHeight;
+    /// Out of 100, minimum total grade the user must get to obtain the credential.
+    uint8 minimumGrade;
+    /// Out of 100, contribution of the multiple choice component towards the total grade:
+    /// pure multiple choice tests will have 100, pure open answer tests will have 0.
+    uint8 multipleChoiceWeight;
+    /// Number of open answer questions the test has -- must be set to 1 for pure multiple choice tests.
+    uint8 nQuestions;
+    /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited.
+    uint32 timeLimit;
+    /// Address that controls this credential.
+    address admin;
+    /// The testId of the credential that needs to be obtained before this one -- set 0 for unrestricted.
+    uint256 requiredCredential;
+    /// Minimum grade that must be obtained for the required credential -- set 0 for unrestricted.
+    uint256 requiredCredentialGradeThreshold;
+    /// Root of the multiple choice Merkle tree, where each leaf is the correct choice out of the given ones.
+    uint256 multipleChoiceRoot;
+    /// Root of the open answers Merkle tree, where each leaf is the hash of the corresponding correct answer.
+    uint256 openAnswersHashesRoot;
+}
+
+/// Defines the hashes that are computed at instantiation time
+struct TestCredentialHashes {
+    /// The test root is the result of hashing together the multiple choice root and the open answers root.
+    uint256 testRoot;
+    /// The test parameters are the result of hashing together the minimum grade, multiple choice weight and number of questions.
+    uint256 testParameters;
+    /// The non passing test parameters are the result of hashing together a minimum grade set to zero, multiple choice weight and number of questions.
+    uint256 nonPassingTestParameters;
+}
+
 /// It defines all the test parameters.
-struct CredentialTest {
+struct CredentialData {
+    /// Height of the trees that define the test.
+    uint8 testHeight;
     /// Out of 100, minimum total grade the user must get to obtain the credential.
     uint8 minimumGrade;  
     /// Out of 100, contribution of the multiple choice component towards the total grade:
@@ -28,29 +65,6 @@ struct CredentialTest {
     uint256 testParameters;
     /// The non passing test parameters are the result of hashing together a minimum grade set to zero, multiple choice weight and number of questions.
     uint256 nonPassingTestParameters;
-}
-
-/// Defines the test parameters that are necessary to initialize a new credential test.
-struct TestInitializingParameters {
-    /// Out of 100, minimum total grade the user must get to obtain the credential.
-    uint8 minimumGrade;
-    /// Out of 100, contribution of the multiple choice component towards the total grade:
-    /// pure multiple choice tests will have 100, pure open answer tests will have 0.
-    uint8 multipleChoiceWeight;
-    /// Number of open answer questions the test has -- must be set to 1 for pure multiple choice tests.
-    uint8 nQuestions;
-    /// Unix time limit after which it is not possible to obtain this credential -- set 0 for unlimited.
-    uint32 timeLimit;
-    /// Address that controls this credential.
-    address admin;
-    /// The testId of the credential that needs to be obtained before this one -- set 0 for unrestricted.
-    uint256 requiredCredential;
-    /// Minimum grade that must be obtained for the required credential -- set 0 for unrestricted.
-    uint256 requiredCredentialGradeThreshold;
-    /// Root of the multiple choice Merkle tree, where each leaf is the correct choice out of the given ones.
-    uint256 multipleChoiceRoot;
-    /// Root of the open answers Merkle tree, where each leaf is the hash of the corresponding correct answer.
-    uint256 openAnswersHashesRoot;
 }
 
 /// Defines the parameters that make up a solution proof to a credential test.

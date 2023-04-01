@@ -5,14 +5,15 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "../../interfaces/ICredentialsRegistry.sol";
 import "../interfaces/ITestVerifier.sol";
 import "../interfaces/ITestCredentialManager.sol";
-import { CredentialTest } from "../libs/Structs.sol";
+import { TestCredential, TestCredentialHashes } from "../libs/Structs.sol";
 
 abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
-    uint256 constant MAX_QUESTIONS = 2 ** 6;
     uint256 constant MAX_GRADE = 100;
 
-    /// @dev Gets a credential id and returns the credential test parameters
-    mapping(uint256 => CredentialTest) public credentialTests;
+    /// @dev Gets a credential id and returns the credential parameters
+    mapping(uint256 => TestCredential) public testCredentials;
+    /// @dev Gets a credential id and returns the test hashes
+    mapping(uint256 => TestCredentialHashes) public testCredentialsHashes;
 
     /// @dev CredentialsRegistry smart contract
     ICredentialsRegistry public credentialsRegistry;
@@ -32,7 +33,7 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @dev Checks if the credential admin is the transaction sender.
     /// @param credentialId: Id of the credential.
     modifier onlyCredentialAdmin(uint256 credentialId) {
-        if (credentialTests[credentialId].admin != tx.origin) {
+        if (testCredentials[credentialId].admin != tx.origin) {
             revert CallerIsNotTheCredentialAdmin();
         }
         _;
@@ -52,7 +53,7 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// Note that test credentials that are not defined yet are also not invalidated.
     /// @param credentialId: Id of the credential.
     modifier onlyValidTestCredentials(uint256 credentialId) {
-        if (credentialTests[credentialId].minimumGrade == 255) {
+        if (testCredentials[credentialId].minimumGrade == 255) {
             revert TestCredentialWasInvalidated();
         }
         _;
@@ -68,7 +69,7 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
         onlyCredentialsRegistry(credentialId) 
         onlyCredentialAdmin(credentialId) 
     {
-        credentialTests[credentialId].minimumGrade = 255;
+        testCredentials[credentialId].minimumGrade = 255;
 
         emit CredentialInvalidated(credentialId);
     }
@@ -78,37 +79,41 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
         return interfaceId == type(ICredentialManager).interfaceId;
     }
 
-    /// @dev Validates the TestInitializingParameters struct
-    function _validateInitParams(
+    /// @dev Validates the TestCredential struct
+    function _validateTestCredential(
         uint256 credentialId,
-        TestInitializingParameters memory initParams
+        TestCredential memory testCredential
     ) internal view {
+        if (testCredential.testHeight < 4 || testCredential.testHeight > 6) {
+            revert TestDepthIsNotSupported();
+        }
+
         // Ensure the required credential exists, if it was specified
-        if (initParams.requiredCredential != 0) {
-            if (initParams.requiredCredential == credentialId) {
+        if (testCredential.requiredCredential != 0) {
+            if (testCredential.requiredCredential == credentialId) {
                 revert CannotRequireSameCredential();
             }
-            credentialsRegistry.credentialExists(initParams.requiredCredential);
+            credentialsRegistry.credentialExists(testCredential.requiredCredential);
         }
 
         // Ensure that the required credential was specified if the grade threshold is given
-        if (initParams.requiredCredentialGradeThreshold > 0 && initParams.requiredCredential == 0) {
+        if (testCredential.requiredCredentialGradeThreshold > 0 && testCredential.requiredCredential == 0) {
             revert GradeRestrictedTestsMustSpecifyRequiredCredential();
         }
 
-        if (initParams.timeLimit < block.timestamp && initParams.timeLimit != 0) {
+        if (testCredential.timeLimit < block.timestamp && testCredential.timeLimit != 0) {
             revert TimeLimitIsInThePast();
         }
 
-        if (initParams.nQuestions > MAX_QUESTIONS || initParams.nQuestions == 0 ) {
+        if (testCredential.nQuestions > 2 ** testCredential.testHeight || testCredential.nQuestions == 0 ) {
             revert InvalidNumberOfQuestions();
         }
 
-        if (initParams.minimumGrade > MAX_GRADE) {
+        if (testCredential.minimumGrade > MAX_GRADE) {
             revert InvalidMinimumGrade();
         }
 
-        if (initParams.multipleChoiceWeight > 100) {
+        if (testCredential.multipleChoiceWeight > 100) {
             revert InvalidMultipleChoiceWeight();
         }
     }

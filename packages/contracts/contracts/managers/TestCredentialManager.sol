@@ -4,7 +4,9 @@ pragma solidity ^0.8.4;
 import "./base/TestCredentialManagerBase.sol";
 import { PoseidonT3, PoseidonT4 } from "../libs/Poseidon.sol";
 import { 
-    TestInitializingParameters, 
+    TestCredential, 
+    TestCredentialHashes,
+    CredentialData,
     TestFullProof, 
     CredentialClaimFullProof,
     GradeClaimFullProof,
@@ -28,43 +30,44 @@ contract TestCredentialManager is TestCredentialManagerBase {
         testVerifier = ITestVerifier(testVerifierAddress);
     }
 
-    /// @dev See {ICredentialHandler-createCredential}.
+    /// @dev See {ICredentialManager-createCredential}.
     function createCredential(
         uint256 credentialId,
+        uint256 treeDepth,
         bytes calldata credentialData
     ) external virtual override onlyCredentialsRegistry(credentialId) {
-        TestInitializingParameters memory initParams = abi.decode(credentialData, (TestInitializingParameters));
+        if (treeDepth != 16) {
+            revert MerkleTreeDepthIsNotSupported();
+        }
 
-        _validateInitParams(credentialId, initParams);
+        TestCredential memory testCredential = abi.decode(credentialData, (TestCredential));
+
+        _validateTestCredential(credentialId, testCredential);
         
         uint256 testParameters = PoseidonT4.poseidon(
             [
-                uint256(initParams.minimumGrade) /* * uint256(initParams.nQuestions) */, 
-                uint256(initParams.multipleChoiceWeight), 
-                uint256(initParams.nQuestions)
+                uint256(testCredential.minimumGrade), 
+                uint256(testCredential.multipleChoiceWeight), 
+                uint256(testCredential.nQuestions)
             ]
         );
         uint256 nonPassingTestParameters;
 
-        if (initParams.minimumGrade != 0) {
+        if (testCredential.minimumGrade != 0) {
             nonPassingTestParameters = PoseidonT4.poseidon(
-                [uint256(0), uint256(initParams.multipleChoiceWeight), uint256(initParams.nQuestions)]
+                [uint256(0), uint256(testCredential.multipleChoiceWeight), uint256(testCredential.nQuestions)]
             );
         } else {
             nonPassingTestParameters = testParameters;
         }
+        
+        uint256 testRoot = 
+            PoseidonT3.poseidon([testCredential.multipleChoiceRoot, testCredential.openAnswersHashesRoot]);
 
-        credentialTests[credentialId] = CredentialTest(
-            initParams.minimumGrade,
-            initParams.multipleChoiceWeight,
-            initParams.nQuestions,
-            initParams.timeLimit,
-            initParams.admin,
-            initParams.requiredCredential,
-            initParams.requiredCredentialGradeThreshold,
-            initParams.multipleChoiceRoot,
-            initParams.openAnswersHashesRoot,
-            PoseidonT3.poseidon([initParams.multipleChoiceRoot, initParams.openAnswersHashesRoot]),
+        testCredentials[credentialId] = testCredential;
+
+        testCredentialsHashes[credentialId] = TestCredentialHashes(
+            testRoot,
             testParameters,
             nonPassingTestParameters
         );
@@ -81,9 +84,9 @@ contract TestCredentialManager is TestCredentialManagerBase {
         onlyValidTestCredentials(credentialId) 
         returns (CredentialState memory newCredentialState) 
     {
-        CredentialTest memory credentialTest = credentialTests[credentialId];
+        TestCredential memory testCredential = testCredentials[credentialId];
 
-        if (credentialTest.requiredCredentialGradeThreshold > 0) {  // Grade restricted 
+        if (testCredential.requiredCredentialGradeThreshold > 0) {  // Grade restricted 
             GradeRestrictedTestFullProof memory gradeRestrictedTestFullProof = abi.decode(
                 credentialUpdate, 
                 (GradeRestrictedTestFullProof)
@@ -107,7 +110,7 @@ contract TestCredentialManager is TestCredentialManagerBase {
                 credentialState,
                 gradeRestrictedTestFullProof.testFullProof
             );
-        } else if (credentialTest.requiredCredential > 0) {  // Credential restricted 
+        } else if (testCredential.requiredCredential > 0) {  // Credential restricted 
             CredentialRestrictedTestFullProof memory credentialRestrictedTestFullProof = abi.decode(
                 credentialUpdate, 
                 (CredentialRestrictedTestFullProof)
@@ -149,21 +152,21 @@ contract TestCredentialManager is TestCredentialManagerBase {
     function getCredentialData(
         uint256 credentialId
     ) external view virtual override onlyExistingTestCredentials(credentialId) returns (bytes memory) {
-        return abi.encode(credentialTests[credentialId]);
+        return abi.encode(testCredentials[credentialId], testCredentialsHashes[credentialId]);
     }
 
     /// @dev See {ICredentialHandler-getCredentialAdmin}.
     function getCredentialAdmin(
         uint256 credentialId
     ) external view virtual override onlyExistingTestCredentials(credentialId) returns (address) {
-        return credentialTests[credentialId].admin;
+        return testCredentials[credentialId].admin;
     }
 
     /// @dev See {ICredentialHandler-credentialIsValid}.
     function credentialIsValid(
         uint256 credentialId
     ) external view virtual override onlyExistingTestCredentials(credentialId) returns (bool) {
-        return credentialTests[credentialId].minimumGrade != 255;
+        return testCredentials[credentialId].minimumGrade != 255;
     }
 
     /// @dev See {ICredentialHandler-credentialExists}.
@@ -178,11 +181,11 @@ contract TestCredentialManager is TestCredentialManagerBase {
         CredentialState memory credentialState,
         TestFullProof memory testFullProof
     ) internal returns (CredentialState memory) {
-        if (credentialTests[credentialId].timeLimit != 0 && block.timestamp > credentialTests[credentialId].timeLimit) {
+        if (testCredentials[credentialId].timeLimit != 0 && block.timestamp > testCredentials[credentialId].timeLimit) {
             revert TimeLimitReached();
         }
 
-        if (testFullProof.testPassed || credentialTests[credentialId].minimumGrade == 0) {
+        if (testFullProof.testPassed || testCredentials[credentialId].minimumGrade == 0) {
             
             uint[10] memory proofInput = [
                 credentialState.credentialsTreeIndex,
@@ -193,11 +196,11 @@ contract TestCredentialManager is TestCredentialManagerBase {
                 testFullProof.gradeCommitment,
                 credentialState.gradeTreeRoot,
                 testFullProof.newGradeTreeRoot,
-                credentialTests[credentialId].testRoot,
-                credentialTests[credentialId].testParameters
+                testCredentialsHashes[credentialId].testRoot,
+                testCredentialsHashes[credentialId].testParameters
             ];
 
-            testVerifier.verifyProof(testFullProof.testProof, proofInput);
+            testVerifier.verifyProof(testFullProof.testProof, proofInput, testCredentials[credentialId].testHeight);
 
             credentialState.credentialsTreeIndex++;
             credentialState.credentialsTreeRoot = testFullProof.newIdentityTreeRoot;
@@ -220,11 +223,11 @@ contract TestCredentialManager is TestCredentialManagerBase {
                 testFullProof.gradeCommitment,
                 credentialState.gradeTreeRoot,
                 testFullProof.newGradeTreeRoot,
-                credentialTests[credentialId].testRoot,
-                credentialTests[credentialId].nonPassingTestParameters
+                testCredentialsHashes[credentialId].testRoot,
+                testCredentialsHashes[credentialId].nonPassingTestParameters
             ];
 
-            testVerifier.verifyProof(testFullProof.testProof, proofInput);
+            testVerifier.verifyProof(testFullProof.testProof, proofInput, testCredentials[credentialId].testHeight);
 
             credentialState.noCredentialsTreeIndex++;
             credentialState.noCredentialsTreeRoot = testFullProof.newIdentityTreeRoot;
@@ -256,7 +259,7 @@ contract TestCredentialManager is TestCredentialManagerBase {
         uint256 signal,
         CredentialClaimFullProof memory credentialClaimFullProof
     ) internal {
-        uint256 requiredCredentialId = credentialTests[credentialId].requiredCredential;
+        uint256 requiredCredentialId = testCredentials[credentialId].requiredCredential;
 
         // formatBytes32String("bq-credential-restricted-test")
         uint256 externalNullifier = 0x62712d63726564656e7469616c2d726573747269637465642d74657374000000;
@@ -276,8 +279,8 @@ contract TestCredentialManager is TestCredentialManagerBase {
         uint256 signal,
         GradeClaimFullProof memory gradeClaimFullProof
     ) internal {
-        uint256 requiredCredentialId = credentialTests[credentialId].requiredCredential;
-        uint256 requiredCredentialGradeThreshold = credentialTests[credentialId].requiredCredentialGradeThreshold;
+        uint256 requiredCredentialId = testCredentials[credentialId].requiredCredential;
+        uint256 requiredCredentialGradeThreshold = testCredentials[credentialId].requiredCredentialGradeThreshold;
 
         // formatBytes32String("bq-grade-restricted-test")
         uint256 externalNullifier = 0x62712d67726164652d726573747269637465642d746573740000000000000000;

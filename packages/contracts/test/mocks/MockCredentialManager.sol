@@ -8,6 +8,7 @@ contract MockCredentialManager is IERC165 {
     
     function createCredential(
         uint256 /* credentialId */,
+        uint256 /* treeDepth */,
         bytes calldata /* credentialData */
     ) external pure {
         

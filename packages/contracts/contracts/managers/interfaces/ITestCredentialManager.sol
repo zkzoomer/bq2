@@ -2,9 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "../../interfaces/ICredentialManager.sol";
-import { CredentialTest, TestInitializingParameters } from "../libs/Structs.sol";
 
 interface ITestCredentialManager is ICredentialManager {
+    error TestDepthIsNotSupported();
     error CannotRequireSameCredential();
     error GradeRestrictedTestsMustSpecifyRequiredCredential();
     error TimeLimitIsInThePast();

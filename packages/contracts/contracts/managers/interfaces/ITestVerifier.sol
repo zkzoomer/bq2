@@ -22,8 +22,8 @@ interface ITestVerifier {
         PairingLib.G1Point C;
     }
 
-    /// @dev Verifies a Test proof
-    /// @param proof: SNARk proof
+    /// @dev Verifies a Test proof.
+    /// @param proof: SNARk proof.
     /// @param input: public inputs for the proof, these being:
     ///     - identityCommitmentIndex
     ///     - identityCommitment
@@ -35,8 +35,10 @@ interface ITestVerifier {
     ///     - newGradeTreeRoot
     ///     - testRoot
     ///     - testParameters
+    /// @param testHeight: height of the trees that define the test.
     function verifyProof(
         uint256[8] calldata proof,
-        uint256[10] memory input
+        uint256[10] memory input,
+        uint8 testHeight
     ) external view;
 }

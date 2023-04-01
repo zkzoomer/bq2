@@ -11,8 +11,6 @@ import { PoseidonT3 } from "./libs/Poseidon.sol";
 /// @title CredentialsRegistry
 /// @dev Manages credential creation and updating, defining credential managers to handle their behavior.
 contract CredentialsRegistry is ICredentialsRegistry {
-    uint256 MAX_DEPTH = 16; 
-
     /// @dev Number of credentials that have been created
     uint256 public nCredentials;
 
@@ -66,7 +64,7 @@ contract CredentialsRegistry is ICredentialsRegistry {
         bytes calldata credentialData,
         string calldata credentialURI
     ) external override {
-        if (treeDepth < 16 || treeDepth > MAX_DEPTH) {  // tree depths unsupported by Semaphore
+        if (treeDepth < 16 || treeDepth > 32) {  // tree depths unsupported by Semaphore
             revert InvalidTreeDepth();
         }
 
@@ -103,6 +101,7 @@ contract CredentialsRegistry is ICredentialsRegistry {
 
         ICredentialManager(credentialManagers[credentialType]).createCredential(
             nCredentials,  // credentialId
+            treeDepth,
             credentialData
         );
 
@@ -153,8 +152,8 @@ contract CredentialsRegistry is ICredentialsRegistry {
             revert CredentialTypeAlreadyDefined();
         }
 
-        // type(ICredentialManager).interfaceId = 0xf0f36c2a
-        if (!ICredentialManager(credentialManager).supportsInterface(0xf0f36c2a)) {
+        // type(ICredentialManager).interfaceId = 0x41be9068
+        if (!ICredentialManager(credentialManager).supportsInterface(0x41be9068)) {
             revert InvalidCredentialManagerAddress();
         }
 
