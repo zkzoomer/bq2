@@ -11,6 +11,7 @@ import {
     verifyGradeClaimProof,
     verifyTestProof,
     rootFromLeafArray,
+    BigNumberish,
     CredentialRestrictedTestFullProof,
     GradeRestrictedTestFullProof,
     Network,
@@ -84,7 +85,7 @@ export default class TestCredential {
 
     static async init(
         credentialId: number,
-        openAnswersHashes?: string[],
+        openAnswersHashes?: BigNumberish[],
         networkOrEthereumURL: Network = "maticmum", 
         options: EthersOptions = {}
     ) {
@@ -94,8 +95,8 @@ export default class TestCredential {
 
         switch (networkOrEthereumURL) {
             case "maticmum":
-                options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.mumbai.credentialsRegistryAddress
-                options.testCredentialType = DEPLOYED_CONTRACTS.mumbai.testCredentialType
+                options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.maticmum.credentialsRegistryAddress
+                options.testCredentialType = DEPLOYED_CONTRACTS.maticmum.testCredentialType
                 break
             default:
                 if (options.credentialsRegistryAddress === undefined) {
@@ -385,6 +386,28 @@ export default class TestCredential {
 
     get isValid(): boolean {
         return this.#testData.minimumGrade === 255
+    }
+
+    async getMerkleTreeRoot(group: "grade" | "credentials" | "no-credentials") {
+        switch (group) {
+            case "grade":
+                return (await this.#credentialsRegistry.getMerkleTreeRoot(3 * (this.#credentialId - 1) + 1)).toString()
+            case "credentials":
+                return (await this.#credentialsRegistry.getMerkleTreeRoot(3 * (this.#credentialId - 1) + 2)).toString()
+            case "no-credentials":
+                return (await this.#credentialsRegistry.getMerkleTreeRoot(3 * (this.#credentialId - 1) + 3)).toString()
+        }
+    }
+
+    async getNumberOfMerkleTreeLeaves(group: "grade" | "credentials" | "no-credentials") {
+        switch (group) {
+            case "grade":
+                return (await this.#credentialsRegistry.getNumberOfMerkleTreeLeaves(3 * (this.#credentialId - 1) + 1)).toNumber()
+            case "credentials":
+                return (await this.#credentialsRegistry.getNumberOfMerkleTreeLeaves(3 * (this.#credentialId - 1) + 2)).toNumber()
+            case "no-credentials":
+                return (await this.#credentialsRegistry.getNumberOfMerkleTreeLeaves(3 * (this.#credentialId - 1) + 3)).toNumber()
+        }
     }
 
     async URI() {
