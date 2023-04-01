@@ -11,7 +11,7 @@ exports.handler = async function(event) {
     }
   
   	const { abi, functionName,  functionParameters } = body
-    const address = "0x835a8EEF0fCeC907F1aA9aCe4B527ecFA4475c0C"
+    const address = "0xF12B8dAeDe57273C40b8dcD75Fa1796C21Aa2C44"
 
     const provider = new DefenderRelayProvider(event);
     const signer = new DefenderRelaySigner(event, provider, { speed: 'fast' });
