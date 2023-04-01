@@ -54,13 +54,12 @@ export default async function generateTestProof(
         gradeMerkleProof = gradeGroup
     }
 
-    // TODO: set these by looking at identityMerkleProof.siblings.length -> gets test height
+    const testHeight = multipleChoiceAnswers.length || openAnswers.length
     if (!snarkArtifacts) {
-        throw new Error("SNARK artifacts need to be provided")
-        /* snarkArtifacts = {
-            wasmFilePath: ``,
-            zkeyFilePath: ``
-        } */
+        snarkArtifacts = {
+            wasmFilePath: `https://blockqualified.s3.us-east-2.amazonaws.com/test${testHeight}.wasm`,
+            zkeyFilePath: `https://blockqualified.s3.us-east-2.amazonaws.com/test${testHeight}.zkey`
+        }
     }
 
     const { proof, publicSignals } = await groth16.fullProve(

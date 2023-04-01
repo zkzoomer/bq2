@@ -29,11 +29,10 @@ export default async function generateGradeClaimProof(
     let gradeCommitment: FullGradeCommitment
 
     if (!snarkArtifacts) {
-        throw new Error("SNARK artifacts need to be provided")
-        /* snarkArtifacts = {
-            wasmFilePath: ``,
-            zkeyFilePath: ``
-        } */
+        snarkArtifacts = {
+            wasmFilePath: `https://blockqualified.s3.us-east-2.amazonaws.com/gradeClaim.wasm`,
+            zkeyFilePath: `https://blockqualified.s3.us-east-2.amazonaws.com/gradeClaim.zkey`
+        }
     }
 
     if ("depth" in gradeGroupOrMerkleProof) {
