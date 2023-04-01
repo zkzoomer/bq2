@@ -5,9 +5,9 @@ export const MAX_COMMENT_LENGTH = 280;
 export const FIELD_SIZE = "21888242871839275222246405745257275088548364400416034343698204186575808495617";
 
 export const DEPLOYED_CONTRACTS = {
-    "mumbai": {
-        "credentialsRegistryAddress": "0x835a8EEF0fCeC907F1aA9aCe4B527ecFA4475c0C",
-        "testCredentialManagerAddress": "0xAE4f50B84e9600C0d038CE046225B9767857d68B",
+    "maticmum": {
+        "credentialsRegistryAddress": "0xF12B8dAeDe57273C40b8dcD75Fa1796C21Aa2C44",
+        "testCredentialManagerAddress": "0x2C2d9CfFec552753E6438380aEb4449672240bA2",
         "testCredentialType": 0
     }
 }
