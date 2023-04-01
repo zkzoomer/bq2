@@ -11,9 +11,7 @@ Each credential test contains two distinct components, each forming a Merkle tre
 - A **multiple choice** component, where the answer to each question is part of a given finite set. The resulting Merkle root is named `multipleChoiceRoot`. The grade for this component is only awarded if the user gets all the answers right: if they know a tree with `multipleChoiceRoot` at its root.
 - An **open answer** component, where the answer to each question can be any value. The leaves of the tree are the [keccak256](../../packages/lib/src/helpers/hash.ts) hashes of the answers, made compatible with the SNARK scalar modulus. The resulting Merkle root of the correct answers tree is named `openAnswersHashesRoot`. The grade for this component is awarded incrementally per answer that the user gets right: every matched hash with the correct `openAnswerHashes`, with the preimage being the user's answer.
 
-<!-- // TODO: change when TEST_HEIGHT is made dynamic -->
-
-The `TEST_HEIGHT` constant sets the maximum number of questions possible for each component. This value is set to 6, giving us a maximum of 64 questions per component. The value of the `testRoot`, which is the result of hashing together the `multipleChoiceRoot` and the `openAnswersHashesRoot` is used to define and identify the test.
+The `TEST_HEIGHT` constant sets the maximum number of questions possible for each component. This value can be either 4, 5 or 6, giving us a maximum of 64 questions per component. It is recommended users choose the smallest test height that can encode all of their questions: this will help reduce proving time. The value of the `testRoot`, which is the result of hashing together the `multipleChoiceRoot` and the `openAnswersHashesRoot` is used to define and identify the test.
 
 If the credential issuer does not define all of the questions for a component, the tree will have to be padded to 64 values. In the bq library, this is done by assigning the default values `0` for multiple choice questions, and `keccak256("")` for open answer questions. 
 
@@ -28,8 +26,7 @@ Where:
 - `multipleChoiceWeight` is the percentage of the multiple choice component towards the final grade.
 - `nCorrect` is the number of correct open answers the user got, including to non-defined questions whose answer is `keccak256("")`.
 - `nQuestions` is the number of open answer questions that make up the test.
-- `maxQuestions` is the maximum number of open answer questions the implementation supports, in this case 64.
-
+- `maxQuestions` is the maximum number of open answer questions the implementation supports, which equals $2 ^ {TEST\_HEIGHT}$.
 
 {% hint style="warning" %}
 Because of the formula above, `nQuestions` must always be greater than one.

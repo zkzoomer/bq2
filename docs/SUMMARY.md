@@ -2,6 +2,7 @@
 
 ## Getting started
 * [About this documentation](README.md)
+* [Deployed contracts](./deployed-contracts.md)
 
 <!-- ## Quick Setup -->
 

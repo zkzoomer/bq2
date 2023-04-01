@@ -8,11 +8,6 @@ Users can define the behavior own [Credential Manager](./credential-registry.md)
 
 Block Qualified has native support for the [Test Credential](./test-credential-manager.md). Each Test Credential has a multiple choice question component and an open answer component, with a minimum grade needed to obtain it. Users can gain these credentials by providing proofs of knowledge of their solution. The actual solutions are encoded as part of the proof and thus are kept private, preventing other users from cheating by looking at public on-chain data.
 
-
-
-
-
-
 ## Credentials.sol
 
 The main smart contract for Block Qualified, [Credentials.sol](../../packages/contracts/contracts/base/Credentials.sol) allows users to create, manage and solve tests.

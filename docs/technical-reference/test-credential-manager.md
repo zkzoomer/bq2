@@ -11,6 +11,7 @@ This function cannot be called directly, as it only supports calls made from the
 {% endhint %}
 
 The encoded data bytes `credentialData` for the Test Credential can be generated using the library function [`encodeTestInitializingParameters`](../../packages/lib/src/helpers/encodeInputs.ts), and providing:
+- `testHeight`: the height of the trees that define the test, as defined in [Block Qualified tests](./block-qualified-tests.md).
 - `minimumGrade`: out of 100, minimum total grade the user must get to obtain the credential.
 - `multipleChoiceWeight`: out of 100, contribution of the multiple choice component towards the total grade: 100 for pure multiple choice tests, 0 for pure open answer tests.
 - `nQuestions`: number of open answer questions the test has -- must be set to 1 for pure multiple choice tests.
