@@ -8,6 +8,7 @@ export const DEPLOYED_CONTRACTS = {
     "maticmum": {
         "credentialsRegistryAddress": "0xF12B8dAeDe57273C40b8dcD75Fa1796C21Aa2C44",
         "testCredentialManagerAddress": "0x2C2d9CfFec552753E6438380aEb4449672240bA2",
-        "testCredentialType": 0
+        "testCredentialType": 0,
+        "autotaskWebhook": "https://api.defender.openzeppelin.com/autotasks/42726ddd-0b3b-42bf-8f36-f7e1ed50b3dc/runs/webhook/597126c3-7872-41c7-a242-06c3745a6d66/36J66HCmNros1DSQpUTfWA"
     }
 }

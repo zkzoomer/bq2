@@ -59,6 +59,8 @@ export default class TestCredential {
     #treeDepth: number
     #openAnswersHashes: string[]
 
+    #autotaskWebhook: string
+
     // Defines the test via its testId and the smart contract that governs it
     // @param testId Test ID of the test we are focused on.
     // @param chainId Chain ID of the network where this bqTest is defined.
@@ -71,6 +73,7 @@ export default class TestCredential {
         testData: TestCredentialData,
         credentialsRegistry: Contract,
         treeDepth: number,
+        autotaskWebhook: string,
         openAnswersHashes?: string[] 
     ) {
         this.#poseidon = poseidon
@@ -80,14 +83,15 @@ export default class TestCredential {
         this.#testData = testData
         this.#credentialsRegistry = credentialsRegistry
         this.#treeDepth = treeDepth
+        this.#autotaskWebhook = autotaskWebhook
         this.#openAnswersHashes = openAnswersHashes ?? []
     }
 
     static async init(
         credentialId: number,
-        openAnswersHashes?: BigNumberish[],
         networkOrEthereumURL: Network = "maticmum", 
-        options: EthersOptions = {}
+        options: EthersOptions = {},
+        openAnswersHashes?: BigNumberish[],
     ) {
         let poseidon = await buildPoseidon();
 
@@ -97,6 +101,7 @@ export default class TestCredential {
             case "maticmum":
                 options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.maticmum.credentialsRegistryAddress
                 options.testCredentialType = DEPLOYED_CONTRACTS.maticmum.testCredentialType
+                options.autotaskWebhook = DEPLOYED_CONTRACTS.maticmum.autotaskWebhook
                 break
             default:
                 if (options.credentialsRegistryAddress === undefined) {
@@ -106,6 +111,8 @@ export default class TestCredential {
                 if (options.testCredentialType === undefined) {
                     options.testCredentialType = 0
                 }
+
+                options.autotaskWebhook = ""
         }
 
         let provider: Provider
@@ -177,7 +184,8 @@ export default class TestCredential {
             testData,
             credentialsRegistry,
             treeDepth,
-            fullOpenAnswersHashes
+            options.autotaskWebhook,
+            fullOpenAnswersHashes,
         )
     }
 
@@ -213,7 +221,9 @@ export default class TestCredential {
     async generateSolutionProof(
         identity: Identity, 
         testAnswers: TestAnswers,
-        { testSnarkArtifacts, semaphoreSnarkArtifacts, gradeClaimSnarkArtifacts }: SolutionSnarkArtifacts
+        testSnarkArtifacts?: SnarkArtifacts,
+        semaphoreSnarkArtifacts?: SnarkArtifacts,
+        gradeClaimSnarkArtifacts?: SnarkArtifacts
     ): Promise<TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof> {
         const grade = this.gradeSolution(testAnswers)
 
@@ -289,7 +299,9 @@ export default class TestCredential {
         }
     }
 
-    async verifySolutionProof(proof: TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof): Promise<boolean> {
+    async verifySolutionProof(
+        proof: TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof)
+    : Promise<boolean> {
         if ("gradeClaimFullProof" in proof) {  // Grade restricted test
             return (await verifyGradeClaimProof(proof.gradeClaimFullProof)) && (await verifyTestProof(proof.testFullProof, this.#testData.testHeight))
         } else if ("semaphoreFullProof" in proof) {  // Credential restricted test
@@ -300,8 +312,7 @@ export default class TestCredential {
     }
 
     async sendSolutionTransaction(
-        proof: TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof,
-        autotaskWebhook: string
+        proof: TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof
     ): Promise<Response> {
         let credentialUpdate: string
         if ("gradeClaimFullProof" in proof) {  // Grade restricted test
@@ -312,7 +323,7 @@ export default class TestCredential {
             credentialUpdate = encodeTestFullProof(proof)
         }
 
-        return fetch(autotaskWebhook, {
+        return fetch(this.#autotaskWebhook, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -347,10 +358,9 @@ export default class TestCredential {
     }
 
     async sendRateIssuerTransaction(
-        proof: RateFullProof,
-        autotaskWebhook: string
+        proof: RateFullProof
     ): Promise<Response> {
-        return fetch(autotaskWebhook, {
+        return fetch(this.#autotaskWebhook, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

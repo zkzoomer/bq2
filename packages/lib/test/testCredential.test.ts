@@ -50,15 +50,7 @@ describe("TestCredential", () => {
 
     const expect = chai.expect
 
-    let webhook_uri: string
-
     let gradeCommitment: bigint;
-                
-    if(process.env.WEBHOOK_URI) {
-        webhook_uri = process.env.WEBHOOK_URI
-    } else {
-        throw new Error("WEBHOOK_URI for the transaction relayer is not set")
-    }
 
     before(async () =>  {
         poseidon = await buildPoseidon();
@@ -88,12 +80,12 @@ describe("TestCredential", () => {
             it("should return a new TestCredential object", async () => {
                 testCredential = await TestCredential.init(
                     credentialId,
-                    openAnswersHashes,
                     "maticmum",
                     {
                         provider: "alchemy",
                         apiKey: process.env.ALCHEMY_API_KEY
-                    }
+                    },
+                    openAnswersHashes,
                 )
 
                 expect(testCredential).to.be.instanceOf(Object)
@@ -140,7 +132,7 @@ describe("TestCredential", () => {
                 expect(await testCredential.verifySolutionProof(proof)).to.be.equal(true)
                 
                 // Gets sent to relayer
-                const response = await testCredential.sendSolutionTransaction(proof, webhook_uri)
+                const response = await testCredential.sendSolutionTransaction(proof)
 
                 // Relayer is successful
                 expect(response.status).to.be.equal(200)
