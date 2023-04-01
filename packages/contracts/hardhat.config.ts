@@ -36,7 +36,7 @@ const hardhatConfig: HardhatUserConfig = {
             allowUnlimitedContractSize: true
         },
         maticmum: {
-            url: 'https://matic.getblock.io/ec6b266a-4d70-450f-a8e5-c21190710931/testnet/',
+            url: 'https://rpc-mumbai.maticvigil.com	',
             chainId: 80001,
             accounts: {
                 mnemonic
