@@ -88,6 +88,7 @@ export type RateFullProof = {
 }
 
 export type TestCredentialData = {
+    testHeight: number,
     minimumGrade: number,
     multipleChoiceWeight: number,
     nQuestions: number,
@@ -126,7 +127,7 @@ export type SolutionSnarkArtifacts = {
 }
 
 export type Network =
-    | "mumbai"
+    | "maticmum"
 
 export type Options = {
     credentialsRegistryAddress?: string

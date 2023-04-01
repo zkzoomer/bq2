@@ -1,4 +1,4 @@
-export const TEST_HEIGHT = 6;
+export const SUPPORTED_TEST_HEIGHTS = [4, 5, 6];
 export const MAX_GRADE = 100;
 export const MAX_TREE_DEPTH = 16;
 export const MAX_COMMENT_LENGTH = 280;

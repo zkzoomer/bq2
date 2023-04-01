@@ -9,8 +9,7 @@ import {
     TestAnswers, 
     TestFullProof, 
     TestVariables, 
-    MAX_TREE_DEPTH, 
-    TEST_HEIGHT, 
+    MAX_TREE_DEPTH
 } from "@bq2/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
@@ -20,18 +19,20 @@ import { getCurveFromName } from "ffjavascript"
 
 chai.use(chaiAsPromised)
 
+const TEST_HEIGHT = 4;
+
 describe("Test Proof", () => {
     let poseidon: Poseidon
 
     const testAnswers: TestAnswers = {
         multipleChoiceAnswers: Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1),
-        openAnswers: generateOpenAnswers(["chuck's", "feed", "seed"])
+        openAnswers: generateOpenAnswers(["chuck's", "feed", "seed"], TEST_HEIGHT)
     }
     let testVariables: TestVariables;
 
     const snarkArtifacts = {
-        wasmFilePath: '../snark-artifacts/test.wasm',
-        zkeyFilePath: `../snark-artifacts/test.zkey`
+        wasmFilePath: `../snark-artifacts/test${TEST_HEIGHT}.wasm`,
+        zkeyFilePath: `../snark-artifacts/test${TEST_HEIGHT}.zkey`
     }
 
     let group = new Group(0, MAX_TREE_DEPTH);
@@ -169,7 +170,7 @@ describe("Test Proof", () => {
 
     describe("verifyTestProof", () => {
         it("Should verify a test proof", async () => {
-            const response = await verifyTestProof(fullProof)
+            const response = await verifyTestProof(fullProof, TEST_HEIGHT)
         
             expect(response).to.be.true
         })

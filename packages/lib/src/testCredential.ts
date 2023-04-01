@@ -6,6 +6,7 @@ import {
     generateGradeRestrictedTestProof,
     generateRateCredentialIssuerProof,
     generateTestProof,
+    generateOpenAnswers,
     verifyCredentialOwnershipProof,
     verifyGradeClaimProof,
     verifyTestProof,
@@ -23,13 +24,12 @@ import {
     TestFullProof,
     TestVariables,
     DEPLOYED_CONTRACTS,
-    TEST_HEIGHT,
     encodeGradeRestrictedTestFullProof,
     encodeCredentialRestrictedTestFullProof,
-    encodeTestFullProof
+    encodeTestFullProof,
+    hash
 } from "@bq2/lib"
 import { Contract } from "@ethersproject/contracts"
-import { keccak256 } from "@ethersproject/keccak256"
 import { 
     AlchemyProvider, 
     AnkrProvider, 
@@ -82,18 +82,18 @@ export default class TestCredential {
         this.#openAnswersHashes = openAnswersHashes ?? []
     }
 
-    static async fetchData(
+    static async init(
         credentialId: number,
-        networkOrEthereumURL: Network = "mumbai", 
-        options: EthersOptions = {},
-        openAnswersHashes?: string[] 
+        openAnswersHashes?: string[],
+        networkOrEthereumURL: Network = "maticmum", 
+        options: EthersOptions = {}
     ) {
         let poseidon = await buildPoseidon();
 
         let testCredentialGroups = new TestCredentialGroupsEthers(networkOrEthereumURL, options)
 
         switch (networkOrEthereumURL) {
-            case "mumbai":
+            case "maticmum":
                 options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.mumbai.credentialsRegistryAddress
                 options.testCredentialType = DEPLOYED_CONTRACTS.mumbai.testCredentialType
                 break
@@ -140,14 +140,30 @@ export default class TestCredential {
 
         const credentialType = await credentialsRegistry.getCredentialType(credentialId)
 
-        if (options.testCredentialType !== credentialType.toString()) {
+        if (options.testCredentialType !== credentialType.toNumber()) {
             throw new Error(`Credential ${credentialId} is not a Test Credential`)
         }
 
         const testData = decodeTestData(await credentialsRegistry.getCredentialData(credentialId))
 
-        if (testData.multipleChoiceWeight !== 0 && openAnswersHashes === undefined) {
-            throw new Error(`Open answers hashes need to be provided for tests that are not multiple choice`)
+        let fullOpenAnswersHashes: string[] = []
+
+        if (testData.multipleChoiceWeight !== 0) {  // Open answer hashes need to be provided
+            if (openAnswersHashes === undefined) {  
+                throw new Error(`Open answers hashes need to be provided for tests that are not multiple choice`)
+            }
+
+            if (openAnswersHashes.length !== testData.nQuestions) {  
+                throw new Error(`Need to provide an open answer hash for each question`)
+            }
+
+            const fullOpenAnswersHashes = new Array(2 ** testData.testHeight).fill(
+                poseidon([hash("")])
+            );
+        
+            fullOpenAnswersHashes.forEach( (_, i) => { if (i < openAnswersHashes.length) {
+                fullOpenAnswersHashes[i] = openAnswersHashes[i]
+            }});
         }
 
         const treeDepth = (await credentialsRegistry.getMerkleTreeDepth(3 * credentialId)).toNumber()
@@ -160,15 +176,19 @@ export default class TestCredential {
             testData,
             credentialsRegistry,
             treeDepth,
-            openAnswersHashes
+            fullOpenAnswersHashes
         )
     }
 
     gradeSolution(testAnswers: TestAnswers) {
         // Multiple choice answers provided must be numbers and less than 64 in number
-        if ( testAnswers.multipleChoiceAnswers.length > 2 ** TEST_HEIGHT ) { throw new RangeError('Surpassed maximum number of answers for a test') }
+        if ( testAnswers.multipleChoiceAnswers.length > 2 ** this.#testData.testHeight ) { 
+            throw new RangeError('Surpassed maximum number of answers for a test')
+        }
         // All open answers must be provided - even if an empty ""
-        if ( testAnswers.openAnswers.length !== this.#testData.nQuestions ) { throw new RangeError('Some questions were left unanswered') }
+        if ( testAnswers.openAnswers.length !== this.#testData.nQuestions ) { 
+            throw new RangeError('Some questions were left unanswered')
+        }
 
         // Multiple choice component
         const multipleChoiceResult = this.#getMultipleChoiceResult(testAnswers)
@@ -195,6 +215,8 @@ export default class TestCredential {
         { testSnarkArtifacts, semaphoreSnarkArtifacts, gradeClaimSnarkArtifacts }: SolutionSnarkArtifacts
     ): Promise<TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof> {
         const grade = this.gradeSolution(testAnswers)
+
+        testAnswers.openAnswers = generateOpenAnswers(testAnswers.openAnswers, this.#testData.testHeight)
 
         const identityGroup = new Group(this.#credentialId, this.#treeDepth)
         const gradeGroup = new Group(this.#credentialId, this.#treeDepth)
@@ -268,11 +290,11 @@ export default class TestCredential {
 
     async verifySolutionProof(proof: TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof): Promise<boolean> {
         if ("gradeClaimFullProof" in proof) {  // Grade restricted test
-            return (await verifyGradeClaimProof(proof.gradeClaimFullProof)) && (await verifyTestProof(proof.testFullProof))
+            return (await verifyGradeClaimProof(proof.gradeClaimFullProof)) && (await verifyTestProof(proof.testFullProof, this.#testData.testHeight))
         } else if ("semaphoreFullProof" in proof) {  // Credential restricted test
-            return (await verifyCredentialOwnershipProof(proof.semaphoreFullProof)) && (await verifyTestProof(proof.testFullProof))
+            return (await verifyCredentialOwnershipProof(proof.semaphoreFullProof)) && (await verifyTestProof(proof.testFullProof, this.#testData.testHeight))
         } else {  // Open test
-            return verifyTestProof(proof)
+            return verifyTestProof(proof, this.#testData.testHeight)
         }
     }
 
@@ -374,7 +396,7 @@ export default class TestCredential {
     }
 
     #getMultipleChoiceResult({ multipleChoiceAnswers }: TestAnswers): number {
-        const answersArray = new Array(2 ** TEST_HEIGHT).fill('0')
+        const answersArray = new Array(2 ** this.#testData.testHeight).fill('0')
     
         answersArray.forEach( (_, i) => {
             if ( i < multipleChoiceAnswers.length ) { 
@@ -395,9 +417,9 @@ export default class TestCredential {
         let nCorrect = 0
         const resultsArray = new Array(openAnswers.length).fill(false)
 
-        for (var i = 0; i < 2 ** TEST_HEIGHT; i++) {
+        for (var i = 0; i < 2 ** this.#testData.testHeight; i++) {
             if ( i < openAnswers.length ) {
-                if (this.#poseidon([keccak256(openAnswers[i])]).toString() === this.#openAnswersHashes[i] ) {
+                if (this.#poseidon([hash(openAnswers[i])]).toString() === this.#openAnswersHashes[i] ) {
                     nCorrect++
                     resultsArray[i] = true
                 }

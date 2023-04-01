@@ -54,6 +54,7 @@ export default async function generateTestProof(
         gradeMerkleProof = gradeGroup
     }
 
+    // TODO: set these by looking at identityMerkleProof.siblings.length -> gets test height
     if (!snarkArtifacts) {
         throw new Error("SNARK artifacts need to be provided")
         /* snarkArtifacts = {

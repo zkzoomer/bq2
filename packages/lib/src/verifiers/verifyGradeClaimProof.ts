@@ -1,7 +1,7 @@
 import { GradeClaimFullProof } from "@bq2/lib"
 import { groth16 } from "snarkjs"
 import { hash, unpackProof } from "../helpers"
-import verificationKey from "../../snark-artifacts/gradeClaimKey.json"
+import verificationKey from "../../verification-keys/gradeClaimKey.json"
 
 /**
  * Verifies a proof where a user claims to have obtained a grade above a certain threshold,

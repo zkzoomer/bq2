@@ -1,11 +1,11 @@
-import { hash, TEST_HEIGHT } from "@bq2/lib";
+import { hash } from "@bq2/lib";
 
-export function generateOpenAnswers( openAnswers: string[] ): string[] {
-    if (openAnswers.length > 2 ** TEST_HEIGHT ) {
+export function generateOpenAnswers( openAnswers: string[], testHeight: number ): string[] {
+    if (openAnswers.length > 2 ** testHeight ) {
         throw new Error("More answers were given than supported")
     }
 
-    const resultsArray = new Array(64).fill(
+    const resultsArray = new Array(2 ** testHeight).fill(
         hash("")
     );
 

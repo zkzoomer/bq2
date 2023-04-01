@@ -3,7 +3,8 @@ import { CredentialRestrictedTestFullProof, GradeRestrictedTestFullProof, Proof,
 
 const abi = utils.defaultAbiCoder
 
-export function encodeTestInitializingParameters(
+export function encodeTestCredential(
+    testHeight: number,
     minimumGrade: number,
     multipleChoiceWeight: number,
     nQuestions: number,
@@ -19,6 +20,7 @@ export function encodeTestInitializingParameters(
 
     return abi.encode(
         [
+            "uint8",
             "uint8", 
             "uint8", 
             "uint8", 
@@ -30,6 +32,7 @@ export function encodeTestInitializingParameters(
             "uint256"
         ], 
         [
+            testHeight,
             minimumGrade,
             multipleChoiceWeight,
             nQuestions,

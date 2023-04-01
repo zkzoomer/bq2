@@ -11,6 +11,7 @@ export function decodeTestData(
             "uint8",
             "uint8",
             "uint8",
+            "uint8",
             "uint32",
             "address",
             "uint256",
@@ -25,17 +26,18 @@ export function decodeTestData(
     )
 
     return {
-        minimumGrade: decodedData[0].toNumber(),
-        multipleChoiceWeight: decodedData[1].toNumber(),
-        nQuestions: decodedData[2].toNumber(),
-        timeLimit: decodedData[3].toNumber(),
-        admin: decodedData[4],
-        requiredCredential: decodedData[5].toNumber(),
-        requiredCredentialGradeThreshold: decodedData[6].toNumber(),
-        multipleChoiceRoot: decodedData[7].toString(),
-        openAnswersHashesRoot: decodedData[8].toString(),
-        testRoot: decodedData[9].toString(),
-        testParameters: decodedData[10].toString(),
-        nonPassingTestParameters: decodedData[11].toString()
+        testHeight: decodedData[0],
+        minimumGrade: decodedData[1],
+        multipleChoiceWeight: decodedData[2],
+        nQuestions: decodedData[3],
+        timeLimit: decodedData[4],
+        admin: decodedData[5],
+        requiredCredential: decodedData[6].toNumber(),
+        requiredCredentialGradeThreshold: decodedData[7].toNumber(),
+        multipleChoiceRoot: decodedData[8].toString(),
+        openAnswersHashesRoot: decodedData[9].toString(),
+        testRoot: decodedData[10].toString(),
+        testParameters: decodedData[11].toString(),
+        nonPassingTestParameters: decodedData[12].toString()
     }
 }
