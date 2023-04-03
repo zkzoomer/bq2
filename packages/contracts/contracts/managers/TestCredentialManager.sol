@@ -18,7 +18,7 @@ import {
 /// @dev Defines the behavior of the Test credential, where users gain their credentials by providing proofs of knowledge
 /// of the solution to mixed tests (multiple choice + open answer components).
 contract TestCredentialManager is TestCredentialManagerBase {
-    /// @dev Initializes the TestBase smart contract
+    /// @dev Initializes the TestCredentialManager smart contract
     /// @param credentialsRegistryAddress: Contract address of the CredentialsRegistry smart contract that
     /// governs this CredentialManager.
     /// @param testVerifierAddress: Contract address for the test circuit proof verifier.
