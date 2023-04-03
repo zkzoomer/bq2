@@ -30,7 +30,7 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
         _;
     }
 
-    /// @dev Checks if the credential admin is the transaction sender.
+    /// @dev Enforces that the credential admin is the transaction sender.
     /// @param credentialId: Id of the credential.
     modifier onlyCredentialAdmin(uint256 credentialId) {
         if (testCredentials[credentialId].admin != tx.origin) {
