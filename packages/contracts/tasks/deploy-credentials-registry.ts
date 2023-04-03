@@ -130,11 +130,7 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
             }
 
             /// CREDENTIALS REGISTRY
-            const CredentialsRegistryFactory = await ethers.getContractFactory("CredentialsRegistry", {
-                libraries: {
-                    PoseidonT3: poseidonT3Address
-                }
-            })
+            const CredentialsRegistryFactory = await ethers.getContractFactory("CredentialsRegistry")
 
             const registry = await CredentialsRegistryFactory.deploy(semaphoreVerifierAddress, gradeClaimVerifierAddress)
 

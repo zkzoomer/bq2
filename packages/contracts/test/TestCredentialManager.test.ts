@@ -283,8 +283,8 @@ describe("TestCredentialManager contract", () => {
                             credentialURI
                         )
                     ).to.be.revertedWithCustomError(
-                        testCredentialManager,
-                        "MerkleTreeDepthIsNotSupported"
+                        credentialsRegistry,
+                        "InvalidTreeDepth"  // Would be "MerkleTreeDepthIsNotSupported" if GradeClaimVerifier.sol supported 16-32
                     )
                 })
             })

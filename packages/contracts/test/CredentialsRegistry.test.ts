@@ -296,7 +296,7 @@ describe("CredentialsRegistry contract", () => {
 
                     await expect(tx)
                         .to.emit(credentialsRegistry, "CredentialCreated")
-                        .withArgs('1', '0', MAX_TREE_DEPTH, zeroValue.toString())
+                        .withArgs('1', '0', MAX_TREE_DEPTH)
                 })
 
                 it("increases the `nCredentials` variable", async () => {

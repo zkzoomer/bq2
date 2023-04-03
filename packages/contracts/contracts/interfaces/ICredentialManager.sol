@@ -123,7 +123,7 @@ interface ICredentialManager is ICredentialHandler, IERC165 {
         uint256 credentialId,
         uint256 treeDepth,
         bytes calldata credentialData
-    ) external;
+    ) external returns (CredentialState memory);
 
     /// @dev Updates a credential as per the credential manager specifications.
     /// @param credentialId: Id of the credential.

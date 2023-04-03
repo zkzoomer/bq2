@@ -11,6 +11,8 @@ import { PoseidonT3 } from "./libs/Poseidon.sol";
 /// @title CredentialsRegistry
 /// @dev Manages credential creation and updating, defining credential managers to handle their behavior.
 contract CredentialsRegistry is ICredentialsRegistry {
+    uint256 constant MAX_TREE_HEIGHT = 16; 
+    
     /// @dev Number of credentials that have been created
     uint256 public nCredentials;
 
@@ -64,7 +66,9 @@ contract CredentialsRegistry is ICredentialsRegistry {
         bytes calldata credentialData,
         string calldata credentialURI
     ) external override {
-        if (treeDepth < 16 || treeDepth > 32) {  // tree depths unsupported by Semaphore
+        // Semaphore supports tree depths from 16 - 32 when generating proofs of inclusion
+        // BlockQualified's GradeClaimVerifier only supports a grade tree height of 16, to be increased in the future to 32
+        if (treeDepth < 16 || treeDepth > MAX_TREE_HEIGHT) {
             revert InvalidTreeDepth();
         }
 
@@ -74,23 +78,10 @@ contract CredentialsRegistry is ICredentialsRegistry {
 
         nCredentials++;
 
-        uint256 zeroValue = uint256(keccak256(abi.encodePacked(nCredentials))) >> 8;
-        
-        for (uint8 i = 0; i < treeDepth; ) {
-            zeroValue = PoseidonT3.poseidon([zeroValue, zeroValue]);
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        credentialStates[nCredentials] = CredentialState(
-            0,
-            0,
-            0,
-            zeroValue,
-            zeroValue,
-            zeroValue
+        credentialStates[nCredentials] = ICredentialManager(credentialManagers[credentialType]).createCredential(
+            nCredentials,  // credentialId
+            treeDepth,
+            credentialData
         );
 
         credentialParameters[nCredentials].treeDepth = treeDepth;
@@ -105,7 +96,7 @@ contract CredentialsRegistry is ICredentialsRegistry {
             credentialData
         );
 
-        emit CredentialCreated(nCredentials, credentialType, treeDepth, zeroValue);
+        emit CredentialCreated(nCredentials, credentialType, treeDepth);
     }
 
     /// @dev See {ICredentialHandler-updateCredential}

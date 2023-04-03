@@ -35,7 +35,7 @@ contract TestCredentialManager is TestCredentialManagerBase {
         uint256 credentialId,
         uint256 treeDepth,
         bytes calldata credentialData
-    ) external virtual override onlyCredentialsRegistry(credentialId) {
+    ) external virtual override onlyCredentialsRegistry(credentialId) returns (CredentialState memory) {
         if (treeDepth != 16) {
             revert MerkleTreeDepthIsNotSupported();
         }
@@ -70,6 +70,25 @@ contract TestCredentialManager is TestCredentialManagerBase {
             testRoot,
             testParameters,
             nonPassingTestParameters
+        );
+
+        uint256 zeroValue = uint256(keccak256(abi.encodePacked(credentialId))) >> 8;
+        
+        for (uint8 i = 0; i < treeDepth; ) {
+            zeroValue = PoseidonT3.poseidon([zeroValue, zeroValue]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        return CredentialState(
+            0,
+            0,
+            0,
+            zeroValue,
+            zeroValue,
+            zeroValue
         );
     }
 
