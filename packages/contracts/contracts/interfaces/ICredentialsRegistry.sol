@@ -8,6 +8,7 @@ import { CredentialParameters, CredentialRating, CredentialState } from "../libs
 /// @title Credentials Registry interface.
 /// @dev Interface of a CredentialsRegistry contract.
 interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
+    error CredentialIdAlreadyExists();
     error CredentialTypeDoesNotExist();
     error CredentialDoesNotExist();
     error CredentialTypeAlreadyDefined();
@@ -34,12 +35,14 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
     event NewCredentialRating(uint256 indexed credentialId, address indexed admin, uint256 rating, string comment);
 
     /// @dev Creates a new credential, defining the starting credential state, and calls the relevant credential manager define it.
+    /// @param credentialId: Unique identifier for this credential.
     /// @param treeDepth: Depth of the trees that define the credential state.
     /// @param credentialType: Unique identifier that links to the credential manager that will define its behavior.
     /// @param merkleTreeDuration: maximum time that an expired Merkle root can still be used to generate proofs of membership for this credential.
     /// @param credentialData: Data that defines the credential, as per the credential manager specifications.
     /// @param credentialURI: External resource containing more information about the credential.
     function createCredential(
+        uint256 credentialId,
         uint256 treeDepth,
         uint256 credentialType,
         uint256 merkleTreeDuration,

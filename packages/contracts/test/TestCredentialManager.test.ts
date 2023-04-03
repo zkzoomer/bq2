@@ -276,6 +276,7 @@ describe("TestCredentialManager contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH + 1,
                             0,
                             0,
@@ -306,6 +307,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -334,6 +336,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -364,6 +367,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -394,6 +398,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -424,6 +429,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -454,6 +460,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -482,6 +489,7 @@ describe("TestCredentialManager contract", () => {
 
                     // tx clears
                     await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         0,
                         0,
@@ -508,6 +516,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -538,6 +547,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -568,6 +578,7 @@ describe("TestCredentialManager contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             0,
                             0,
@@ -616,6 +627,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a test credential that does not exist", () => {
                 it("reverts", async () => {
                     await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         1,
                         0,
@@ -654,6 +666,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a test credential that does not exist", () => {
                 it("reverts", async () => {
                     await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         1,
                         0,
@@ -690,6 +703,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a test credential that does not exist", () => {
                 it("reverts", async () => {
                     await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         1,
                         0,
@@ -726,6 +740,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a test credential that does not exist", () => {
                 it("reverts", async () => {
                     await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         1,
                         0,
@@ -762,6 +777,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a test credential that does not exist", () => {
                 it("reverts", async () => {
                     await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         1,
                         0,
@@ -784,7 +800,7 @@ describe("TestCredentialManager contract", () => {
 
     context("with created test credentials", () => {
         beforeEach(async () => {
-            await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+            await credentialsRegistry.createCredential(1, MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
         })
 
         describe("updateCredential", () => {
@@ -915,6 +931,7 @@ describe("TestCredentialManager contract", () => {
                     )
 
                     await credentialsRegistry.createCredential(
+                        2,
                         MAX_TREE_DEPTH,
                         0,
                         0,
@@ -1017,6 +1034,7 @@ describe("TestCredentialManager contract", () => {
                     )
 
                     await credentialsRegistry.createCredential(
+                        2,
                         MAX_TREE_DEPTH,
                         0,
                         0,

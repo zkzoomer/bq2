@@ -12,9 +12,6 @@ import { PoseidonT3 } from "./libs/Poseidon.sol";
 /// @dev Manages credential creation and updating, defining credential managers to handle their behavior.
 contract CredentialsRegistry is ICredentialsRegistry {
     uint256 constant MAX_TREE_HEIGHT = 16; 
-    
-    /// @dev Number of credentials that have been created
-    uint256 public nCredentials;
 
     /// @dev Gets a credential ID and returns the corresponding credential state
     mapping(uint256 => CredentialState) public credentialStates;
@@ -60,12 +57,17 @@ contract CredentialsRegistry is ICredentialsRegistry {
 
     /// @dev See {ICredentialHandler-createCredential}
     function createCredential(
+        uint256 credentialId,
         uint256 treeDepth,
         uint256 credentialType,
         uint256 merkleTreeDuration,
         bytes calldata credentialData,
         string calldata credentialURI
     ) external override {
+        if (credentialParameters[credentialId].treeDepth != 0) {
+            revert CredentialIdAlreadyExists();
+        }
+
         // Semaphore supports tree depths from 16 - 32 when generating proofs of inclusion
         // BlockQualified's GradeClaimVerifier only supports a grade tree height of 16, to be increased in the future to 32
         if (treeDepth < 16 || treeDepth > MAX_TREE_HEIGHT) {
@@ -76,27 +78,25 @@ contract CredentialsRegistry is ICredentialsRegistry {
             revert CredentialTypeDoesNotExist();
         }
 
-        nCredentials++;
-
-        credentialStates[nCredentials] = ICredentialManager(credentialManagers[credentialType]).createCredential(
-            nCredentials,  // credentialId
+        credentialStates[credentialId] = ICredentialManager(credentialManagers[credentialType]).createCredential(
+            credentialId,
             treeDepth,
             credentialData
         );
 
-        credentialParameters[nCredentials].treeDepth = treeDepth;
-        credentialParameters[nCredentials].credentialType = credentialType;
-        credentialParameters[nCredentials].merkleTreeDuration = merkleTreeDuration;
+        credentialParameters[credentialId].treeDepth = treeDepth;
+        credentialParameters[credentialId].credentialType = credentialType;
+        credentialParameters[credentialId].merkleTreeDuration = merkleTreeDuration;
 
-        credentialURIs[nCredentials] = credentialURI;
+        credentialURIs[credentialId] = credentialURI;
 
         ICredentialManager(credentialManagers[credentialType]).createCredential(
-            nCredentials,  // credentialId
+            credentialId,  // credentialId
             treeDepth,
             credentialData
         );
 
-        emit CredentialCreated(nCredentials, credentialType, treeDepth);
+        emit CredentialCreated(credentialId, credentialType, treeDepth);
     }
 
     /// @dev See {ICredentialHandler-updateCredential}
@@ -408,6 +408,6 @@ contract CredentialsRegistry is ICredentialsRegistry {
     /// @param credentialId: id of the credential
     /// @return boolean, credential existence
     function _credentialExists(uint256 credentialId) internal view virtual returns (bool) {
-        return credentialId <= nCredentials && credentialId != 0;
+        return credentialParameters[credentialId].treeDepth != 0;
     }
 }

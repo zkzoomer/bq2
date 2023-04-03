@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 
 task("create-test", "Deploy the credentials contract")
     .addOptionalParam<boolean>("logs", "Print logs", false, types.boolean)
+    .addPositionalParam("credentialId")
     .addPositionalParam("credentialsRegistryAddress")
     .addPositionalParam("merkleTreeDuration")
     .addPositionalParam("testHeight")
@@ -58,6 +59,7 @@ task("create-test", "Deploy the credentials contract")
         )
 
         const tx = await credentialsRegistry.createCredential(
+            taskArgs.credentialId,
             16,
             0,
             taskArgs.merkleTreeDuration,

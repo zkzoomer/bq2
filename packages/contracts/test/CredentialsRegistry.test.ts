@@ -231,6 +231,7 @@ describe("CredentialsRegistry contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             15,
                             0,
                             0,
@@ -244,6 +245,7 @@ describe("CredentialsRegistry contract", () => {
 
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             33,
                             0,
                             0,
@@ -261,6 +263,7 @@ describe("CredentialsRegistry contract", () => {
                 it("reverts", async () => {
                     await expect(
                         credentialsRegistry.createCredential(
+                            1,
                             MAX_TREE_DEPTH,
                             1,
                             0,
@@ -279,6 +282,7 @@ describe("CredentialsRegistry contract", () => {
 
                 beforeEach(async () => {
                     tx = await credentialsRegistry.createCredential(
+                        1,
                         MAX_TREE_DEPTH,
                         0,
                         0,
@@ -299,10 +303,22 @@ describe("CredentialsRegistry contract", () => {
                         .withArgs('1', '0', MAX_TREE_DEPTH)
                 })
 
-                it("increases the `nCredentials` variable", async () => {
-                    expect(
-                        await credentialsRegistry.nCredentials()
-                    ).to.be.equal('1')
+                context("when trying to mint a new credential by the same `credentialId`", () => {
+                    it("reverts", async () => {
+                        await expect(
+                            credentialsRegistry.createCredential(
+                                1,
+                                MAX_TREE_DEPTH,
+                                0,
+                                0,
+                                encodedTestCredentialData,
+                                credentialURI
+                            )
+                        ).to.be.revertedWithCustomError(
+                            credentialsRegistry,
+                            "CredentialIdAlreadyExists"
+                        )
+                    })
                 })
             })
         })
@@ -600,7 +616,7 @@ describe("CredentialsRegistry contract", () => {
 
     context("with created credentials", () => {
         beforeEach(async () => {
-            await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+            await credentialsRegistry.createCredential(1, MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
             await credentialsRegistry.updateCredential(1, encodedTestFullProof)
         })
 
@@ -1079,7 +1095,7 @@ describe("CredentialsRegistry contract", () => {
 
         describe("getMerkleTreeRoot", () => {
             it("returns the empty root for the different groups that make up a new credential", async () => {
-                await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+                await credentialsRegistry.createCredential(2, MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
                 const expectedRoot = (new Group(2, MAX_TREE_DEPTH)).root
                 
                 expect(await credentialsRegistry.getMerkleTreeRoot(4))
@@ -1113,7 +1129,7 @@ describe("CredentialsRegistry contract", () => {
 
         describe("getNumberOfMerkleTreeLeaves", () => {
             it("returns `0` for the different groups that make up a new credential", async () => {
-                await credentialsRegistry.createCredential(MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+                await credentialsRegistry.createCredential(2, MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
                 
                 expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(4))
                     .to.be.equal(0)   
