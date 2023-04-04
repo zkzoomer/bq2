@@ -223,10 +223,7 @@ describe("TestCredentialManager contract", () => {
     })
 
     beforeEach(async () => {
-        const { registry, testManager, testVerifierAddress, gradeClaimVerifierAddress, pairingAddress } = await run("deploy:credentials-registry", {
-            logs: false, 
-            connectTestManager: true
-        })
+        const { registry, testManager, testVerifierAddress, gradeClaimVerifierAddress, pairingAddress } = await run("deploy:credentials-registry")
 
         credentialsRegistry = registry
         testCredentialManager = testManager
@@ -234,7 +231,7 @@ describe("TestCredentialManager contract", () => {
         gradeClaimVerifier = GradeClaimVerifier__factory.connect(gradeClaimVerifierAddress, signers[0])
         pairing = Pairing__factory.connect(pairingAddress, signers[0])
 
-        await credentialsRegistry.defineCredentialType(1, mockCredentialManagerAddress)
+        await credentialsRegistry.defineCredentialType(2, mockCredentialManagerAddress)
     })
 
     describe("supportsInterface", () => {
@@ -591,6 +588,27 @@ describe("TestCredentialManager contract", () => {
                     )
                 })
             })
+
+            context("after successfully creating a test credential", () => {
+                beforeEach(async () => {
+                    await credentialsRegistry.createCredential(1, MAX_TREE_DEPTH, 0, 15 * 60, encodedTestCredentialData, credentialURI)
+                })
+
+                it("sets the initial credential state to the corresponding zero struct", async () => {
+                    let zeroValue = hash(1);
+
+                    for (var i = 0; i < MAX_TREE_DEPTH; i++) {
+                        zeroValue = poseidon([zeroValue, zeroValue]).toString();
+                    }
+
+                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(1)).to.be.equal(0)
+                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(2)).to.be.equal(0)
+                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(3)).to.be.equal(0)
+                    expect(await credentialsRegistry.getMerkleTreeRoot(1)).to.be.equal(zeroValue)
+                    expect(await credentialsRegistry.getMerkleTreeRoot(2)).to.be.equal(zeroValue)
+                    expect(await credentialsRegistry.getMerkleTreeRoot(3)).to.be.equal(zeroValue)
+                })
+            })
         })
 
         describe("updateCredential", () => {
@@ -614,7 +632,7 @@ describe("TestCredentialManager contract", () => {
             context("when calling for a credential that does not exist", () => {
                 it("reverts", async () => {
                     await expect(
-                        testCredentialManager.getCredentialData(
+                        credentialsRegistry.getCredentialData(
                             1,
                         )
                     ).to.be.revertedWithCustomError(
@@ -629,7 +647,7 @@ describe("TestCredentialManager contract", () => {
                     await credentialsRegistry.createCredential(
                         1,
                         MAX_TREE_DEPTH,
-                        1,
+                        2,
                         0,
                         encodedTestCredentialData,
                         credentialURI
@@ -668,7 +686,7 @@ describe("TestCredentialManager contract", () => {
                     await credentialsRegistry.createCredential(
                         1,
                         MAX_TREE_DEPTH,
-                        1,
+                        2,
                         0,
                         encodedTestCredentialData,
                         credentialURI
@@ -705,7 +723,7 @@ describe("TestCredentialManager contract", () => {
                     await credentialsRegistry.createCredential(
                         1,
                         MAX_TREE_DEPTH,
-                        1,
+                        2,
                         0,
                         encodedTestCredentialData,
                         credentialURI
@@ -742,7 +760,7 @@ describe("TestCredentialManager contract", () => {
                     await credentialsRegistry.createCredential(
                         1,
                         MAX_TREE_DEPTH,
-                        1,
+                        2,
                         0,
                         encodedTestCredentialData,
                         credentialURI
@@ -779,7 +797,7 @@ describe("TestCredentialManager contract", () => {
                     await credentialsRegistry.createCredential(
                         1,
                         MAX_TREE_DEPTH,
-                        1,
+                        2,
                         0,
                         encodedTestCredentialData,
                         credentialURI
@@ -804,6 +822,22 @@ describe("TestCredentialManager contract", () => {
         })
 
         describe("updateCredential", () => {
+            context("when calling for an invalidated credential", () => {
+                it("reverts", async () => {
+                    await credentialsRegistry.invalidateCredential(1)
+
+                    await expect(
+                        credentialsRegistry.updateCredential(
+                            1,
+                            encodedTestFullProof
+                        )
+                    ).to.be.revertedWithCustomError(
+                        testCredentialManager,
+                        "CredentialWasInvalidated"
+                    )
+                })
+            })
+
             describe("tests", () => {
                 context("when providing an invalid proof", () => {
                     it("reverts", async () => {
@@ -1133,7 +1167,7 @@ describe("TestCredentialManager contract", () => {
                     [TEST_HEIGHT, minimumGrade, multipleChoiceWeight, nQuestions, 0, accounts[0], 0, 0, multipleChoiceRoot, openAnswersHashesRoot, testRoot, testParameters, nonPassingTestParameters]
                 )
 
-                expect(await testCredentialManager.getCredentialData(1))
+                expect(await credentialsRegistry.getCredentialData(1))
                     .to.be.equal(credentialData)
             })
         })
@@ -1190,7 +1224,7 @@ describe("TestCredentialManager contract", () => {
                         credentialsRegistry.invalidateCredential(1)
                     ).to.be.revertedWithCustomError(
                         testCredentialManager,
-                        "TestCredentialWasInvalidated"
+                        "CredentialWasInvalidated"
                     )
                 })
             })

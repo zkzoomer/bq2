@@ -182,10 +182,7 @@ describe("CredentialsRegistry contract", () => {
     })
 
     beforeEach(async () => {
-        const { registry, testManager, pairingAddress, gradeClaimVerifierAddress } = await run("deploy:credentials-registry", {
-            logs: false, 
-            connectTestManager: true
-        })
+        const { registry, testManager, pairingAddress, gradeClaimVerifierAddress } = await run("deploy:credentials-registry")
 
         credentialsRegistry = registry
         testCredentialManager = testManager
@@ -198,7 +195,7 @@ describe("CredentialsRegistry contract", () => {
             it("reverts", async () => {
                 await expect(
                     credentialsRegistry.defineCredentialType(
-                        1,
+                        2,
                         invalidCredentialManagerAddress
                     )
                 ).to.be.revertedWithCustomError(
@@ -265,7 +262,7 @@ describe("CredentialsRegistry contract", () => {
                         credentialsRegistry.createCredential(
                             1,
                             MAX_TREE_DEPTH,
-                            1,
+                            2,
                             0,
                             encodedTestCredentialData,
                             credentialURI
@@ -292,12 +289,6 @@ describe("CredentialsRegistry contract", () => {
                 })
 
                 it("emits a `CredentialCreated` event", async () => {
-                    let zeroValue = hash(1);
-
-                    for (var i = 0; i < MAX_TREE_DEPTH; i++) {
-                        zeroValue = poseidon([zeroValue, zeroValue]).toString();
-                    }
-
                     await expect(tx)
                         .to.emit(credentialsRegistry, "CredentialCreated")
                         .withArgs('1', '0', MAX_TREE_DEPTH)

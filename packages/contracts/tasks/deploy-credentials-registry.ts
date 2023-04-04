@@ -4,6 +4,7 @@ import { task, types } from "hardhat/config"
 task("deploy:credentials-registry", "Deploy the credentials contract")
     .addOptionalParam<boolean>("logs", "Print logs", false, types.boolean)
     .addOptionalParam<boolean>("connectTestManager", "Connect the TestCredentialManager by defining a new credential type", true, types.boolean)
+    .addOptionalParam<boolean>("connectLegacyManager", "Connect the LegacyCredentialManager by defining a new credential type", true, types.boolean)
     .addOptionalParam<boolean>("pairing", "Pairing library address", undefined, types.string)
     .addOptionalParam<boolean>("semaphoreVerifier", "SemaphoreVerifier contract address", undefined, types.string)
     .addOptionalParam<boolean>("gradeClaimVerifier", "GradeClaimVerifier contract address", undefined, types.string)
@@ -12,11 +13,13 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
     .addOptionalParam<boolean>("poseidonT4", "PoseidonT3 library address", undefined, types.string)
     .addOptionalParam<boolean>("credentialsRegistry", "CredentialsRegistry contract address", undefined, types.string)
     .addOptionalParam<boolean>("testCredentialManager", "TestCredentialManager contract address", undefined, types.string)
+    .addOptionalParam<boolean>("legacyCredentialManager", "LegacyCredentialManager contract address", undefined, types.string)
     .setAction(
         async (
             {
                 logs,
                 connectTestManager,
+                connectLegacyManager,
                 pairing: pairingAddress,
                 semaphoreVerifier: semaphoreVerifierAddress,
                 gradeClaimVerifier: gradeClaimVerifierAddress,
@@ -24,7 +27,8 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
                 poseidonT3: poseidonT3Address,
                 poseidonT4: poseidonT4Address,
                 credentialsRegistry: credentialsRegistryAddress,
-                testCredentialManager: testCredentialManagerAddress
+                testCredentialManager: testCredentialManagerAddress,
+                legacyCredentialManager: legacyCredentialManagerAddress
             },
             { ethers }
         ): Promise<any> => {
@@ -160,12 +164,33 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
                 console.info(`TestCredentialManager contract has been deployed to: ${testCredentialManagerAddress}`)
             }
 
-            /// CONNECTING THE CREDENTIAL MANAGER TO THE CREDENTIAL 
+            const LegacyCredentialManagerFactory = await ethers.getContractFactory("LegacyCredentialManager")
+
+            const legacyManager = await LegacyCredentialManagerFactory.deploy(credentialsRegistryAddress)
+
+            await legacyManager.deployed()
+
+            legacyCredentialManagerAddress = legacyManager.address
+            
+            if (logs) {
+                console.info(`LegacyCredentialManager contract has been deployed to: ${legacyCredentialManagerAddress}`)
+            }
+
+            /// CONNECTING THE TEST CREDENTIAL MANAGER TO THE CREDENTIAL 
             if (connectTestManager) {
                 await registry.defineCredentialType(0, testCredentialManagerAddress)
     
                 if (logs) {
                     console.info(`TestCredentialManager succesfully set as credential type #0 for the credentials registry`)
+                }
+            }
+
+            /// CONNECTING THE LEGACY CREDENTIAL MANAGER TO THE CREDENTIAL 
+            if (connectTestManager) {
+                await registry.defineCredentialType(1, legacyCredentialManagerAddress)
+    
+                if (logs) {
+                    console.info(`LegacyCredentialManager succesfully set as credential type #1 for the credentials registry`)
                 }
             }
 
@@ -177,7 +202,8 @@ task("deploy:credentials-registry", "Deploy the credentials contract")
                 poseidonT3Address,
                 poseidonT4Address,
                 registry,
-                testManager
+                testManager,
+                legacyManager
             }
         }
     )
