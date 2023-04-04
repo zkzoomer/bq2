@@ -10,6 +10,7 @@ import { CredentialState } from "../libs/Structs.sol";
 interface ICredentialManager is ICredentialHandler, IERC165 {
     error CallerIsNotTheCredentialsRegistry();
     error CallerIsNotTheCredentialAdmin();
+    error CredentialWasInvalidated();
     error MerkleTreeDepthIsNotSupported();
 
     /// @dev Emitted when a credential is invalidated by its admin.

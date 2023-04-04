@@ -3,12 +3,12 @@ pragma solidity ^0.8.4;
 
 /// It defines the current state of the credential.
 struct CredentialState {
+    /// Leaf index of the next empty grade tree leaf.
+    uint80 gradeTreeIndex;
     /// Leaf index of the next empty credentials tree leaf.
     uint80 credentialsTreeIndex;
     /// Leaf index of the next empty no-credentials tree leaf.
     uint80 noCredentialsTreeIndex;
-    /// Leaf index of the next empty grade tree leaf.
-    uint80 gradeTreeIndex;
     /// Root hash of the grade tree.
     uint256 gradeTreeRoot;
     /// Root hash of the credentials tree.

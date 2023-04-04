@@ -54,7 +54,7 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
     /// @param credentialId: Id of the credential.
     modifier onlyValidTestCredentials(uint256 credentialId) {
         if (testCredentials[credentialId].minimumGrade == 255) {
-            revert TestCredentialWasInvalidated();
+            revert CredentialWasInvalidated();
         }
         _;
     }

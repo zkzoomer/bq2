@@ -13,6 +13,5 @@ interface ITestCredentialManager is ICredentialManager {
     error InvalidMultipleChoiceWeight();
 
     error TestCredentialDoesNotExist();
-    error TestCredentialWasInvalidated();
     error TimeLimitReached();
 }
