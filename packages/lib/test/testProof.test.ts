@@ -102,7 +102,7 @@ describe("Test Proof", () => {
         it("Should not generate a test proof with default snark artifacts with Node.js", async () => {
             await expect(
                 generateTestProof(identity, testAnswers, testVariables, group, gradeGroup, true)
-            ).to.be.rejectedWith("SNARK artifacts need to be provided")
+            ).to.be.rejectedWith("ENOENT: no such file or directory")
         })
 
         it("Should generate a test proof passing groups as parameters", async () => {

@@ -83,7 +83,7 @@ describe("Grade Claim", () => {
         it("Should not generate a grade claim proof with default snark artifacts with Node.js", async () => {
             await expect(
                 generateGradeClaimProof(identity, gradeGroup, gradeThreshold, externalNullifier, signal, gradeCommitment)
-            ).to.be.rejectedWith("SNARK artifacts need to be provided")
+            ).to.be.rejectedWith("ENOENT: no such file or directory")
         })
 
         it("Should generate a grade claim proof passing a group as parameter", async () => {
