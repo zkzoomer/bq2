@@ -26,7 +26,13 @@ contract LegacyCredentialManager is LegacyCredentialManagerBase {
         legacyCredentialAdmins[credentialId] = tx.origin;
 
         // Credential Admin sets the legacy credential initial state
-        return abi.decode(credentialData, (CredentialState));
+        (CredentialState memory initialState, uint256 minimumGrade) = abi.decode(
+            credentialData, (CredentialState, uint256)
+        );
+
+        minimumGrades[credentialId] = minimumGrade;
+
+        return initialState;
     }
 
     /// @dev See {ICredentialHandler-updateCredential}.
@@ -55,7 +61,8 @@ contract LegacyCredentialManager is LegacyCredentialManagerBase {
             credentialsRegistry.getNumberOfMerkleTreeLeaves(3 * (credentialId - 1) + 3),
             credentialsRegistry.getMerkleTreeRoot(3 * (credentialId - 1) + 1),
             credentialsRegistry.getMerkleTreeRoot(3 * (credentialId - 1) + 2),
-            credentialsRegistry.getMerkleTreeRoot(3 * (credentialId - 1) + 3)
+            credentialsRegistry.getMerkleTreeRoot(3 * (credentialId - 1) + 3),
+            minimumGrades[credentialId]
         );
     }
 

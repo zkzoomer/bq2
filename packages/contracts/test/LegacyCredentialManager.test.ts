@@ -18,7 +18,7 @@ describe("LegacyCredentialManager contract", () => {
     let legacyCredentialManager: LegacyCredentialManager;
     let mockCredentialManagerAddress: string;
     
-    let intialCredentialState = [1, 2, 3, 4, 5, 6];
+    let intialCredentialState = [1, 2, 3, 4, 5, 6, 50];
     let encodedCredentialData: string;
 
     let newCredentialState = [7, 8, 9, 10, 11, 12];
@@ -31,7 +31,7 @@ describe("LegacyCredentialManager contract", () => {
         accounts = await Promise.all(signers.map((signer: Signer) => signer.getAddress()))
 
         encodedCredentialData = abi.encode(
-            ["uint80", "uint80", "uint80", "uint256", "uint256", "uint256"],
+            ["uint80", "uint80", "uint80", "uint256", "uint256", "uint256", "uint256"],
             intialCredentialState
         )
 
@@ -107,6 +107,10 @@ describe("LegacyCredentialManager contract", () => {
                     expect(await credentialsRegistry.getMerkleTreeRoot(1)).to.be.equal(intialCredentialState[3])
                     expect(await credentialsRegistry.getMerkleTreeRoot(2)).to.be.equal(intialCredentialState[4])
                     expect(await credentialsRegistry.getMerkleTreeRoot(3)).to.be.equal(intialCredentialState[5])
+                })
+
+                it("sets the minimum grade to the one sent", async () => {
+                    expect(await legacyCredentialManager.minimumGrades(1)).to.be.equal(intialCredentialState[6])
                 })
             })
         })

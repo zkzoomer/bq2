@@ -10,6 +10,8 @@ abstract contract LegacyCredentialManagerBase is ILegacyCredentialManager, Conte
 
     /// @dev Gets a credential id and returns the credential parameters
     mapping(uint256 => address) public legacyCredentialAdmins;
+    /// @dev Gets a credential id and returns the corresponding minimum grade
+    mapping(uint256 => uint256) public minimumGrades;
     /// @dev Gets a credential id and returns is valid status
     mapping(uint256 => bool) public invalidatedLegacyCredentials;
 

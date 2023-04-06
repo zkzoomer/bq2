@@ -9,7 +9,7 @@ import generateRateCredentialIssuerProof from "./provers/generateRateCredentialI
 import verifyCredentialOwnershipProof from "./verifiers/verifyCredentialOwnershipProof"
 import verifyGradeClaimProof from "./verifiers/verifyGradeClaimProof"
 import verifyTestProof from "./verifiers/verifyTestProof"
-import TestCredential from "./testCredential"
+import TestCredential from "./TestCredential"
 
 export * from "./constants"
 export * from "./types"
