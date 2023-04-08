@@ -4,13 +4,13 @@ Block Qualified implements native support for the Test Credential, which operate
 ### Creating a Test Credential
 To create a Test Credential, the `createCredential` function of the [Credential Registry](./credential-registry.md) is called, providing:
 - `credentialId`: unique identifier of the test credential to be created.
+- `treeDepth`: tree depth of the different groups that will be created -- must be set to 16.
+- `credentialType`: the credential manager type that enforces the test credential logic -- by default it is 0.
+- `merkleTreeDuration`: maximum time that an expired Merkle root can still be used to generate proofs of membership for this credential.
 - `credentialData`: encoded data bytes that will define the test credential.
+- `credentialURI`: external resource containing more information about the credential.
 
-{% hint style="warning" %}
-This function cannot be called directly, as it only supports calls made from the [Credential Registry](./credential-registry.md).
-{% endhint %}
-
-The encoded data bytes `credentialData` for the Test Credential can be generated using the library function [`encodeTestInitializingParameters`](../../packages/lib/src/helpers/encodeInputs.ts), and providing:
+The encoded data bytes `credentialData` for the Test Credential can be generated using the library function [`encodeTestCredential`](../../packages/lib/src/helpers/encodeInputs.ts), and providing:
 - `testHeight`: the height of the trees that define the test, as defined in [Block Qualified tests](./block-qualified-tests.md).
 - `minimumGrade`: out of 100, minimum total grade the user must get to obtain the credential.
 - `multipleChoiceWeight`: out of 100, contribution of the multiple choice component towards the total grade: 100 for pure multiple choice tests, 0 for pure open answer tests.
@@ -76,5 +76,3 @@ The encoded data bytes `credentialUpdate` for grade restricted tests can be gene
 - `gradeRestrictedTestFullProof`: the [grade restricted test proof](../guides/proofs/bq-restricted-test-proof.md#grade-restricted-tests) generated with the library.
 - `testPassed`: a boolean parameter indicating if their solution achieves a grade over the `minimumGrade` or not.
 
-### Verifying a Test Credential
-The admin of a test credential can choose to _verify it_ by providing the open answer hashes needed to solve this test directly on-chain, which is done by calling the function `verifyTestCredentialAnswers`.
