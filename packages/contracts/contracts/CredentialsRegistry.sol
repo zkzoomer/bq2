@@ -307,8 +307,8 @@ contract CredentialsRegistry is ICredentialsRegistry {
     /// @dev See {ICredentialsRegistry-credentialExists}
     function credentialExists(
         uint256 credentialId
-    ) external view override onlyExistingCredentials(credentialId) returns (bool) {
-        return true;
+    ) external view override returns (bool) {
+        return _credentialExists(credentialId);
     }
 
     /// @dev See {ICredentialsRegistry-credentialIsValid}

@@ -38,7 +38,7 @@ interface ICredentialsRegistry is ICredentialHandler, ISemaphoreGroups {
     /// @param credentialId: Unique identifier for this credential.
     /// @param treeDepth: Depth of the trees that define the credential state.
     /// @param credentialType: Unique identifier that links to the credential manager that will define its behavior.
-    /// @param merkleTreeDuration: maximum time that an expired Merkle root can still be used to generate proofs of membership for this credential.
+    /// @param merkleTreeDuration: Maximum time that an expired Merkle root can still be used to generate proofs of membership for this credential.
     /// @param credentialData: Data that defines the credential, as per the credential manager specifications.
     /// @param credentialURI: External resource containing more information about the credential.
     function createCredential(

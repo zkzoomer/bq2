@@ -6,6 +6,7 @@ import "../../interfaces/ICredentialManager.sol";
 interface ITestCredentialManager is ICredentialManager {
     error TestDepthIsNotSupported();
     error CannotRequireSameCredential();
+    error RequiredCredentialDoesNotExist();
     error GradeRestrictedTestsMustSpecifyRequiredCredential();
     error TimeLimitIsInThePast();
     error InvalidNumberOfQuestions();

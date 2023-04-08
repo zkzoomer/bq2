@@ -93,7 +93,10 @@ abstract contract TestCredentialManagerBase is ITestCredentialManager, Context {
             if (testCredential.requiredCredential == credentialId) {
                 revert CannotRequireSameCredential();
             }
-            credentialsRegistry.credentialExists(testCredential.requiredCredential);
+
+            if (!credentialsRegistry.credentialExists(testCredential.requiredCredential)) {
+                revert RequiredCredentialDoesNotExist();
+            }
         }
 
         // Ensure that the required credential was specified if the grade threshold is given
