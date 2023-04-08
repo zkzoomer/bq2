@@ -9,13 +9,15 @@ import generateRateCredentialIssuerProof from "./provers/generateRateCredentialI
 import verifyCredentialOwnershipProof from "./verifiers/verifyCredentialOwnershipProof"
 import verifyGradeClaimProof from "./verifiers/verifyGradeClaimProof"
 import verifyTestProof from "./verifiers/verifyTestProof"
-import TestCredential from "./TestCredential"
+import LegacyCredential from "./LegacyCredential"
+import TestCredential from "./testCredential"
 
 export * from "./constants"
 export * from "./types"
 export * from "./helpers"
 export { 
     Poseidon, 
+    LegacyCredential,
     TestCredential,
     buildPoseidon, 
     generateTestProof, 
