@@ -8,7 +8,8 @@
 
 ## Guides
 
-* [TestCredential](./guides/README.md)
+* [TestCredential](./guides/test-credential.md)
+* [LegacyCredential](./guides/legacy-credential.md)
 * [Proofs](./guides/proofs/README.md)
     * [Block Qualified Test Proof](./guides/proofs/bq-test-proof.md)
     * [Block Qualified Restricted Test Proof](./guides/proofs/bq-restricted-test-proof.md)
@@ -25,3 +26,4 @@
     * [The Credential Registry](./technical-reference/credential-registry.md)
     * [Credential Managers](./technical-reference/credential-managers.md)
     * [The Test Credential Manager](./technical-reference/test-credential-manager.md)
+    * [The Legacy Credential Manager](./technical-reference/legacy-credential-manager.md)
