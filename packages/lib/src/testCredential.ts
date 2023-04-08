@@ -1,7 +1,7 @@
 import { TestCredentialGroupsEthers, EthersOptions } from "@bq2/data"
 import {
     buildPoseidon,
-    decodeTestData,
+    decodeTestCredentialData,
     generateCredentialRestrictedTestProof,
     generateGradeRestrictedTestProof,
     generateRateCredentialIssuerProof,
@@ -19,7 +19,6 @@ import {
     Poseidon,
     RateFullProof,
     SnarkArtifacts,
-    SolutionSnarkArtifacts,
     TestAnswers,
     TestCredentialData,
     TestFullProof,
@@ -149,10 +148,10 @@ export default class TestCredential {
         const credentialType = await credentialsRegistry.getCredentialType(credentialId)
 
         if (options.testCredentialType !== credentialType.toNumber()) {
-            throw new Error(`Credential ${credentialId} is not a Test Credential`)
+            throw new Error(`Credential #${credentialId} is not a Test Credential`)
         }
 
-        const testData = decodeTestData(await credentialsRegistry.getCredentialData(credentialId))
+        const testData = decodeTestCredentialData(await credentialsRegistry.getCredentialData(credentialId))
 
         let fullOpenAnswersHashes: string[] = []
 
@@ -250,7 +249,7 @@ export default class TestCredential {
             const requiredCredentialsGradeGroup = new Group(this.#testData.requiredCredential, treeDepth)
             requiredCredentialsGradeGroup.addMembers(await this.#testCredentialGroups.getGroupMembers(this.#testData.requiredCredential, "grade"))
 
-            const testData = decodeTestData(await this.#credentialsRegistry.getCredentialData(this.#testData.requiredCredential))
+            const testData = decodeTestCredentialData(await this.#credentialsRegistry.getCredentialData(this.#testData.requiredCredential))
 
             return generateGradeRestrictedTestProof(
                 identity,
@@ -420,7 +419,7 @@ export default class TestCredential {
         }
     }
 
-    async URI() {
+    async URI(): Promise<string> {
         return await this.#credentialsRegistry.getCredentialURI(this.#credentialId)
     }
 
