@@ -46,6 +46,57 @@ export function encodeTestCredential(
     )
 }
 
+export function encodeLegacyCredential(
+    gradeTreeIndex: number,
+    credentialsTreeIndex: number,
+    noCredentialsTreeIndex: number,
+    gradeTreeRoot: string,
+    credentialsTreeRoot: string,
+    noCredentialsTreeRoot: string,
+    minimumGrade?: number
+): string {
+    return minimumGrade ?
+        abi.encode(
+            [
+                "uint80",
+                "uint80",
+                "uint80",
+                "uint256",
+                "uint256",
+                "uint256",
+                "uint256"
+            ],
+            [
+                gradeTreeIndex,
+                credentialsTreeIndex,
+                noCredentialsTreeIndex,
+                gradeTreeRoot,
+                credentialsTreeRoot,
+                noCredentialsTreeRoot,
+                minimumGrade
+            ]
+        )
+    :
+        abi.encode(
+            [
+                "uint80",
+                "uint80",
+                "uint80",
+                "uint256",
+                "uint256",
+                "uint256",
+            ],
+            [
+                gradeTreeIndex,
+                credentialsTreeIndex,
+                noCredentialsTreeIndex,
+                gradeTreeRoot,
+                credentialsTreeRoot,
+                noCredentialsTreeRoot
+            ]
+        )
+}
+
 export function encodeTestFullProof(
     testFullProof: TestFullProof
 ): string {

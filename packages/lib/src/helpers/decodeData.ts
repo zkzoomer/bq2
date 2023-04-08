@@ -1,9 +1,9 @@
 import { utils } from 'ethers';
-import { TestCredentialData } from '../types';
+import { CredentialState, TestCredentialData } from '../types';
 
 const abi = utils.defaultAbiCoder
 
-export function decodeTestData(
+export function decodeTestCredentialData(
     data: string
 ): TestCredentialData {
     const decodedData = abi.decode(
@@ -39,5 +39,34 @@ export function decodeTestData(
         testRoot: decodedData[10].toString(),
         testParameters: decodedData[11].toString(),
         nonPassingTestParameters: decodedData[12].toString()
+    }
+}
+
+export function decodeLegacyCredentialData(
+    data: string
+): { credentialState: CredentialState, minimumGrade: number } {
+    const decodedData = abi.decode(
+        [
+            "uint80",
+            "uint80",
+            "uint80",
+            "uint256",
+            "uint256",
+            "uint256",
+            "uint256"
+        ],
+        data
+    )
+
+    return {
+        credentialState: {
+            gradeTreeIndex: decodedData[0].toNumber(),
+            credentialsTreeIndex: decodedData[1].toNumber(),
+            noCredentialsTreeIndex: decodedData[2].toNumber(),
+            gradeTreeRoot: decodedData[3].toString(),
+            credentialsTreeRoot: decodedData[4].toString(),
+            noCredentialsTreeRoot: decodedData[5].toString(),
+        },
+        minimumGrade: decodedData[6].toNumber()
     }
 }
