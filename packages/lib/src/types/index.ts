@@ -103,6 +103,20 @@ export type TestCredentialData = {
     nonPassingTestParameters: string
 }
 
+export type CredentialState = {
+    gradeTreeIndex: number
+    credentialsTreeIndex: number
+    noCredentialsTreeIndex: number
+    gradeTreeRoot: string
+    credentialsTreeRoot: string
+    noCredentialsTreeRoot: string
+}
+
+export type LegacyCredentialRecipient = {
+    userSecret: string
+    grade: number
+}
+
 export type OpenAnswersResults = {
     nCorrect: number,
     resultsArray: boolean[],
