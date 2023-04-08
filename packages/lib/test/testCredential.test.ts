@@ -80,11 +80,11 @@ describe("TestCredential", () => {
             it("should return a new TestCredential object", async () => {
                 testCredential = await TestCredential.init(
                     credentialId,
-                    "maticmum",
                     {
                         provider: "alchemy",
                         apiKey: process.env.ALCHEMY_API_KEY
                     },
+                    "maticmum",
                     openAnswersHashes,
                 )
 
