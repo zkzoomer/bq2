@@ -1,14 +1,19 @@
-import { MAX_TREE_DEPTH } from "@bq2/lib";
+import { buildPoseidon, LegacyCredential, Poseidon, MAX_TREE_DEPTH } from "@bq2/lib";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { generateProof, FullProof } from '@semaphore-protocol/proof';
 import { expect } from "chai";
-import { utils, Signer } from "ethers"
+import { utils, Signer, Contract } from "ethers"
 import { ethers, run } from "hardhat";
 import { describe } from "mocha";
 import { CredentialsRegistry, LegacyCredentialManager } from "../typechain-types"
 
+import CredentialRegistryABI from "../../lib/src/abi/CredentialsRegistryABI.json"
+
+
 describe("LegacyCredentialManager contract", () => {
+    let poseidon: Poseidon; 
+
     let credentialURI = 'https://twitter.com/0xdeenz';
 
     let signers: Signer[];
@@ -18,26 +23,35 @@ describe("LegacyCredentialManager contract", () => {
     let legacyCredentialManager: LegacyCredentialManager;
     let mockCredentialManagerAddress: string;
     
-    let intialCredentialState = [1, 2, 3, 4, 5, 6, 50];
+    let intialCredentialState;
+    let minimumGrade = 50;
     let encodedCredentialData: string;
-
-    let newCredentialState = [7, 8, 9, 10, 11, 12];
-    let encodedNewCredentialState: string;
 
     let abi = utils.defaultAbiCoder
 
     before(async () => {
+        poseidon = await buildPoseidon();
+
         signers = await run("accounts", { logs: false })
         accounts = await Promise.all(signers.map((signer: Signer) => signer.getAddress()))
+
+        const gradeGroup = new Group(1, 16)
+        const credentialsGroup = new Group(1, 16)
+        const noCredentialsGroup = new Group(1, 16)
+
+        intialCredentialState = [
+            gradeGroup.members.length,
+            credentialsGroup.members.length,
+            noCredentialsGroup.members.length,
+            gradeGroup.root,
+            credentialsGroup.root,
+            noCredentialsGroup.root,
+            minimumGrade
+        ]
 
         encodedCredentialData = abi.encode(
             ["uint80", "uint80", "uint80", "uint256", "uint256", "uint256", "uint256"],
             intialCredentialState
-        )
-
-        encodedNewCredentialState = abi.encode(
-            ["uint80", "uint80", "uint80", "uint256", "uint256", "uint256"],
-            newCredentialState
         )
         
         const MockCredentialManagerFactory = await ethers.getContractFactory("MockCredentialManager")
@@ -111,6 +125,50 @@ describe("LegacyCredentialManager contract", () => {
 
                 it("sets the minimum grade to the one sent", async () => {
                     expect(await legacyCredentialManager.minimumGrades(1)).to.be.equal(intialCredentialState[6])
+                })
+            })
+
+            context("when being called via the LegacyCredential library", () => {
+                let legacyCredential: LegacyCredential
+
+                beforeEach(async () => {
+                    /* const registry = new Contract(credentialsRegistry.address, CredentialRegistryABI, signers[0])
+
+                    const test = await registry.semaphoreVerifier()
+                    console.log(test) */
+
+                    legacyCredential = await LegacyCredential.new(
+                        1,
+                        MAX_TREE_DEPTH,
+                        0,
+                        credentialURI,
+                        intialCredentialState[6],
+                        [{ userSecret: "deenz", grade: 100 }],
+                        signers[0],
+                        { credentialsRegistryAddress: credentialsRegistry.address },
+                        "localhost"
+                    )
+                })
+
+                it("sets the legacy credential admin to the original transaction sender", async () => {
+                    expect(await credentialsRegistry.getCredentialAdmin(1)).to.be.equal(accounts[0])
+                })
+
+                it("sets the credential state to the one sent", async () => {
+                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(1)).to.be.equal(legacyCredential.gradeGroup.members.length)
+                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(2)).to.be.equal(legacyCredential.credentialsGroup.members.length)
+                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(3)).to.be.equal(legacyCredential.noCredentialsGroup.members.length)
+                    expect(await credentialsRegistry.getMerkleTreeRoot(1)).to.be.equal(legacyCredential.gradeGroup.root)
+                    expect(await credentialsRegistry.getMerkleTreeRoot(2)).to.be.equal(legacyCredential.credentialsGroup.root)
+                    expect(await credentialsRegistry.getMerkleTreeRoot(3)).to.be.equal(legacyCredential.noCredentialsGroup.root)
+                })
+
+                it("sets the minimum grade to the one sent", async () => {
+                    expect(await legacyCredentialManager.minimumGrades(1)).to.be.equal(intialCredentialState[6])
+                })
+
+                it("can retrieve the correct URI", async () => {
+                    expect(await legacyCredential.URI()).to.be.equal(credentialURI)
                 })
             })
         })
@@ -320,7 +378,8 @@ describe("LegacyCredentialManager contract", () => {
         })
     })
 
-    context("with created legacy credentiasl", () => {
+    context("with created legacy credentials", () => {
+
         beforeEach(async () => {
             await credentialsRegistry.createCredential(1, MAX_TREE_DEPTH, 1, 0, encodedCredentialData, credentialURI)
         })
@@ -333,7 +392,7 @@ describe("LegacyCredentialManager contract", () => {
                     await expect(
                         credentialsRegistry.updateCredential(
                             1,
-                            encodedNewCredentialState
+                            encodedCredentialData
                         )
                     ).to.be.revertedWithCustomError(
                         legacyCredentialManager,
@@ -347,7 +406,7 @@ describe("LegacyCredentialManager contract", () => {
                     await expect(
                         credentialsRegistry.connect(signers[1]).updateCredential(
                             1,
-                            encodedNewCredentialState
+                            encodedCredentialData
                         )
                     ).to.be.revertedWithCustomError(
                         legacyCredentialManager,
@@ -356,19 +415,126 @@ describe("LegacyCredentialManager contract", () => {
                 })
             })
 
-            context("after a successful call", () => {
-                it("updates the credentials registry to the new state of the legacy credential", async () => {
-                    await credentialsRegistry.updateCredential(
-                        1,
-                        encodedNewCredentialState
+            context("when being called via the LegacyCredential library", () => {
+                let legacyCredential: LegacyCredential
+
+                let gradeGroup: Group
+                let credentialsGroup: Group
+                let noCredentialsGroup: Group
+
+                const recipient = { userSecret: "deenz", grade: 2 * minimumGrade }
+                const altRecipient = { userSecret: "sneed", grade: minimumGrade - 1 }
+
+                const identity = new Identity(recipient.userSecret)
+                const altIdentity = new Identity(altRecipient.userSecret)
+
+                beforeEach(async () => {
+                    gradeGroup = new Group(2, 16)
+                    credentialsGroup = new Group(2, 16)
+                    noCredentialsGroup = new Group(2, 16)
+
+                    intialCredentialState = [
+                        gradeGroup.members.length,
+                        credentialsGroup.members.length,
+                        noCredentialsGroup.members.length,
+                        gradeGroup.root,
+                        credentialsGroup.root,
+                        noCredentialsGroup.root,
+                        minimumGrade
+                    ]
+
+                    encodedCredentialData = abi.encode(
+                        ["uint80", "uint80", "uint80", "uint256", "uint256", "uint256", "uint256"],
+                        intialCredentialState
                     )
 
-                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(1)).to.be.equal(newCredentialState[0])
-                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(2)).to.be.equal(newCredentialState[1])
-                    expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(3)).to.be.equal(newCredentialState[2])
-                    expect(await credentialsRegistry.getMerkleTreeRoot(1)).to.be.equal(newCredentialState[3])
-                    expect(await credentialsRegistry.getMerkleTreeRoot(2)).to.be.equal(newCredentialState[4])
-                    expect(await credentialsRegistry.getMerkleTreeRoot(3)).to.be.equal(newCredentialState[5])
+                    await credentialsRegistry.createCredential(2, MAX_TREE_DEPTH, 1, 0, encodedCredentialData, credentialURI)
+                    
+                    legacyCredential = await LegacyCredential.load(
+                        2,
+                        new Group(2, 16),
+                        new Group(2, 16),
+                        new Group(2, 16),
+                        signers[0],
+                        { credentialsRegistryAddress: credentialsRegistry.address },
+                        "localhost"
+                    )
+                })
+                
+                describe("addCredentialRecipient", () => {
+                    it("adds new members to the tracked groups", () => {
+                        gradeGroup.addMembers([
+                            poseidon([poseidon([identity.nullifier, identity.trapdoor]), recipient.grade]).toString(),
+                            poseidon([poseidon([altIdentity.nullifier, altIdentity.trapdoor]), altRecipient.grade]).toString()
+                        ])
+                        credentialsGroup.addMember(identity.commitment)
+                        noCredentialsGroup.addMember(altIdentity.commitment)
+
+                        legacyCredential.addCredentialRecipient(recipient)
+                        legacyCredential.addCredentialRecipient(altRecipient)
+
+                        expect(legacyCredential.gradeGroup.root).to.be.equal(gradeGroup.root)
+                        expect(legacyCredential.credentialsGroup.root).to.be.equal(credentialsGroup.root)
+                        expect(legacyCredential.noCredentialsGroup.root).to.be.equal(noCredentialsGroup.root)
+                    })
+                })
+
+                describe("setNewUserIdentity", () => {
+                    it("updates an existing member of the tracked groups", () => {
+                        const recipient = { userSecret: "deenz", grade: 2 * minimumGrade }
+
+                        const newIdentity = new Identity("0xdeenz")
+
+                        gradeGroup.addMembers([
+                            poseidon([poseidon([identity.nullifier, identity.trapdoor]), recipient.grade]).toString(),
+                            poseidon([poseidon([altIdentity.nullifier, altIdentity.trapdoor]), altRecipient.grade]).toString()
+                        ])
+                        credentialsGroup.addMember(identity.commitment)
+                        noCredentialsGroup.addMember(altIdentity.commitment)
+
+                        legacyCredential.addCredentialRecipient(recipient)
+                        legacyCredential.addCredentialRecipient(altRecipient)
+
+                        gradeGroup.updateMember(0, poseidon([poseidon([newIdentity.nullifier, newIdentity.trapdoor]), 2 * minimumGrade]))
+                        credentialsGroup.updateMember(0, newIdentity.commitment)
+
+                        legacyCredential.setNewUserIdentity(recipient, newIdentity)
+
+                        expect(legacyCredential.gradeGroup.root).to.be.equal(gradeGroup.root)
+                        expect(legacyCredential.credentialsGroup.root).to.be.equal(credentialsGroup.root)
+                    })
+                })
+
+                describe("publishChanges", () => {
+                    it("updates the credentials registry to the new state of the legacy credential", async () => {
+                        const recipient = { userSecret: "deenz", grade: 2 * minimumGrade }
+
+                        const newIdentity = new Identity("0xdeenz")
+
+                        gradeGroup.addMembers([
+                            poseidon([poseidon([identity.nullifier, identity.trapdoor]), recipient.grade]).toString(),
+                            poseidon([poseidon([altIdentity.nullifier, altIdentity.trapdoor]), altRecipient.grade]).toString()
+                        ])
+                        credentialsGroup.addMember(identity.commitment)
+                        noCredentialsGroup.addMember(altIdentity.commitment)
+
+                        legacyCredential.addCredentialRecipient(recipient)
+                        legacyCredential.addCredentialRecipient(altRecipient)
+
+                        gradeGroup.updateMember(0, poseidon([poseidon([newIdentity.nullifier, newIdentity.trapdoor]), 2 * minimumGrade]))
+                        credentialsGroup.updateMember(0, newIdentity.commitment)
+
+                        legacyCredential.setNewUserIdentity(recipient, newIdentity)
+
+                        await legacyCredential.publishChanges()
+    
+                        expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(4)).to.be.equal(gradeGroup.members.length)
+                        expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(5)).to.be.equal(credentialsGroup.members.length)
+                        expect(await credentialsRegistry.getNumberOfMerkleTreeLeaves(6)).to.be.equal(noCredentialsGroup.members.length)
+                        expect(await credentialsRegistry.getMerkleTreeRoot(4)).to.be.equal(gradeGroup.root)
+                        expect(await credentialsRegistry.getMerkleTreeRoot(5)).to.be.equal(credentialsGroup.root)
+                        expect(await credentialsRegistry.getMerkleTreeRoot(6)).to.be.equal(noCredentialsGroup.root)
+                    })
                 })
             })
         })
