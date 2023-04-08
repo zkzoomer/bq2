@@ -141,6 +141,7 @@ export type SolutionSnarkArtifacts = {
 }
 
 export type Network =
+    | "localhost"
     | "maticmum"
 
 export type Options = {

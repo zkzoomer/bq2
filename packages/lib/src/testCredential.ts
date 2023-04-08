@@ -88,8 +88,8 @@ export default class TestCredential {
 
     static async init(
         credentialId: number,
-        networkOrEthereumURL: Network = "maticmum", 
         options: EthersOptions = {},
+        networkOrEthereumURL: Network = "maticmum", 
         openAnswersHashes?: BigNumberish[],
     ) {
         let poseidon = await buildPoseidon();

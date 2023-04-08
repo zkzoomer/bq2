@@ -26,13 +26,11 @@ import CredentialRegistryABI from "./abi/CredentialsRegistryABI.json"
 
 export default class LegacyCredential {
     #poseidon: Poseidon
-    #network: Network
 
     #credentialId: number
     #credentialsRegistry: Contract
     #minimumGrade: number
 
-    #treeDepth: number
     #gradeGroup: Group
     #credentialsGroup: Group
     #noCredentialsGroup: Group
@@ -44,20 +42,16 @@ export default class LegacyCredential {
     private constructor(
         poseidon: Poseidon,
         credentialId: number,
-        network: Network,
         credentialsRegistry,
         minimumGrade,
-        treeDepth: number,
         gradeGroup: Group,
         credentialsGroup: Group,
         noCredentialsGroup: Group
     ) {
         this.#poseidon = poseidon
-        this.#network = network
         this.#credentialId = credentialId
         this.#credentialsRegistry = credentialsRegistry
         this.#minimumGrade = minimumGrade
-        this.#treeDepth = treeDepth
         this.#gradeGroup = gradeGroup
         this.#credentialsGroup = credentialsGroup
         this.#noCredentialsGroup = noCredentialsGroup
@@ -71,9 +65,9 @@ export default class LegacyCredential {
         credentialURI: string,
         minimumGrade: number,
         legacyCredentialRecipients: LegacyCredentialRecipient[],
-        networkOrEthereumURL: Network = "maticmum", 
-        options: EthersOptions = {},
         signer: Signer,
+        options: EthersOptions = {},
+        networkOrEthereumURL: Network = "maticmum"
     ) {
         let poseidon = await buildPoseidon();
 
@@ -81,7 +75,6 @@ export default class LegacyCredential {
             case "maticmum":
                 options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.maticmum.credentialsRegistryAddress
                 options.legacyCredentialType = DEPLOYED_CONTRACTS.maticmum.testCredentialType
-                options.autotaskWebhook = DEPLOYED_CONTRACTS.maticmum.autotaskWebhook
                 break
             default:
                 if (options.credentialsRegistryAddress === undefined) {
@@ -89,10 +82,8 @@ export default class LegacyCredential {
                 }
 
                 if (options.legacyCredentialType === undefined) {
-                    options.legacyCredentialType = 0
+                    options.legacyCredentialType = 1
                 }
-
-                options.autotaskWebhook = ""
         }
 
         const credentialsRegistry = new Contract(options.credentialsRegistryAddress, CredentialRegistryABI, signer)
@@ -151,10 +142,8 @@ export default class LegacyCredential {
         return new LegacyCredential(
             poseidon,
             credentialId,
-            networkOrEthereumURL,
             credentialsRegistry,
             minimumGrade,
-            treeDepth,
             gradeGroup,
             credentialsGroup,
             noCredentialsGroup
@@ -167,9 +156,9 @@ export default class LegacyCredential {
         gradeGroup: Group,
         credentialsGroup: Group,
         noCredentialsGroup: Group,
-        networkOrEthereumURL: Network = "maticmum", 
-        options: EthersOptions = {},
         signer: Signer,
+        options: EthersOptions = {},
+        networkOrEthereumURL: Network = "maticmum", 
     ) {
         let poseidon = await buildPoseidon();
 
@@ -177,7 +166,6 @@ export default class LegacyCredential {
             case "maticmum":
                 options.credentialsRegistryAddress = DEPLOYED_CONTRACTS.maticmum.credentialsRegistryAddress
                 options.legacyCredentialType = DEPLOYED_CONTRACTS.maticmum.testCredentialType
-                options.autotaskWebhook = DEPLOYED_CONTRACTS.maticmum.autotaskWebhook
                 break
             default:
                 if (options.credentialsRegistryAddress === undefined) {
@@ -185,49 +173,49 @@ export default class LegacyCredential {
                 }
 
                 if (options.legacyCredentialType === undefined) {
-                    options.legacyCredentialType = 0
+                    options.legacyCredentialType = 1
                 }
-
-                options.autotaskWebhook = ""
         }
 
         const credentialsRegistry = new Contract(options.credentialsRegistryAddress, CredentialRegistryABI, signer)
 
-        const credentialType = await credentialsRegistry.getCredentialType(credentialId)
+        let credentialType;
+        try {
+            credentialType = await credentialsRegistry.getCredentialType(credentialId)
+        } catch (_) {
+            throw new Error(`Credential #${credentialId} does not exist`)
+        }
 
         if (options.legacyCredentialType !== credentialType.toNumber()) {
             throw new Error(`Credential #${credentialId} is not a Legacy Credential`)
         }
 
         const credentialAdmin = await credentialsRegistry.getCredentialAdmin(credentialId)
+        const signerAddress = await signer.getAddress()
 
-        if (signer.getAddress() !== credentialAdmin) {
+        if (signerAddress !== credentialAdmin) {
             throw new Error(`Signer provided is not the credential admin ${credentialAdmin}`)
         }
-
-        const treeDepth = (await credentialsRegistry.getMerkleTreeDepth(3 * credentialId)).toNumber()
 
         const credentialData = decodeLegacyCredentialData(await credentialsRegistry.getCredentialData(credentialId))
 
         // Verify that the groups given correspond to those on-chain
         // Don't really need to check that the number of leaves is correct, as it gets encoded in the root
-        if (gradeGroup.root !== credentialData.credentialState.gradeTreeRoot) {
+        if (gradeGroup.root.toString() !== credentialData.credentialState.gradeTreeRoot) {
             throw new Error("Grade group provided does not match with the on-chain root")
         }
-        if (credentialsGroup.root !== credentialData.credentialState.credentialsTreeRoot) {
+        if (credentialsGroup.root.toString() !== credentialData.credentialState.credentialsTreeRoot) {
             throw new Error("Credentials group provided does not match with the on-chain root")
         }
-        if (noCredentialsGroup.root !== credentialData.credentialState.noCredentialsTreeRoot) {
+        if (noCredentialsGroup.root.toString() !== credentialData.credentialState.noCredentialsTreeRoot) {
             throw new Error("No-credentials group provided does not match with the on-chain root")
         }
 
         return new LegacyCredential(
             poseidon,
             credentialId,
-            networkOrEthereumURL,
-            credentialData.minimumGrade,
             credentialsRegistry,
-            treeDepth,
+            credentialData.minimumGrade,
             gradeGroup,
             credentialsGroup,
             noCredentialsGroup
@@ -242,7 +230,7 @@ export default class LegacyCredential {
         const oldIdentity = new Identity(legacyCredentialRecipient.userSecret)
         
         const gradeIndex = this.#gradeGroup.indexOf(
-            this.#poseidon([this.#poseidon([oldIdentity.nullifier, oldIdentity.trapdoor]), legacyCredentialRecipient.grade]).toString()
+            this.#poseidon([this.#poseidon([oldIdentity.nullifier, oldIdentity.trapdoor]), legacyCredentialRecipient.grade])
         )
 
         if (gradeIndex === -1) {
@@ -251,7 +239,7 @@ export default class LegacyCredential {
 
         this.#gradeGroup.updateMember( 
             gradeIndex,
-            this.#poseidon([this.#poseidon([newIdentity.nullifier, newIdentity.trapdoor]), legacyCredentialRecipient.grade]).toString()
+            this.#poseidon([this.#poseidon([newIdentity.nullifier, newIdentity.trapdoor]), legacyCredentialRecipient.grade])
         )
 
         if (legacyCredentialRecipient.grade >= this.#minimumGrade) {
@@ -275,7 +263,7 @@ export default class LegacyCredential {
         legacyCredentialRecipient: LegacyCredentialRecipient
     ) {
         const { trapdoor, nullifier, commitment } = new Identity(legacyCredentialRecipient.userSecret)
-            
+        
         this.#gradeGroup.addMember(
             this.#poseidon([this.#poseidon([nullifier, trapdoor]), legacyCredentialRecipient.grade]).toString()
         )
@@ -295,9 +283,9 @@ export default class LegacyCredential {
         const currentData = decodeLegacyCredentialData(await this.#credentialsRegistry.getCredentialData(this.#credentialId))
 
         if (
-            this.#gradeGroup.root === currentData.credentialState.gradeTreeRoot &&
-            this.#credentialsGroup.root === currentData.credentialState.credentialsTreeRoot &&
-            this.#noCredentialsGroup.root === currentData.credentialState.noCredentialsTreeRoot
+            this.#gradeGroup.root.toString() === currentData.credentialState.gradeTreeRoot &&
+            this.#credentialsGroup.root.toString() === currentData.credentialState.credentialsTreeRoot &&
+            this.#noCredentialsGroup.root.toString() === currentData.credentialState.noCredentialsTreeRoot
         ) {
             throw new Error("Cannot publish changes as no changes were made")
         }
