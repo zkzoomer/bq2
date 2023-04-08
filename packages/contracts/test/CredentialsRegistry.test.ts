@@ -531,15 +531,9 @@ describe("CredentialsRegistry contract", () => {
 
         describe("credentialExists", () => {
             context("when calling for a credential that does not exist", () => {
-                it("reverts", async () => {
-                    await expect(
-                        credentialsRegistry.credentialExists(
-                            1
-                        )
-                    ).to.be.revertedWithCustomError(
-                        credentialsRegistry,
-                        "CredentialDoesNotExist"
-                    )
+                it("returns false", async () => {
+                    expect(await credentialsRegistry.credentialExists(1))
+                        .to.be.equal(false)
                 })
             })
         })
@@ -1082,6 +1076,15 @@ describe("CredentialsRegistry contract", () => {
             })
 
             // nullifier that was used was tested on `verifyCredentialOwnershipProof` and  `verifyGradeClaimProof` tests
+        })
+
+        describe("credentialExists", () => {
+            context("when calling for a credential that does exist", () => {
+                it("returns true", async () => {
+                    expect(await credentialsRegistry.credentialExists(1))
+                        .to.be.equal(true)
+                })
+            })
         })
 
         describe("getMerkleTreeRoot", () => {

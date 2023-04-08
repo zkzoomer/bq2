@@ -552,8 +552,8 @@ describe("TestCredentialManager contract", () => {
                             credentialURI
                         )
                     ).to.be.revertedWithCustomError(
-                        credentialsRegistry,
-                        "CredentialDoesNotExist"
+                        testCredentialManager,
+                        "RequiredCredentialDoesNotExist"
                     )
                 })
             })
