@@ -38,6 +38,9 @@ export type EthersOptions = {
     testCredentialManagerAddress?: string
     testCredentialManagerStartBlock?: number
     testCredentialType?: number
+    legacyCredentialManagerAddress?: string
+    legacyCredentialManagerStartBlock?: number
+    legacyCredentialType?: number
     provider?: "etherscan" | "infura" | "alchemy" | "cloudflare" | "pocket" | "ankr"
     apiKey?: string
     autotaskWebhook?: string
