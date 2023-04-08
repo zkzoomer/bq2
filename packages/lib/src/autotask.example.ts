@@ -11,12 +11,12 @@ exports.handler = async function(event) {
     }
   
   	const { abi, functionName,  functionParameters } = body
-    const address = "0xF12B8dAeDe57273C40b8dcD75Fa1796C21Aa2C44"
+    const credentialsRegistryAddress = "0x5A140303E92da80BF96a734fd777957fF02714C4"
 
     const provider = new DefenderRelayProvider(event);
     const signer = new DefenderRelaySigner(event, provider, { speed: 'fast' });
 
-    const contract = new ethers.Contract(address, abi, signer);
+    const contract = new ethers.Contract(credentialsRegistryAddress, abi, signer);
 
     const tx = await contract[functionName](...functionParameters);
 

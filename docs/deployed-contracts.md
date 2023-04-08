@@ -2,11 +2,12 @@
 
 | Contract | Mumbai |
 | -------- | ------ |
-| [CredentialsRegistry.sol](../packages/contracts/contracts/CredentialsRegistry.sol) | [0xF12B...2C44](https://mumbai.polygonscan.com/address/0xF12B8dAeDe57273C40b8dcD75Fa1796C21Aa2C44) |
-| [TestCredentialManager.sol](../packages/contracts/contracts/managers/TestCredentialManager.sol) | [0x2C2d...0bA2](https://mumbai.polygonscan.com/address/0x2C2d9CfFec552753E6438380aEb4449672240bA2) |
-| [GradeClaimVerifier.sol](../packages/contracts/contracts/base/GradeClaimVerifier.sol) | [0xE40D...ff80](https://mumbai.polygonscan.com/address/0xE40D9779fc591BB2CBB97EdbeB4adbD1f8F9ff80) |
-| [TestVerifier.sol](../packages/contracts/contracts/managers/verifiers/TestVerifier.sol) | [0x9fb0...EDD7C](https://mumbai.polygonscan.com/address/0x9fb0e4f0ed3CAB75B358463a66bE738690AEDD7C) |
-| [PoseidonT4.sol](../packages/contracts/contracts/libs/Poseidon.sol) | [0xD0F3...9719](https://mumbai.polygonscan.com/address/0xD0F32Ad818d3E235B1Da8383168e94B317889719) |
+| [CredentialsRegistry.sol](../packages/contracts/contracts/CredentialsRegistry.sol) | [0x5A14...14C4](https://mumbai.polygonscan.com/address/0x5A140303E92da80BF96a734fd777957fF02714C4) |
+| [TestCredentialManager.sol](../packages/contracts/contracts/managers/TestCredentialManager.sol) | [0x043c...1cee](https://mumbai.polygonscan.com/address/0x043c69abf15d154cf0Ffc482f8d63eE7874e1cee) |
+| [LegacyCredentialManager.sol](../packages/contracts/contracts/managers/LegacyCredentialManager.sol) | [0x7747...72C7](https://mumbai.polygonscan.com/address/0x77479918eA3962f8a1EfCc578520582778E272C7) |
+| [GradeClaimVerifier.sol](../packages/contracts/contracts/base/GradeClaimVerifier.sol) | [0x987B...4eb1](https://mumbai.polygonscan.com/address/0x987B9432B78f1A26490f88D8F972c0a2c46C4eb1) |
+| [TestVerifier.sol](../packages/contracts/contracts/managers/verifiers/TestVerifier.sol) | [0xA868...f610](https://mumbai.polygonscan.com/address/0xA8687a68c919aB5bAcB039Dd656dA8b2c4DEf610) |
+| [PoseidonT4.sol](../packages/contracts/contracts/libs/Poseidon.sol) | [0xc5031...Aa62](https://mumbai.polygonscan.com/address/0xc50311C8811B9a19f41EB4B121E3023966BAAa62) |
 
 ## Inherited Contracts
 
