@@ -137,7 +137,6 @@ describe("TestCredentialGroupsEthers", () => {
 
             expect(group.merkleTree.depth).toBe("20")
             expect(group.merkleTree.root).toBe("222")
-            expect(group.merkleTree.zeroValue).toContain("111")
         })
 
         it("Should throw an error if the group does not exist", async () => {

@@ -187,7 +187,6 @@ export default class TestCredentialGroupsEthers {
             id: groupId.toString(),
             merkleTree: {
                 depth: groupCreatedEvent.merkleTreeDepth.toString(),
-                zeroValue: groupCreatedEvent.zeroValue.toString(),
                 numberOfLeaves: numberOfLeaves.toNumber(),
                 root: merkleTreeRoot.toString()
             }
