@@ -36,7 +36,7 @@ export default class BlockQualifiedSubgraph {
      * @param group Options to select the group parameters.
      * @returns Specific group.
      */
-    async getGroup(credentialId: number, group: "grade" | "credential" | "no-credential"): Promise<GroupResponse> {
+    async getGroupMembers(credentialId: number, group: "grade" | "credential" | "no-credential"): Promise<GroupResponse> {
         checkParameter(credentialId, "credentialId", "number")
 
         let groupId: string
