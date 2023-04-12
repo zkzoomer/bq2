@@ -1,4 +1,5 @@
+import BlockQualifiedSubgraph from "./subgraph"
 import TestCredentialGroupsEthers from "./ethers"
 
-export { TestCredentialGroupsEthers }
+export { BlockQualifiedSubgraph, TestCredentialGroupsEthers }
 export * from "./types"
