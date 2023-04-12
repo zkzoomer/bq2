@@ -40,10 +40,16 @@ describe("BlockQualifiedSubgraph", () => {
     })
     
     describe("# getGroup", () => {
-        it("Should throw an error if the groupId parameter type is wrong", async () => {
-            const fun = () => blockQualified.getGroup(1 as any)
+        it("Should throw an error if the credentialId parameter type is wrong", async () => {
+            const fun = () => blockQualified.getGroup("1" as any, "grade")
 
-            await expect(fun).rejects.toThrow("Parameter 'groupId' is not a string")
+            await expect(fun).rejects.toThrow("Parameter 'credentialId' is not a number")
+        })
+
+        it("Should throw an error if the group parameter type is wrong", async () => {
+            const fun = () => blockQualified.getGroup(1, "no-grade" as any)
+
+            await expect(fun).rejects.toThrow("Group 'no-grade' is not valid")
         })
 
         it("Should return a specific group with its members", async () => {
@@ -70,7 +76,7 @@ describe("BlockQualifiedSubgraph", () => {
                 })
             )
 
-            const expectedValue = await blockQualified.getGroup("1")
+            const expectedValue = await blockQualified.getGroup(1, "grade")
 
             expect(expectedValue).toBeDefined()
             expect(expectedValue).toEqual({

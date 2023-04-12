@@ -33,11 +33,27 @@ export default class BlockQualifiedSubgraph {
     /**
      * Returns a specific group.
      * @param groupId Group id.
-     * @param options Options to select the group parameters.
+     * @param group Options to select the group parameters.
      * @returns Specific group.
      */
-    async getGroup(groupId: string): Promise<GroupResponse> {
-        checkParameter(groupId, "groupId", "string")
+    async getGroup(credentialId: number, group: "grade" | "credential" | "no-credential"): Promise<GroupResponse> {
+        checkParameter(credentialId, "credentialId", "number")
+
+        let groupId: string
+
+        switch (group) {
+            case "grade":
+                groupId = (3 * (credentialId - 1) + 1).toString()
+                break
+            case "credential":
+                groupId = (3 * (credentialId - 1) + 2).toString()
+                break
+            case "no-credential":
+                groupId = (3 * (credentialId - 1) + 3).toString()
+                break
+            default:
+                throw new TypeError(`Group '${group}' is not valid`)
+        }
 
         const config: AxiosRequestConfig = {
             method: "post",
