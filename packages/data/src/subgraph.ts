@@ -36,7 +36,7 @@ export default class BlockQualifiedSubgraph {
      * @param group Options to select the group parameters.
      * @returns Specific group.
      */
-    async getGroupMembers(credentialId: number, group: "grade" | "credential" | "no-credential"): Promise<string[]> {
+    async getGroupMembers(credentialId: number, group: "grade" | "credentials" | "no-credentials"): Promise<string[]> {
         checkParameter(credentialId, "credentialId", "number")
 
         let groupId: string
@@ -45,10 +45,10 @@ export default class BlockQualifiedSubgraph {
             case "grade":
                 groupId = (3 * (credentialId - 1) + 1).toString()
                 break
-            case "credential":
+            case "credentials":
                 groupId = (3 * (credentialId - 1) + 2).toString()
                 break
-            case "no-credential":
+            case "no-credentials":
                 groupId = (3 * (credentialId - 1) + 3).toString()
                 break
             default:
