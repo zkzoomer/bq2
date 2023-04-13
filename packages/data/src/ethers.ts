@@ -211,8 +211,6 @@ export default class TestCredentialGroupsEthers {
             this._options.credentialsRegistryStartBlock
         )
 
-        console.log(credentialId)
-
         if (!groupCreatedEvent) {
             throw new Error(`Credential '${credentialId}' not found`)
         }
