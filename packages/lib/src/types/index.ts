@@ -146,9 +146,16 @@ export type Network =
 
 export type Options = {
     credentialsRegistryAddress?: string
+    credentialsRegistryStartBlock?: number
     testCredentialManagerAddress?: string
-    testCredentialType?: string
-    openAnswersHashes?: string[]
+    testCredentialManagerStartBlock?: number
+    testCredentialType?: number
+    legacyCredentialManagerAddress?: string
+    legacyCredentialManagerStartBlock?: number
+    legacyCredentialType?: number
     provider?: "etherscan" | "infura" | "alchemy" | "cloudflare" | "pocket" | "ankr"
     apiKey?: string
+    autotaskWebhook?: string
 }
+
+
