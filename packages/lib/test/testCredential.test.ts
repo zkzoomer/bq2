@@ -1,14 +1,10 @@
 import {
     buildPoseidon,
-    generateOpenAnswers,
-    generateTestProof,
     hash,
     BigNumberish,
     TestCredential,
     Poseidon,
-    MAX_TREE_DEPTH,
 } from "@bq2/lib"
-import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { config as dotenvConfig } from "dotenv"
 import { getCurveFromName } from "ffjavascript"
@@ -25,7 +21,7 @@ dotenvConfig({ path: resolve(__dirname, "../../../.env") })
 const testSnarkArtifacts = {
     wasmFilePath: `../snark-artifacts/test${TEST_HEIGHT}.wasm`,
     zkeyFilePath: `../snark-artifacts/test${TEST_HEIGHT}.zkey`
-}/* 
+}
 const gradeClaimSnarkArtifacts = {
     wasmFilePath: '../snark-artifacts/gradeClaim.wasm',
     zkeyFilePath: `../snark-artifacts/gradeClaim.zkey`
@@ -33,7 +29,7 @@ const gradeClaimSnarkArtifacts = {
 const semaphoreSnarkArtifacts = {
     wasmFilePath: '../snark-artifacts/semaphore.wasm',
     zkeyFilePath: `../snark-artifacts/semaphore.zkey`
-} */
+}
 
 describe("TestCredential", () => {
     let poseidon: Poseidon
@@ -60,7 +56,7 @@ describe("TestCredential", () => {
         identity = new Identity("deenz")
 
         multipleChoiceAnswers = Array.from({length: 2 ** TEST_HEIGHT}, (_, i) => 1)
-        openAnswers = generateOpenAnswers(["sneed's", "feed", "seed"], TEST_HEIGHT)
+        openAnswers = ["sneed's", "feed", "seed"]
 
         openAnswersHashes = [
             poseidon([hash("sneed's")]), 
@@ -94,55 +90,31 @@ describe("TestCredential", () => {
     })
 
     context("after defining a TestCredential object", () => {
-        describe("sendSolutionTransaction", () => {
-            it("sends a request to the relayer that will post the transaction", async () => {
-                // const proof = await testCredential.generateSolutionProof(
-                //    identity,
-                //    { multipleChoiceAnswers, openAnswers },
-                //    { testSnarkArtifacts, semaphoreSnarkArtifacts, gradeClaimSnarkArtifacts }
-                // )
-                
-                const fullOpenAnswersHashes = Array(2 ** TEST_HEIGHT).fill( poseidon([hash("")]) )
-                fullOpenAnswersHashes.forEach( (_, i) => { if (i < openAnswersHashes.length) { fullOpenAnswersHashes[i] = openAnswersHashes[i] }})
+        let proof: any
 
-                const testVariables = {
-                    ...testCredential.testCredentialData,
-                    openAnswersHashes: fullOpenAnswersHashes
-                }
-
-                const identityGroup = new Group(credentialId, MAX_TREE_DEPTH)
-                const gradeGroup = new Group(credentialId, MAX_TREE_DEPTH)
-
-                const nLeaves = await testCredential.getNumberOfMerkleTreeLeaves("credentials")
-
-                identityGroup.addMembers(new Array(nLeaves).fill(identity.commitment))
-                gradeGroup.addMembers(new Array(nLeaves).fill(gradeCommitment))
-
-                const proof = await generateTestProof(
+        describe("generateSolutionProof", () => {
+            it("fetches the current data from the subgraph to generate a valid proof", async () => {
+                proof = await testCredential.generateSolutionProof(
                     identity,
                     { multipleChoiceAnswers, openAnswers },
-                    testVariables,
-                    identityGroup,
-                    gradeGroup,
-                    true,
-                    testSnarkArtifacts
+                    testSnarkArtifacts, 
+                    semaphoreSnarkArtifacts, 
+                    gradeClaimSnarkArtifacts
                 )
                 
                 // Proof is valid
                 expect(await testCredential.verifySolutionProof(proof)).to.be.equal(true)
-                
-                // Gets sent to relayer
+            })
+        })
+
+        describe("sendSolutionTransaction", () => {
+            it("sends a request to the relayer that will post the transaction", async () => {
+                // Proof gets sent to relayer
                 const response = await testCredential.sendSolutionTransaction(proof)
 
                 // Relayer is successful
                 expect(response.status).to.be.equal(200)
             })
         })
-
-        /* describe("sendRateIssuerTransaction", () => {
-            it("sends a request to the relayer that will post the transaction", () => {
-                    
-            })
-        }) */
     })
 }) 

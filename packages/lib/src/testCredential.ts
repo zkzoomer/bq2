@@ -1,12 +1,16 @@
-import { TestCredentialGroupsEthers, EthersOptions } from "@bq2/data"
+import { BlockQualifiedSubgraph } from "@bq2/data"
 import {
     buildPoseidon,
     decodeTestCredentialData,
+    encodeGradeRestrictedTestFullProof,
+    encodeCredentialRestrictedTestFullProof,
+    encodeTestFullProof,
     generateCredentialRestrictedTestProof,
     generateGradeRestrictedTestProof,
     generateRateCredentialIssuerProof,
     generateTestProof,
     generateOpenAnswers,
+    hash,
     verifyCredentialOwnershipProof,
     verifyGradeClaimProof,
     verifyTestProof,
@@ -16,6 +20,7 @@ import {
     GradeRestrictedTestFullProof,
     Network,
     OpenAnswersResults,
+    Options,
     Poseidon,
     RateFullProof,
     SnarkArtifacts,
@@ -23,11 +28,7 @@ import {
     TestCredentialData,
     TestFullProof,
     TestVariables,
-    DEPLOYED_CONTRACTS,
-    encodeGradeRestrictedTestFullProof,
-    encodeCredentialRestrictedTestFullProof,
-    encodeTestFullProof,
-    hash
+    DEPLOYED_CONTRACTS
 } from "@bq2/lib"
 import { Contract } from "@ethersproject/contracts"
 import { 
@@ -48,7 +49,7 @@ import CredentialRegistryABI from "./abi/CredentialsRegistryABI.json"
 export default class TestCredential {
     #poseidon: Poseidon
 
-    #testCredentialGroups: TestCredentialGroupsEthers
+    #subgraph: BlockQualifiedSubgraph
     #network: Network
 
     #credentialId: number
@@ -66,7 +67,7 @@ export default class TestCredential {
     // @param credentialsContractAddress Address of the Credentials smart contract for this chainId.
     private constructor(
         poseidon: Poseidon,
-        testCredentialGroups: TestCredentialGroupsEthers,
+        blockQualifiedSubgraph: BlockQualifiedSubgraph,
         credentialId: number,
         network: Network, 
         testData: TestCredentialData,
@@ -76,7 +77,7 @@ export default class TestCredential {
         openAnswersHashes?: string[] 
     ) {
         this.#poseidon = poseidon
-        this.#testCredentialGroups = testCredentialGroups
+        this.#subgraph = blockQualifiedSubgraph
         this.#credentialId = credentialId
         this.#network = network
         this.#testData = testData
@@ -88,13 +89,13 @@ export default class TestCredential {
 
     static async init(
         credentialId: number,
-        options: EthersOptions = {},
+        options: Options = {},
         networkOrEthereumURL: Network = "maticmum", 
         openAnswersHashes?: BigNumberish[],
     ) {
         let poseidon = await buildPoseidon();
 
-        let testCredentialGroups = new TestCredentialGroupsEthers(networkOrEthereumURL, options)
+        let blockQualifiedSubgraph = new BlockQualifiedSubgraph(networkOrEthereumURL)
 
         switch (networkOrEthereumURL) {
             case "maticmum":
@@ -164,12 +165,12 @@ export default class TestCredential {
                 throw new Error(`Need to provide an open answer hash for each question`)
             }
 
-            const fullOpenAnswersHashes = new Array(2 ** testData.testHeight).fill(
+            fullOpenAnswersHashes = new Array(2 ** testData.testHeight).fill(
                 poseidon([hash("")])
             );
         
             fullOpenAnswersHashes.forEach( (_, i) => { if (i < openAnswersHashes.length) {
-                fullOpenAnswersHashes[i] = openAnswersHashes[i]
+                fullOpenAnswersHashes[i] = openAnswersHashes[i].toString()
             }});
         }
 
@@ -177,7 +178,7 @@ export default class TestCredential {
 
         return new TestCredential(
             poseidon,
-            testCredentialGroups,
+            blockQualifiedSubgraph,
             credentialId,
             networkOrEthereumURL,
             testData,
@@ -194,8 +195,13 @@ export default class TestCredential {
             throw new RangeError('Surpassed maximum number of answers for a test')
         }
         // All open answers must be provided - even if an empty ""
-        if ( testAnswers.openAnswers.length !== this.#testData.nQuestions ) { 
+        if ( testAnswers.openAnswers.length < this.#testData.nQuestions ) { 
             throw new RangeError('Some questions were left unanswered')
+        }
+        if ( testAnswers.openAnswers.length > this.#testData.nQuestions ) { 
+            throw new RangeError(
+                `Answered ${testAnswers.openAnswers.length} questions while the test only has ${this.#testData.nQuestions}`
+            )
         }
 
         // Multiple choice component
@@ -237,17 +243,17 @@ export default class TestCredential {
             openAnswersHashes: this.#openAnswersHashes
         }
 
-        const gradeGroupMembers = await this.#testCredentialGroups.getGroupMembers(this.#credentialId, "grade")
+        const gradeGroupMembers = await this.#subgraph.getGroupMembers(this.#credentialId, "grade")
         gradeGroup.addMembers(gradeGroupMembers)
 
-        const identityGroupMembers = await this.#testCredentialGroups.getGroupMembers(this.#credentialId, grade.pass ? "credentials" : "no-credentials")
+        const identityGroupMembers = await this.#subgraph.getGroupMembers(this.#credentialId, grade.pass ? "credentials" : "no-credentials")
         identityGroup.addMembers(identityGroupMembers)
 
         if (this.#testData.requiredCredentialGradeThreshold !== 0) {  // Grade restricted test
 
             const treeDepth = (await this.#credentialsRegistry.getMerkleTreeDepth(3 * this.#testData.requiredCredential)).toNumber()
             const requiredCredentialsGradeGroup = new Group(this.#testData.requiredCredential, treeDepth)
-            requiredCredentialsGradeGroup.addMembers(await this.#testCredentialGroups.getGroupMembers(this.#testData.requiredCredential, "grade"))
+            requiredCredentialsGradeGroup.addMembers(await this.#subgraph.getGroupMembers(this.#testData.requiredCredential, "grade"))
 
             const testData = decodeTestCredentialData(await this.#credentialsRegistry.getCredentialData(this.#testData.requiredCredential))
 
@@ -269,7 +275,7 @@ export default class TestCredential {
 
             const treeDepth = (await this.#credentialsRegistry.getMerkleTreeDepth(3 * this.#testData.requiredCredential)).toNumber()
             const requiredCredentialsGroup = new Group(this.#testData.requiredCredential, treeDepth)
-            requiredCredentialsGroup.addMembers(await this.#testCredentialGroups.getGroupMembers(this.#testData.requiredCredential, "credentials"))
+            requiredCredentialsGroup.addMembers(await this.#subgraph.getGroupMembers(this.#testData.requiredCredential, "credentials"))
             
             return generateCredentialRestrictedTestProof(
                 identity,
@@ -340,7 +346,7 @@ export default class TestCredential {
         semaphoreSnarkArtifacts?: SnarkArtifacts
     ): Promise<RateFullProof> {
         const credentialsGroup = new Group(this.#credentialId, this.#treeDepth)
-        const credentialsGroupMembers = await this.#testCredentialGroups.getGroupMembers(this.#credentialId, "credentials")
+        const credentialsGroupMembers = await this.#subgraph.getGroupMembers(this.#credentialId, "credentials")
         credentialsGroup.addMembers(credentialsGroupMembers)
 
         return generateRateCredentialIssuerProof(
