@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from "axios"
 import checkParameter from "./checkParameter"
 import getURL from "./getURL"
 import request from "./request"
-import { GroupResponse, GroupOptions, Network } from "./types"
+import { Network } from "./types"
 
 export default class BlockQualifiedSubgraph {
     private _url: string
@@ -36,7 +36,7 @@ export default class BlockQualifiedSubgraph {
      * @param group Options to select the group parameters.
      * @returns Specific group.
      */
-    async getGroupMembers(credentialId: number, group: "grade" | "credential" | "no-credential"): Promise<GroupResponse> {
+    async getGroupMembers(credentialId: number, group: "grade" | "credential" | "no-credential"): Promise<string[]> {
         checkParameter(credentialId, "credentialId", "number")
 
         let groupId: string
@@ -76,8 +76,6 @@ export default class BlockQualifiedSubgraph {
 
         const { groups } = await request(this._url, config)
 
-        groups[0].members = groups[0].members.map((member: any) => member.identityCommitment)
-
-        return groups[0]
+        return groups[0].members.map((member: any) => member.identityCommitment)
     }
 }

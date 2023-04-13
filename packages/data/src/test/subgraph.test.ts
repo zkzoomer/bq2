@@ -79,15 +79,7 @@ describe("BlockQualifiedSubgraph", () => {
             const expectedValue = await blockQualified.getGroupMembers(1, "grade")
 
             expect(expectedValue).toBeDefined()
-            expect(expectedValue).toEqual({
-                id: "1",
-                merkleTree: {
-                    depth: 20,
-                    numberOfLeaves: 2,
-                    root: "2"
-                },
-                members: ["1", "2"]
-            })
+            expect(expectedValue).toEqual(["1", "2"])
         })
     })
 })
