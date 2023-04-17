@@ -1,16 +1,15 @@
 {
 	"name": "@bq2/lib",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"license": "MIT",
 	"main": "dist/index.node.js",
 	"exports": {
 		"import": "./dist/index.mjs",
 		"require": "./dist/index.node.js"
 	},
-	"types": "dist/types/index.d.ts",
+	"types": "dist/lib/index.d.ts",
 	"files": [
-		"dist/",
-		"src/"
+		"dist/"
 	],
 	"scripts": {
 		"test": "mocha test/*",
