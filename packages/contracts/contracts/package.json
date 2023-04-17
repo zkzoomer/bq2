@@ -1,0 +1,17 @@
+{
+    "name": "@bq-core/contracts",
+    "version": "1.0.0",
+    "description": "Block Qualified contracts to define and manage credentials.",
+    "license": "MIT",
+    "files": [
+        "CredentialsRegistry.sol",
+        "**/*.sol"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "4.7.3",
+        "@semaphore-protocol/contracts": "3.2.1"
+    }
+}
