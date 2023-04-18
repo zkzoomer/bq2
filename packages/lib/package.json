@@ -1,6 +1,6 @@
 {
 	"name": "@bq-core/lib",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "MIT",
 	"main": "dist/index.node.js",
 	"exports": {
@@ -9,7 +9,8 @@
 	},
 	"types": "dist/lib/index.d.ts",
 	"files": [
-		"dist/"
+		"dist/",
+		"src/"
 	],
 	"scripts": {
 		"test": "mocha test/*",
