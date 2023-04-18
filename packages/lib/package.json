@@ -1,6 +1,6 @@
 {
-	"name": "@bq2/lib",
-	"version": "1.0.4",
+	"name": "@bq-core/lib",
+	"version": "1.0.0",
 	"license": "MIT",
 	"main": "dist/index.node.js",
 	"exports": {
@@ -13,7 +13,7 @@
 	],
 	"scripts": {
 		"test": "mocha test/*",
-		"build": "rollup -c rollup.config.ts --configPlugin typescript",
+		"build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript --format umd --name '@bq-core/lib'",
 		"prepublishOnly": "yarn build"
 	},
 	"publishConfig": {
