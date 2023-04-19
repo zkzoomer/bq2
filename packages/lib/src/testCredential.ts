@@ -156,7 +156,7 @@ export default class TestCredential {
 
         let fullOpenAnswersHashes: string[] = []
 
-        if (testData.multipleChoiceWeight !== 0) {  // Open answer hashes need to be provided
+        if (testData.multipleChoiceWeight !== 100) {  // Open answer hashes need to be provided
             if (openAnswersHashes === undefined) {  
                 throw new Error(`Open answers hashes need to be provided for tests that are not multiple choice`)
             }
