@@ -1,9 +1,10 @@
-import { generateTestProof, CredentialRestrictedTestFullProof, SnarkArtifacts, TestAnswers, TestVariables } from "@bq2/lib"
+import { generateTestProof, CredentialRestrictedTestFullProof, SnarkArtifacts, TestAnswers, TestVariables } from "@bq-core/lib"
+import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { generateProof } from "@semaphore-protocol/proof"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
-import { utils } from "ethers"
+import { AbiCoder, keccak256 } from "ethers"
 
 /**
  * Generates a proof of knowledge of a solution to a Block Qualified test, while also proving ownership of a different credential.
@@ -32,9 +33,11 @@ export default async function generateCredentialRestrictedTestProof(
 ): Promise<CredentialRestrictedTestFullProof> {
     const testFullProof = await generateTestProof(identity, testAnswers, testVariables, testIdentityGroup, gradeGroup, testPassed, testSnarkArtifacts, testId)
 
-    const externalNullifier = utils.formatBytes32String("bq-credential-restricted-test")  // 0x62712d63726564656e7469616c2d726573747269637465642d74657374000000
+    const externalNullifier = formatBytes32String("bq-credential-restricted-test")  // 0x62712d63726564656e7469616c2d726573747269637465642d74657374000000
 
-    const encodedSignalPreimage = utils.defaultAbiCoder.encode(
+    const abi = new AbiCoder()
+
+    const encodedSignalPreimage = abi.encode(
         ["uint", "uint", "uint", "uint"], 
         [
             testFullProof.identityCommitment,
@@ -43,7 +46,7 @@ export default async function generateCredentialRestrictedTestProof(
             testFullProof.newGradeTreeRoot
         ]
     )
-    const signal = BigInt(utils.keccak256(encodedSignalPreimage))
+    const signal = BigInt(keccak256(encodedSignalPreimage))
 
     const semaphoreFullProof = await generateProof(identity, requiredCredentialsGroup, externalNullifier, signal, semaphoreSnarkArtifacts)
 

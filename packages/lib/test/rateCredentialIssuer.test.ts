@@ -6,16 +6,18 @@ import {
     RateFullProof,
     MAX_TREE_DEPTH, 
     MAX_COMMENT_LENGTH, 
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { verifyProof } from "@semaphore-protocol/proof"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
-import { utils } from "ethers"
+import { AbiCoder, keccak256 } from "ethers"
 import { getCurveFromName } from "ffjavascript"
 
 chai.use(chaiAsPromised)
+
+const abi = new AbiCoder()
 
 describe("Rate Credential Issuer", () => {
     let poseidon: Poseidon
@@ -71,8 +73,8 @@ describe("Rate Credential Issuer", () => {
             group.addMembers([BigInt(1), BigInt(2), identity.commitment])
 
             const expectedNullifierHash = poseidon([hash(externalNullifier), identity.nullifier])
-            const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rate, comment])
-            const expectedSignal = BigInt(utils.keccak256(encodedRating))
+            const encodedRating = abi.encode(["uint", "string"], [rate, comment])
+            const expectedSignal = BigInt(keccak256(encodedRating))
 
             rateFullProof = await generateRateCredentialIssuerProof(identity, group, rate, comment, snarkArtifacts)
 

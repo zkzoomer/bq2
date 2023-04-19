@@ -1,4 +1,4 @@
-import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, MAX_TREE_DEPTH } from "@bq2/lib"
+import { generateCredentialOwnershipProof, verifyCredentialOwnershipProof, MAX_TREE_DEPTH } from "@bq-core/lib"
 import { FullProof } from "@semaphore-protocol/proof"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"

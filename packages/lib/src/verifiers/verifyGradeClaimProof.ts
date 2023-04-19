@@ -1,4 +1,4 @@
-import { GradeClaimFullProof } from "@bq2/lib"
+import { GradeClaimFullProof } from "@bq-core/lib"
 import { groth16 } from "snarkjs"
 import { hash, unpackProof } from "../helpers"
 import verificationKey from "../../verification-keys/gradeClaimKey.json"

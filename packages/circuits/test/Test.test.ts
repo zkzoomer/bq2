@@ -1,4 +1,4 @@
-import { buildPoseidon, generateOpenAnswers, hash, rootFromLeafArray, Poseidon, MAX_TREE_DEPTH } from "@bq2/lib";
+import { buildPoseidon, generateOpenAnswers, hash, rootFromLeafArray, Poseidon, MAX_TREE_DEPTH } from "@bq-core/lib";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";

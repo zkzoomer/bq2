@@ -10,7 +10,7 @@ import verifyCredentialOwnershipProof from "./verifiers/verifyCredentialOwnershi
 import verifyGradeClaimProof from "./verifiers/verifyGradeClaimProof"
 import verifyTestProof from "./verifiers/verifyTestProof"
 import LegacyCredential from "./LegacyCredential"
-import TestCredential from "./testCredential"
+import TestCredential from "./TestCredential"
 
 export * from "./constants"
 export * from "./types"

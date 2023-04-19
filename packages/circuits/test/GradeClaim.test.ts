@@ -1,4 +1,4 @@
-import { MAX_TREE_DEPTH, Poseidon, buildPoseidon, hash } from "@bq2/lib";
+import { MAX_TREE_DEPTH, Poseidon, buildPoseidon, hash } from "@bq-core/lib";
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group";
 import { expect } from "chai";

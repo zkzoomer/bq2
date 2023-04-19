@@ -1,12 +1,12 @@
 import { BigNumber } from "@ethersproject/bignumber"
 import { BytesLike, Hexable, zeroPad } from "@ethersproject/bytes"
 import { keccak256 } from "@ethersproject/keccak256"
-import { utils } from "ethers"
+import { keccak256 as utilsKeccak256 } from "ethers"
 import { formatBytes32String, toUtf8Bytes } from "@ethersproject/strings"
 
 export function hash(message: BytesLike | Hexable | number | bigint | string): string {
     if (message === "") {
-        return (BigInt(utils.keccak256(formatBytes32String(message))) >> BigInt(8)).toString()
+        return (BigInt(utilsKeccak256(formatBytes32String(message))) >> BigInt(8)).toString()
     }
 
     if (typeof message === 'string' && isNaN(message as any)) {

@@ -1,7 +1,7 @@
-import { utils } from 'ethers';
+import { AbiCoder, getAddress } from 'ethers';
 import { CredentialRestrictedTestFullProof, GradeRestrictedTestFullProof, Proof, TestFullProof } from '../types';
 
-const abi = utils.defaultAbiCoder
+const abi = new AbiCoder()
 
 export function encodeTestCredential(
     testHeight: number,
@@ -16,7 +16,7 @@ export function encodeTestCredential(
     openAnswersHashesRoot: string
 ): string {
     // Ensures it was given a valid address
-    admin = utils.getAddress(admin)
+    admin = getAddress(admin)
 
     return abi.encode(
         [

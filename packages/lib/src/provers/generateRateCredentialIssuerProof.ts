@@ -1,9 +1,10 @@
-import { RateFullProof, SnarkArtifacts, MAX_COMMENT_LENGTH, MAX_TREE_DEPTH } from "@bq2/lib"
+import { RateFullProof, SnarkArtifacts, MAX_COMMENT_LENGTH, MAX_TREE_DEPTH } from "@bq-core/lib"
 import { Identity } from "@semaphore-protocol/identity"
 import { Group } from "@semaphore-protocol/group"
 import { generateProof } from "@semaphore-protocol/proof"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
-import { utils } from "ethers"
+import { AbiCoder, keccak256 } from "ethers"
+import { formatBytes32String } from "@ethersproject/strings"
 
 /**
  * Rates a credential issuer by generating a Semaphore proof of credential ownership.
@@ -20,10 +21,12 @@ export default async function generateRateCredentialIssuerProof(
     comment: string,
     snarkArtifacts?: SnarkArtifacts
 ): Promise<RateFullProof> {
-    const externalNullifier = utils.formatBytes32String("bq-rate")  // 0x62712d7261746500000000000000000000000000000000000000000000000000
+    const externalNullifier = formatBytes32String("bq-rate")  // 0x62712d7261746500000000000000000000000000000000000000000000000000
 
-    const encodedRating = utils.defaultAbiCoder.encode(["uint", "string"], [rating, comment])
-    const signal = BigInt(utils.keccak256(encodedRating))
+    const abi = new AbiCoder()
+
+    const encodedRating = abi.encode(["uint", "string"], [rating, comment])
+    const signal = BigInt(keccak256(encodedRating))
     
     if (rating > 100 || rating < 0) {
         throw new Error("Rating value is not supported")

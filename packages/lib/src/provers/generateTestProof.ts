@@ -1,9 +1,8 @@
-import { TestAnswers, TestFullProof, TestVariables, SnarkArtifacts, MAX_TREE_DEPTH } from "@bq2/lib"
-import { Group, Member } from "@semaphore-protocol/group"
+import { packProof, TestAnswers, TestFullProof, TestVariables, SnarkArtifacts, MAX_TREE_DEPTH } from "@bq-core/lib"
+import { Group, BigNumberish } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
 import { groth16 } from "snarkjs"
-import { packProof } from "../helpers"
 
 /**
  * Generates a proof of knowledge of a solution to a Block Qualified test
@@ -28,7 +27,7 @@ export default async function generateTestProof(
 ): Promise<TestFullProof> {
     let identityMerkleProof: MerkleProof
     let gradeMerkleProof: MerkleProof
-    let emptyLeaf: Member
+    let emptyLeaf: BigNumberish
 
     if ("depth" in identityGroup) {
         emptyLeaf = identityGroup.zeroValue
@@ -54,7 +53,7 @@ export default async function generateTestProof(
         gradeMerkleProof = gradeGroup
     }
 
-    const testHeight = multipleChoiceAnswers.length || openAnswers.length
+    const testHeight = Math.sqrt(multipleChoiceAnswers.length || openAnswers.length)
     if (!snarkArtifacts) {
         snarkArtifacts = {
             wasmFilePath: `https://blockqualified.s3.us-east-2.amazonaws.com/test${testHeight}.wasm`,

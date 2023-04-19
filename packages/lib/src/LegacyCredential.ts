@@ -1,25 +1,15 @@
-import { EthersOptions } from "@bq2/data"
 import {
     buildPoseidon,
     decodeLegacyCredentialData,
+    encodeLegacyCredential,
+    LegacyCredentialRecipient,
     Network,
+    Options,
     Poseidon,
     DEPLOYED_CONTRACTS,
-    LegacyCredentialRecipient,
-    encodeLegacyCredential,
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Signer } from "@ethersproject/abstract-signer"
 import { Contract } from "@ethersproject/contracts"
-import { 
-    AlchemyProvider, 
-    AnkrProvider, 
-    CloudflareProvider, 
-    EtherscanProvider,
-    InfuraProvider,
-    JsonRpcProvider,
-    PocketProvider,
-    Provider
-} from "@ethersproject/providers"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import CredentialRegistryABI from "./abi/CredentialsRegistryABI.json"
@@ -66,7 +56,7 @@ export default class LegacyCredential {
         minimumGrade: number,
         legacyCredentialRecipients: LegacyCredentialRecipient[],
         signer: Signer,
-        options: EthersOptions = {},
+        options: Options = {},
         networkOrEthereumURL: Network = "maticmum"
     ) {
         let poseidon = await buildPoseidon();
@@ -157,7 +147,7 @@ export default class LegacyCredential {
         credentialsGroup: Group,
         noCredentialsGroup: Group,
         signer: Signer,
-        options: EthersOptions = {},
+        options: Options = {},
         networkOrEthereumURL: Network = "maticmum", 
     ) {
         let poseidon = await buildPoseidon();

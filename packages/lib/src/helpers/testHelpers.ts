@@ -1,4 +1,4 @@
-import { hash } from "@bq2/lib";
+import { hash } from "@bq-core/lib";
 
 export function generateOpenAnswers( openAnswers: string[], testHeight: number ): string[] {
     if (openAnswers.length > 2 ** testHeight ) {

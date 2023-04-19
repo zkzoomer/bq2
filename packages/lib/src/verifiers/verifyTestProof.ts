@@ -1,4 +1,4 @@
-import { SUPPORTED_TEST_HEIGHTS, TestFullProof } from "@bq2/lib"
+import { SUPPORTED_TEST_HEIGHTS, TestFullProof } from "@bq-core/lib"
 import { groth16 } from "snarkjs"
 import { unpackProof } from "../helpers"
 import testKeys from "../../verification-keys/testKeys.json"

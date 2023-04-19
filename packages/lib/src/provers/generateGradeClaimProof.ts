@@ -1,4 +1,4 @@
-import { FullGradeCommitment, GradeClaimFullProof, SnarkArtifacts, TestGradingVariables } from "@bq2/lib"
+import { FullGradeCommitment, GradeClaimFullProof, SnarkArtifacts, TestGradingVariables } from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"

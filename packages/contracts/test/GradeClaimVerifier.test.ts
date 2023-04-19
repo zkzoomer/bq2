@@ -5,7 +5,7 @@ import {
     Poseidon, 
     MAX_TREE_DEPTH,
     BigNumberish,
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";

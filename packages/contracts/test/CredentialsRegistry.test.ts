@@ -14,7 +14,7 @@ import {
     GradeClaimFullProof,
     generateGradeClaimProof,
     MAX_TREE_DEPTH
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { time, mine } from "@nomicfoundation/hardhat-network-helpers";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";

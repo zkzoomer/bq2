@@ -1,4 +1,4 @@
-import { buildPoseidon, encodeTestCredential, hash, rootFromLeafArray } from "@bq2/lib"
+import { buildPoseidon, encodeTestCredential, hash, rootFromLeafArray } from "@bq-core/lib"
 import { task, types } from "hardhat/config"
 import CredentialRegistryABI from "../../lib/src/abi/CredentialsRegistryABI.json"
 import { readFileSync } from 'fs';

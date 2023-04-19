@@ -1,4 +1,4 @@
-import { BlockQualifiedSubgraph } from "@bq2/data"
+import { BlockQualifiedSubgraph } from "@bq-core/data"
 import {
     buildPoseidon,
     decodeTestCredentialData,
@@ -29,7 +29,7 @@ import {
     TestFullProof,
     TestVariables,
     DEPLOYED_CONTRACTS
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Contract } from "@ethersproject/contracts"
 import { 
     AlchemyProvider, 

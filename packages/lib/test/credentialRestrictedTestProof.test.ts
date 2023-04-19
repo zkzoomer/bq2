@@ -10,16 +10,18 @@ import {
     TestAnswers, 
     TestVariables,
     MAX_TREE_DEPTH
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { verifyProof } from "@semaphore-protocol/proof"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
-import { utils } from "ethers"
+import { AbiCoder, keccak256 } from "ethers"
 import { getCurveFromName } from "ffjavascript"
 
 chai.use(chaiAsPromised)
+
+const abi = new AbiCoder()
 
 const TEST_HEIGHT = 4;
 
@@ -105,7 +107,7 @@ describe("Credential Restricted Test Proof", () => {
         it("Should generate the Semaphore proof with the correct nullifier hash and signal", async () => {
             const expectedNullifierHash = poseidon([hash(externalNullifier), identity.nullifier])
 
-            const expectedSignalPreimage = utils.defaultAbiCoder.encode(
+            const expectedSignalPreimage = abi.encode(
                 ["uint", "uint", "uint", "uint"], 
                 [
                     identity.commitment,
@@ -114,7 +116,7 @@ describe("Credential Restricted Test Proof", () => {
                     gradeGroup.root
                 ]
             )
-            const expectedSignal = BigInt(utils.keccak256(expectedSignalPreimage))
+            const expectedSignal = BigInt(keccak256(expectedSignalPreimage))
             
             expect(credentialRestrictedTestFullProof.semaphoreFullProof.nullifierHash).to.be.equal(expectedNullifierHash.toString())
             expect(credentialRestrictedTestFullProof.semaphoreFullProof.signal).to.be.equal(expectedSignal.toString())

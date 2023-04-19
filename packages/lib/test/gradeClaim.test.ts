@@ -7,7 +7,7 @@ import {
     Poseidon, 
     TestGradingVariables, 
     MAX_TREE_DEPTH
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import * as chai from 'chai'    

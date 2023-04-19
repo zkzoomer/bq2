@@ -1,4 +1,4 @@
-import { SnarkArtifacts, MAX_TREE_DEPTH } from "@bq2/lib"
+import { SnarkArtifacts, MAX_TREE_DEPTH } from "@bq-core/lib"
 import { BytesLike, Hexable } from "@ethersproject/bytes"
 import { formatBytes32String } from "@ethersproject/strings"
 import { Identity } from "@semaphore-protocol/identity"

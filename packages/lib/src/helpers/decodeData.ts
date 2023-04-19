@@ -1,7 +1,7 @@
-import { utils } from 'ethers';
+import { AbiCoder } from 'ethers';
 import { CredentialState, TestCredentialData } from '../types';
 
-const abi = utils.defaultAbiCoder
+const abi = new AbiCoder()
 
 export function decodeTestCredentialData(
     data: string
@@ -26,14 +26,14 @@ export function decodeTestCredentialData(
     )
 
     return {
-        testHeight: decodedData[0],
-        minimumGrade: decodedData[1],
-        multipleChoiceWeight: decodedData[2],
-        nQuestions: decodedData[3],
-        timeLimit: decodedData[4],
-        admin: decodedData[5],
-        requiredCredential: decodedData[6].toNumber(),
-        requiredCredentialGradeThreshold: decodedData[7].toNumber(),
+        testHeight: parseFloat(decodedData[0].toString()),
+        minimumGrade: parseFloat(decodedData[1].toString()),
+        multipleChoiceWeight: parseFloat(decodedData[2].toString()),
+        nQuestions: parseFloat(decodedData[3].toString()),
+        timeLimit: parseFloat(decodedData[4].toString()),
+        admin: decodedData[5].toString(),
+        requiredCredential: parseFloat(decodedData[6].toString()),
+        requiredCredentialGradeThreshold: parseFloat(decodedData[7].toString()),
         multipleChoiceRoot: decodedData[8].toString(),
         openAnswersHashesRoot: decodedData[9].toString(),
         testRoot: decodedData[10].toString(),

@@ -1,4 +1,4 @@
-import { buildPoseidon, FullGradeCommitment, Poseidon, BigNumberish } from "@bq2/lib"
+import { buildPoseidon, FullGradeCommitment, Poseidon, BigNumberish } from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group"
 import type { Identity } from "@semaphore-protocol/identity"
 

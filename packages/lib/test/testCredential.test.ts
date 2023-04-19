@@ -4,7 +4,7 @@ import {
     BigNumberish,
     TestCredential,
     Poseidon,
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Identity } from "@semaphore-protocol/identity"
 import { config as dotenvConfig } from "dotenv"
 import { getCurveFromName } from "ffjavascript"

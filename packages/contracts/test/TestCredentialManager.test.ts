@@ -22,7 +22,7 @@ import {
     generateGradeClaimProof,
     MAX_GRADE,
     SUPPORTED_TEST_HEIGHTS
-} from "@bq2/lib"
+} from "@bq-core/lib"
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { generateProof, FullProof } from '@semaphore-protocol/proof';

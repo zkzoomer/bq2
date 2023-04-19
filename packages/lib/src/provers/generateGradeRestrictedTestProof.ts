@@ -7,11 +7,12 @@ import {
     TestGradingVariables,
     TestVariables,
     SnarkArtifacts, 
-} from "@bq2/lib"
+} from "@bq-core/lib"
+import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { MerkleProof } from "@zk-kit/incremental-merkle-tree"
-import { utils } from "ethers"
+import { AbiCoder, keccak256 } from "ethers"
 
 /**
  * Generates a proof of knowledge of a solution to a Block Qualified test, while also proving a grade over a certain threshold for a given credential
@@ -43,9 +44,11 @@ export default async function generateGradeRestrictedTestProof(
 ): Promise<GradeRestrictedTestFullProof> {
     const testFullProof = await generateTestProof(identity, testAnswers, testVariables, testIdentityGroup, testGradeGroup, testPassed, testSnarkArtifacts, testId)
 
-    const externalNullifier = utils.formatBytes32String("bq-grade-restricted-test")  // 0x62712d67726164652d726573747269637465642d746573740000000000000000
+    const externalNullifier = formatBytes32String("bq-grade-restricted-test")  // 0x62712d67726164652d726573747269637465642d746573740000000000000000
 
-    const encodedSignalPreimage = utils.defaultAbiCoder.encode(
+    const abi = new AbiCoder()
+
+    const encodedSignalPreimage = abi.encode(
         ["uint", "uint", "uint", "uint"], 
         [
             testFullProof.identityCommitment,
@@ -54,7 +57,7 @@ export default async function generateGradeRestrictedTestProof(
             testFullProof.newGradeTreeRoot
         ]
     )
-    const signal = BigInt(utils.keccak256(encodedSignalPreimage))
+    const signal = BigInt(keccak256(encodedSignalPreimage))
 
     const gradeClaimFullProof = await generateGradeClaimProof(identity, gradeClaimGroupOrMerkleProof, gradeClaimThreshold, externalNullifier, signal, gradeClaimCommitmentOrTestGradingVariables, gradeClaimSnarkArtifacts)
     
