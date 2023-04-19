@@ -2,7 +2,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "strict": true,
-        "target": "ESNext",
+        "target": "ES6",
         "module": "ES6",
         "moduleResolution": "node",
         "esModuleInterop": true,
@@ -15,7 +15,7 @@
         "declarationDir": "types",
         "typeRoots": ["node_modules/@types", "types"],
         "paths": {
-            "@bq2/*": ["packages/*/src"]
+            "@bq-core/*": ["packages/*/src"]
         }
     },
     "ts-node": {
