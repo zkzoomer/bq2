@@ -1,5 +1,3 @@
-import commonjs from "@rollup/plugin-commonjs"
-import { nodeResolve }  from "@rollup/plugin-node-resolve"
 import typescript from "rollup-plugin-typescript2"
 import json from "@rollup/plugin-json"
 import * as fs from "fs"
@@ -22,8 +20,6 @@ export default {
             tsconfig: "./build.tsconfig.json",
             useTsconfigDeclarationDir: true
         }),
-        json(),
-        commonjs(),
-        nodeResolve({ preferBuiltins: true, mainFields: ['browser'] }),
+        json()
     ]
 };
