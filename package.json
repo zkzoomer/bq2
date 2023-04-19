@@ -1,5 +1,5 @@
 {
-	"name": "bq2",
+	"name": "bq-core",
 	"version": "1.0.0",
 	"description": "Block Qualified v2 implementing Semaphore for increased privacy and functionality",
 	"main": "index.js",
@@ -11,16 +11,23 @@
 		"test": "yarn test:circuits && yarn test:contracts && yarn test:libraries",
 		"test:circuits": "yarn workspace circuits test",
 		"test:contracts": "yarn workspace contracts test",
-		"test:libraries": "yarn workspace @bq2/lib test"
+		"test:libraries": "yarn workspace @bq-core/lib test"
 	},
 	"workspaces": [
 		"packages/*"
 	],
 	"devDependencies": {
+		"@rollup/plugin-commonjs": "^24.1.0",
+		"@rollup/plugin-json": "^6.0.0",
+		"@rollup/plugin-node-resolve": "^15.0.2",
+		"@rollup/plugin-typescript": "^11.1.0",
 		"@types/mocha": "^10.0.1",
 		"chai": "^4.3.7",
 		"dotenv": "^16.0.3",
 		"mocha": "^10.2.0",
+		"rimraf": "^5.0.0",
+		"rollup-plugin-typescript2": "^0.34.1",
+		"rollup": "^3.20.6",
 		"ts-node": "^10.4.0",
 		"tslib": "^2.3.1",
 		"typescript": "^4.9.4"
