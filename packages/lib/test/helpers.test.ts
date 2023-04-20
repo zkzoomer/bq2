@@ -1,9 +1,12 @@
 import { 
     buildPoseidon, 
-    generateCredentialOwnershipProof, 
-    generateOpenAnswers, 
     getGradeCommitment, 
+    generateCredentialOwnershipProof, 
+    generateMultipleChoiceAnswers,
+    generateOpenAnswers, 
     hash, 
+    packProof,
+    unpackProof,
     Poseidon, 
     MAX_TREE_DEPTH
 } from "@bq-core/lib"
@@ -13,7 +16,6 @@ import { FullProof } from "@semaphore-protocol/proof"
 import * as chai from 'chai'    
 import chaiAsPromised from 'chai-as-promised'
 import { getCurveFromName } from "ffjavascript"
-import { packProof, unpackProof } from "../src/helpers"
 
 chai.use(chaiAsPromised)
 
@@ -107,6 +109,38 @@ describe("Helper functions", () => {
             const proof = packProof(originalProof)
 
             expect(proof).to.deep.equal(fullProof.proof)
+        })
+    })
+
+    describe("generateMultipleChoiceAnswers", () => {
+        it("Throws when giving it more answers than supported", () => {
+            expect(
+                () => generateMultipleChoiceAnswers(Array(2 ** TEST_HEIGHT + 1).fill(1), TEST_HEIGHT)
+            ).to.throw("More answers were given than supported")
+        })
+
+        it("Fills up an incomplete multiple choice answers array", () => {
+            const fullOpenAnswers = generateMultipleChoiceAnswers([1], TEST_HEIGHT)
+            const expectedMultipleChoiceAnswers = Array(2 ** TEST_HEIGHT).fill('0')
+            expectedMultipleChoiceAnswers[0] = '1'
+
+            expect(fullOpenAnswers).to.deep.equal(expectedMultipleChoiceAnswers)
+        })
+
+        it("Joins together multiple answer responses into a single number", () => {
+            const fullOpenAnswers = generateMultipleChoiceAnswers([[1,2,3]], TEST_HEIGHT)
+            const expectedMultipleChoiceAnswers = Array(2 ** TEST_HEIGHT).fill('0')
+            expectedMultipleChoiceAnswers[0] = '123'
+
+            expect(fullOpenAnswers).to.deep.equal(expectedMultipleChoiceAnswers)
+        })
+
+        it("Correctly orders multiple answer responses into a single number", () => {
+            const fullOpenAnswers = generateMultipleChoiceAnswers([[7,8,4]], TEST_HEIGHT)
+            const expectedMultipleChoiceAnswers = Array(2 ** TEST_HEIGHT).fill('0')
+            expectedMultipleChoiceAnswers[0] = '478'
+
+            expect(fullOpenAnswers).to.deep.equal(expectedMultipleChoiceAnswers)
         })
     })
 

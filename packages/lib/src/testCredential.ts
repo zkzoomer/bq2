@@ -7,6 +7,7 @@ import {
     encodeTestFullProof,
     generateCredentialRestrictedTestProof,
     generateGradeRestrictedTestProof,
+    generateMultipleChoiceAnswers,
     generateRateCredentialIssuerProof,
     generateTestProof,
     generateOpenAnswers,
@@ -154,7 +155,9 @@ export default class TestCredential {
 
         const testData = decodeTestCredentialData(await credentialsRegistry.getCredentialData(credentialId))
 
-        let fullOpenAnswersHashes: string[] = []
+        let fullOpenAnswersHashes = new Array(2 ** testData.testHeight).fill(
+            poseidon([hash("")])
+        );
 
         if (testData.multipleChoiceWeight !== 100) {  // Open answer hashes need to be provided
             if (openAnswersHashes === undefined) {  
@@ -164,10 +167,6 @@ export default class TestCredential {
             if (openAnswersHashes.length !== testData.nQuestions) {  
                 throw new Error(`Need to provide an open answer hash for each question`)
             }
-
-            fullOpenAnswersHashes = new Array(2 ** testData.testHeight).fill(
-                poseidon([hash("")])
-            );
         
             fullOpenAnswersHashes.forEach( (_, i) => { if (i < openAnswersHashes.length) {
                 fullOpenAnswersHashes[i] = openAnswersHashes[i].toString()
@@ -190,12 +189,12 @@ export default class TestCredential {
     }
 
     gradeSolution(testAnswers: TestAnswers) {
-        // Multiple choice answers provided must be numbers and less than 64 in number
+        // Multiple choice answers provided must be numbers and less than 2 ** testHeight in number
         if ( testAnswers.multipleChoiceAnswers.length > 2 ** this.#testData.testHeight ) { 
             throw new RangeError('Surpassed maximum number of answers for a test')
         }
         // All open answers must be provided - even if an empty ""
-        if ( testAnswers.openAnswers.length < this.#testData.nQuestions ) { 
+        if ( this.#testData.multipleChoiceWeight !== 100 && testAnswers.openAnswers.length < this.#testData.nQuestions ) { 
             throw new RangeError('Some questions were left unanswered')
         }
         if ( testAnswers.openAnswers.length > this.#testData.nQuestions ) { 
@@ -232,6 +231,7 @@ export default class TestCredential {
     ): Promise<TestFullProof | CredentialRestrictedTestFullProof | GradeRestrictedTestFullProof> {
         const grade = this.gradeSolution(testAnswers)
 
+        testAnswers.multipleChoiceAnswers = generateMultipleChoiceAnswers(testAnswers.multipleChoiceAnswers, this.#testData.testHeight)
         testAnswers.openAnswers = generateOpenAnswers(testAnswers.openAnswers, this.#testData.testHeight)
 
         const identityGroup = new Group(this.#credentialId, this.#treeDepth)
@@ -434,17 +434,7 @@ export default class TestCredential {
     }
 
     #getMultipleChoiceResult({ multipleChoiceAnswers }: TestAnswers): number {
-        const answersArray = new Array(2 ** this.#testData.testHeight).fill('0')
-    
-        answersArray.forEach( (_, i) => {
-            if ( i < multipleChoiceAnswers.length ) { 
-                if (Array.isArray(multipleChoiceAnswers[i])) {
-                    answersArray[i] = (multipleChoiceAnswers[i] as string[] | number[]).sort().join('')
-                } else {
-                    answersArray[i] = multipleChoiceAnswers[i].toString()
-                }
-            }
-        })
+        const answersArray = generateMultipleChoiceAnswers(multipleChoiceAnswers, this.#testData.testHeight)
         
         // Checking if test is passed and returning the result
         return rootFromLeafArray(this.#poseidon, answersArray).toString() === this.#testData.multipleChoiceRoot ? 
@@ -462,12 +452,13 @@ export default class TestCredential {
                     resultsArray[i] = true
                 }
             } else {
-                nCorrect++  // Default hash is always correct, simply filling to 64
+                nCorrect++  // Default hash is always correct, simply filling to 2 ** testHeight
             }
         }
 
-        const openAnswersResult = (nCorrect + openAnswers.length > 64) ?  // prevent underflow
-            Math.floor((100 - this.#testData.multipleChoiceWeight) * (nCorrect + openAnswers.length - 64) / openAnswers.length)
+        const openAnswersResult = (nCorrect + this.#testData.nQuestions > 2 ** this.#testData.testHeight) ?  // prevent underflow
+            Math.floor((100 - this.#testData.multipleChoiceWeight) * 
+            (nCorrect + this.#testData.nQuestions - 2 ** this.#testData.testHeight) / this.#testData.nQuestions)
         :
             0;
 
