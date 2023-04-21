@@ -28,14 +28,6 @@ export default async function generateCredentialOwnershipProof(
             zkeyFilePath: `https://www.trusted-setup-pse.org/semaphore/${MAX_TREE_DEPTH}/semaphore.zkey`
         }
     }
-
-    if (typeof externalNullifier === 'string') {
-        externalNullifier = formatBytes32String(externalNullifier)
-    }
-    
-    if(typeof signal === 'string') {
-        signal = formatBytes32String(signal)
-    }
      
     return generateProof(identity, groupOrMerkleProof, externalNullifier, signal, snarkArtifacts)
 }
