@@ -10,6 +10,7 @@ import {
     Poseidon, 
     MAX_TREE_DEPTH
 } from "@bq-core/lib"
+import { formatBytes32String } from "@ethersproject/strings"
 import { Group } from "@semaphore-protocol/group"
 import { Identity } from "@semaphore-protocol/identity"
 import { FullProof } from "@semaphore-protocol/proof"
@@ -24,8 +25,8 @@ const TEST_HEIGHT = 4;
 describe("Helper functions", () => {
     let poseidon: Poseidon 
 
-    const externalNullifier = "Topic"
-    const signal = "Hello world"
+    const externalNullifier = formatBytes32String("Topic")
+    const signal = formatBytes32String("Hello world")
 
     const snarkArtifacts = {
         wasmFilePath: '../snark-artifacts/semaphore.wasm',
