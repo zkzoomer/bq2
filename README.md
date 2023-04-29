@@ -1,5 +1,7 @@
 # bq - Block Qualified
 
+### See the [documentation](https://deenz.gitbook.io/bq2/)
+
 ## Introduction 
 
 Block Qualified allows users to gain credentials by solving tests *directly on-chain*: we use zero-knowledge proofs to ensure these solutions remain a secret, so cheating becomes mathematically unfeasible. Additionally, we integrate with the [Semaphore protocol](http://semaphore.appliedzkp.org/), which allows users to prove their membership of a group and send signals without revealing their original identity.
