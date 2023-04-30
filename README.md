@@ -65,11 +65,18 @@ Users earn these credentials by sending transactions to the [Credential Registry
 
 ## Additional Resources
 
+#### Check out the [documentation](https://deenz.gitbook.io/bq2/)
+
 #### You can check this 3-minute [demo walkthrough](https://youtu.be/n0m2aHLhoXs) highlighting the main functionalities.
 
-This demo has been deployed on the Polygon Mumbai testnet network. If you wish to interact directly with the protocol, you can get yourself some testnet funds at [this faucet](https://mumbaifaucet.com/) or [this faucet](https://faucet.polygon.technology/).
+#### Related Repositories
+- [bq2-subgraph](https://github.com/0xdeenz/bq2-subgraph)
+- [bq2-site](https://github.com/0xdeenz/bq2-site)
+- [bq2-gated-nft](https://github.com/0xdeenz/bq2-gated-nft)
 
 #### Deployed Contracts
+
+This demo has been deployed on the Polygon Mumbai testnet network. If you wish to interact directly with the protocol, you can get yourself some testnet funds at [this faucet](https://mumbaifaucet.com/) or [this faucet](https://faucet.polygon.technology/).
 
 | Contract | Mumbai |
 | -------- | ------ |
